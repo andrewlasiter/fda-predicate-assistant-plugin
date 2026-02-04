@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "local",
+  "description": "Local custom plugins",
+  "owner": {
+    "name": "PredicateExtraction"
+  },
+  "plugins": [
+    {
+      "name": "fda-predicate-assistant",
+      "description": "FDA 510(k) predicate extraction and analysis assistant for medical device regulatory workflows",
+      "version": "1.0.0",
+      "author": {
+        "name": "PredicateExtraction"
+      },
+      "source": "./plugins/fda-predicate-assistant",
+      "category": "productivity"
+    }
+  ]
+}
