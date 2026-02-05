@@ -271,6 +271,89 @@ PYEOF
 
 **For deeper analysis**: Suggest `/fda:safety --product-code CODE` in the Recommendations section. Do NOT run the full safety analysis inline (it's too detailed for the research report).
 
+## Step 3.75: Applicable FDA Guidance
+
+**Skip this step entirely for `--depth quick`.**
+
+Search for FDA guidance documents applicable to the user's device. Use data already obtained from Step 2 — `regulation_number`, `device_name`, and `device_class` from the openFDA classification API response.
+
+### Guidance Document Search
+
+Run WebSearch queries to find applicable guidance:
+
+**Query 1** (always run for standard/deep): Device-specific guidance tied to the CFR regulation
+```
+WebSearch: "{regulation_number}" guidance site:fda.gov/medical-devices
+```
+
+**Query 2** (always run for standard/deep): Special controls guidance (Class II regulatory roadmap)
+```
+WebSearch: "{device_name}" "special controls" OR "class II" guidance site:fda.gov
+```
+
+**Query 3** (deep depth only): Submission-specific testing guidance
+```
+WebSearch: "{device_name}" "510(k)" guidance testing requirements site:fda.gov
+```
+
+Replace `{regulation_number}` with the actual regulation (e.g., `878.4018`) and `{device_name}` with the FDA classification name (e.g., `Dressing, Wound, Drug`).
+
+### Cross-Cutting Guidance Logic
+
+Determine which cross-cutting guidances to mention based on device characteristics from Step 2 classification data and the user's `--device-description`. Apply these rules:
+
+| Trigger | Guidance Topic |
+|---------|---------------|
+| Always (all devices) | Biocompatibility: "Use of ISO 10993-1: Biological evaluation of medical devices" |
+| `device_class == 2` | Special controls for the specific regulation number |
+| Description mentions "sterile", "sterilization", or product code implies sterile device | Sterilization: "Submission and Review of Sterility Information in Premarket Notification (510(k)) Submissions" |
+| Description mentions "software", "algorithm", "app", "firmware", "SaMD" | Software: "Content of Premarket Submissions for Device Software Functions" (IEC 62304) |
+| Description mentions "wireless", "bluetooth", "wifi", "connected", "IoT" | Cybersecurity: "Cybersecurity in Medical Devices: Quality System Considerations and Content of Premarket Submissions" |
+| Description mentions "reusable" or "reprocessing" | Reprocessing: "Reprocessing Medical Devices in Health Care Settings: Validation Methods and Labeling" |
+| Product code in IVD category (from review panel or classification) | IVD-specific guidance documents |
+| Description mentions "combination product", "drug", "biologic" | Combination product guidance |
+
+No additional API calls needed — this logic uses keywords already available from the openFDA classification response and user arguments.
+
+### For `--depth deep`: Fetch Key Guidance Content
+
+For the single most relevant device-specific guidance found, use WebFetch to retrieve the guidance page and extract:
+- Specific testing requirements or performance criteria
+- Recommended standards (ISO, ASTM, IEC, etc.)
+- Special submission requirements or content expectations
+- Any specific clinical data expectations
+
+Store these extracted requirements — they will be cross-referenced against predicate testing data in Step 5.
+
+### Output Format for This Section
+
+```
+3.75. APPLICABLE FDA GUIDANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Device-Specific Guidance:
+  ✓ "{Guidance Title}" ({Year})
+    {URL}
+    Key requirements: {summarized requirements from the guidance}
+
+  OR (if none found):
+
+  ✗ No device-specific guidance found for regulation {regulation_number}
+    → Submission should rely on predicate precedent and general guidance
+
+Cross-Cutting Guidance (based on device characteristics):
+  • Biocompatibility: "Use of ISO 10993-1: Biological evaluation" (2023)
+  • Sterilization: "Submission and Review of Sterility Info" (2016)
+  • [If software]: "Content of Premarket Submissions for Device Software" (2023)
+  • [If cybersecurity]: "Cybersecurity in Medical Devices" (2023)
+  • [Other applicable cross-cutting guidance based on triggers above]
+
+Recognized Consensus Standards (commonly cited for this product code):
+  • [List specific ISO/ASTM/IEC standards mentioned in guidance or commonly associated]
+```
+
+Only list cross-cutting guidance items where the trigger condition is met. Do NOT list all possible cross-cutting guidance for every device.
+
 ## Step 4: Predicate Landscape
 
 ### Extract predicates directly from PDF text
@@ -626,6 +709,47 @@ For each type of testing found, summarize:
 
 Provide a recommended testing matrix with Required/Likely Needed/Possibly Needed/Not Typically Required categories.
 
+### Guidance vs. Predicate Testing Cross-Reference (standard and deep depth)
+
+**Skip for `--depth quick`.**
+
+If Step 3.75 identified applicable FDA guidance (device-specific or cross-cutting), cross-reference the guidance requirements against what the top predicate devices actually tested. This is the key value-add — not just "here's a guidance link" but "here's what it means for YOUR submission based on YOUR predicates."
+
+Build a comparison table:
+
+```
+Guidance vs. Predicate Testing Comparison
+──────────────────────────────────────────
+| Test Category     | FDA Guidance Says         | Predicate Evidence     | Gap? |
+|-------------------|---------------------------|------------------------|------|
+| Biocompatibility  | ISO 10993-5, -10 required | 3/3 predicates include | No   |
+| Sterilization     | Validate per ISO 11135    | 2/3 used EO + 11135   | No   |
+| Shelf Life        | Accelerated aging needed  | 1/3 included ASTM F1980| Flag |
+| Antimicrobial     | If claimed: AATCC 100     | 0/3 included           | Flag |
+| Performance       | [per guidance]            | 2/3 included bench test| No   |
+| Electrical Safety | IEC 60601-1 required      | [N/A or evidence]      | Flag |
+| Software V&V      | IEC 62304 lifecycle       | [N/A or evidence]      | Flag |
+| Clinical          | [per guidance]            | 1/3 included lit review| Flag |
+```
+
+**How to populate each row:**
+1. **"FDA Guidance Says"** column: Pull from device-specific guidance found in Step 3.75 (if any), plus cross-cutting guidance requirements. If no device-specific guidance exists, use general FDA expectations for the device class.
+2. **"Predicate Evidence"** column: Count how many of the top predicate summaries (from Step 4.5/Step 5 analysis) included this test category. Use the section-patterns.md patterns to detect each test type.
+3. **"Gap?"** column:
+   - **No** — Guidance recommends it AND most predicates included it
+   - **Flag** — Guidance recommends it BUT few or no predicates included it (user needs to plan for this)
+   - **N/A** — Not applicable to this device type
+
+Only include rows relevant to the device. Do NOT include software/cybersecurity rows for a simple wound dressing, or sterilization rows for non-sterile devices.
+
+**Flag items prominently** — these represent potential gaps where the user's submission may need testing that predicates didn't do or didn't document. Add a brief note below the table:
+
+```
+⚠ Flagged items indicate areas where FDA guidance recommends testing but predicate
+  evidence is thin. Plan to address these in your submission — either by including
+  the testing or by providing a rationale for why it's not applicable.
+```
+
 ## Step 6: Indications for Use Landscape
 
 Search for IFU content in PDF text for this product code. Analyze:
@@ -667,20 +791,29 @@ Structure the research package as:
 2. REGULATORY INTELLIGENCE
    [Clearance stats, review times, submission types]
 
-3. PREDICATE CANDIDATES (Ranked)
+3. SAFETY INTELLIGENCE
+   [MAUDE events, recalls, safety flags]
+
+3.75. APPLICABLE FDA GUIDANCE
+   [Device-specific guidance (if any)]
+   [Cross-cutting guidance based on device characteristics]
+   [Recognized consensus standards]
+
+4. PREDICATE CANDIDATES (Ranked)
    [Top 3-5 primary predicates from same product code]
    [Secondary predicates from other product codes if needed]
 
-4. TESTING STRATEGY
+5. TESTING STRATEGY
    [Required, likely needed, possibly needed testing]
+   [Guidance vs. Predicate Testing cross-reference table]
 
-5. INDICATIONS FOR USE LANDSCAPE
+6. INDICATIONS FOR USE LANDSCAPE
    [IFU patterns, breadth analysis]
 
-6. COMPETITIVE LANDSCAPE
+7. COMPETITIVE LANDSCAPE
    [Top companies, trends, sub-categories]
 
-7. RECOMMENDATIONS & NEXT STEPS
+8. RECOMMENDATIONS & NEXT STEPS
    [Specific actionable next steps — NOT "run this command"]
 ```
 
@@ -693,9 +826,12 @@ Structure the research package as:
 - Top 3 predicate candidates (citation count only)
 - Competitive landscape overview
 - Skip PDF text analysis
+- Skip guidance document lookup
 
 ### `--depth standard` (default, 5-10 minutes)
 - Full regulatory intelligence
+- Guidance document search + key requirements (device-specific + cross-cutting)
+- Guidance vs. predicate testing cross-reference table
 - Top 5 predicate candidates with chain analysis
 - Cross-product-code search for novel features
 - Testing strategy from PDF text (if available)
@@ -704,6 +840,7 @@ Structure the research package as:
 
 ### `--depth deep` (15+ minutes)
 - Everything in standard
+- Guidance search + WebFetch key guidance content + detailed cross-reference
 - Full predicate chain mapping (all generations)
 - Document-by-document section analysis
 - Detailed testing method comparison tables
