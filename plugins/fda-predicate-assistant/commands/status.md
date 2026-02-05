@@ -29,6 +29,61 @@ Report:
 - Dependency status for each stage
 - If missing: `pip install -r "$CLAUDE_PLUGIN_ROOT/scripts/requirements.txt"`
 
+### 0.5. openFDA API Status
+
+Check API connectivity and configuration:
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re, time
+
+# Read settings
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = None
+api_enabled = True
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    m = re.search(r'openfda_api_key:\s*(\S+)', content)
+    if m and m.group(1) != 'null':
+        api_key = m.group(1)
+    m = re.search(r'openfda_enabled:\s*(\S+)', content)
+    if m and m.group(1).lower() == 'false':
+        api_enabled = False
+
+if not api_enabled:
+    print("STATUS:disabled")
+    exit(0)
+
+# Quick connectivity check — hit 510k endpoint with limit=1
+params = {"search": 'k_number:"K241335"', "limit": "1"}
+if api_key:
+    params["api_key"] = api_key
+url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+start = time.time()
+try:
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        data = json.loads(resp.read())
+        elapsed = (time.time() - start) * 1000
+        print(f"STATUS:online")
+        print(f"LATENCY:{elapsed:.0f}ms")
+        print(f"API_KEY:{'yes' if api_key else 'no'}")
+        print(f"RATE_TIER:{'120K/day' if api_key else '1K/day'}")
+except Exception as e:
+    print(f"STATUS:unreachable")
+    print(f"ERROR:{e}")
+    print(f"API_KEY:{'yes' if api_key else 'no'}")
+PYEOF
+```
+
+Report in the status output:
+- If `STATUS:disabled`: Show `openFDA API  ⊘  Disabled (offline mode) — /fda:configure --set openfda_enabled true`
+- If `STATUS:online`: Show `openFDA API  ✓  Online ({LATENCY}ms) | Key: {yes/no} | Rate: {RATE_TIER}`
+- If `STATUS:unreachable`: Show `openFDA API  ✗  Unreachable — check network connection`
+
+If the API is reachable and no key is configured, add a recommendation: "Get a free API key at https://open.fda.gov/apis/authentication/ for 120K requests/day (vs 1K/day without key). Set with: `/fda:configure --set openfda_api_key YOUR_KEY`"
+
 ### 1. Projects
 
 Check for project folders:
@@ -167,6 +222,11 @@ Plugin Scripts
   batchfetch.py            ✓  Available
   Stage 1 dependencies     ✓  Installed
   Stage 2 dependencies     ✓  Installed
+
+openFDA API
+  Connectivity             ✓  Online (245ms)
+  API Key                  ✗  Not configured (1K/day limit)
+  Rate Tier                   1K/day (get free key for 120K/day)
 
 Projects (510k_projects/)
   KGN_2020-2025/     ✓  Stage 1: 247 records, 195 PDFs | Stage 2: 180 devices

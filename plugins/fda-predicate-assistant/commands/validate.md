@@ -1,7 +1,7 @@
 ---
 description: Validate FDA device numbers against official databases and all available pipeline data
 allowed-tools: Bash, Read, Grep, Glob
-argument-hint: "<number> [number2] [--project NAME]"
+argument-hint: "<number> [number2] [--project NAME] [--offline]"
 ---
 
 # FDA Device Number Validation (Enriched)
@@ -49,7 +49,95 @@ Track which sources exist — you'll use this in the final report.
 
 Parse all device numbers from `$ARGUMENTS`. Handle comma-separated, space-separated, or mixed input.
 
-### Step 2: Primary Validation — FDA Database Files
+### Step 2: Primary Validation — openFDA API (then flat-file fallback)
+
+**Try the openFDA API first** for the richest, most current data. Fall back to flat files if the API is disabled, unreachable, or `--offline` is specified.
+
+#### 2A: openFDA API Validation (Primary)
+
+Check if `--offline` was specified or if API is disabled. If not, query the API using the template from `references/openfda-api.md`:
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re
+
+# Read settings
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = None
+api_enabled = True
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    m = re.search(r'openfda_api_key:\s*(\S+)', content)
+    if m and m.group(1) != 'null':
+        api_key = m.group(1)
+    m = re.search(r'openfda_enabled:\s*(\S+)', content)
+    if m and m.group(1).lower() == 'false':
+        api_enabled = False
+
+if not api_enabled:
+    print("API_SKIP:disabled")
+    exit(0)
+
+knumber = "KNUMBER"  # Replace with actual K-number
+
+# Query 510k endpoint
+params = {"search": f'k_number:"{knumber}"', "limit": "1"}
+if api_key:
+    params["api_key"] = api_key
+url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+
+try:
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        data = json.loads(resp.read())
+        if data.get("results"):
+            r = data["results"][0]
+            print(f"API_FOUND:true")
+            print(f"APPLICANT:{r.get('applicant', 'N/A')}")
+            print(f"DEVICE_NAME:{r.get('device_name', 'N/A')}")
+            print(f"DECISION_DATE:{r.get('decision_date', 'N/A')}")
+            print(f"DECISION_CODE:{r.get('decision_code', 'N/A')}")
+            print(f"DECISION_DESC:{r.get('decision_description', 'N/A')}")
+            print(f"PRODUCT_CODE:{r.get('product_code', 'N/A')}")
+            print(f"CLEARANCE_TYPE:{r.get('clearance_type', 'N/A')}")
+            print(f"ADVISORY_COMMITTEE:{r.get('advisory_committee_description', r.get('advisory_committee', 'N/A'))}")
+            print(f"THIRD_PARTY:{r.get('third_party', 'N/A')}")
+            print(f"STATEMENT_OR_SUMMARY:{r.get('statement_or_summary', 'N/A')}")
+            print(f"DATE_RECEIVED:{r.get('date_received', 'N/A')}")
+            print(f"EXPEDITED:{r.get('expedited_review_flag', 'N/A')}")
+            # Compute review time
+            dr = r.get('date_received', '')
+            dd = r.get('decision_date', '')
+            if dr and dd and len(dr) == 8 and len(dd) == 8:
+                from datetime import datetime
+                try:
+                    d1 = datetime.strptime(dr, '%Y%m%d')
+                    d2 = datetime.strptime(dd, '%Y%m%d')
+                    print(f"REVIEW_DAYS:{(d2 - d1).days}")
+                except:
+                    pass
+        else:
+            print("API_FOUND:false")
+except urllib.error.HTTPError as e:
+    if e.code == 404:
+        print("API_FOUND:false")
+    else:
+        print(f"API_ERROR:HTTP {e.code}")
+except Exception as e:
+    print(f"API_ERROR:{e}")
+PYEOF
+```
+
+If the API returns data, use it as the primary source — this gives you applicant, decision date, product code, clearance type, advisory committee, third party review, statement/summary, and review time all from one call.
+
+If the API returns `API_FOUND:false`, the device may not exist or may be too old for the API. Proceed to flat-file fallback.
+
+If the API returns `API_ERROR`, note the error and proceed to flat-file fallback silently.
+
+#### 2B: Flat-File Fallback
+
+If the API was unavailable, disabled, or returned no results, fall back to flat files.
 
 FDA database files may be in multiple locations. Check these in order:
 
@@ -68,6 +156,8 @@ grep -i "PNUMBER" /mnt/c/510k/Python/PredicateExtraction/pma*.txt /mnt/c/510k/Py
 ```
 
 Report: Found/Not Found + full database record if found.
+
+**Note the data source in the report**: `(source: openFDA API)` or `(source: flat files — offline fallback)`.
 
 ### Step 3: Enrichment — 510kBF Metadata
 
@@ -174,6 +264,101 @@ Do NOT use `grep -c "KNUMBER"` on pdf_data.json — it may match inside other do
 **If text is NOT cached and it's a Statement**: Report:
 > **PDF Text**: Not cached — this is a Statement-only filing (limited public data available)
 
+### Step 5.5: openFDA Safety Check (MAUDE Events + Recalls)
+
+**If the API is available and the device was found**, run MAUDE event count and recall checks. This provides critical safety context that flat files cannot.
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re
+
+# Read settings
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = None
+api_enabled = True
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    m = re.search(r'openfda_api_key:\s*(\S+)', content)
+    if m and m.group(1) != 'null':
+        api_key = m.group(1)
+    m = re.search(r'openfda_enabled:\s*(\S+)', content)
+    if m and m.group(1).lower() == 'false':
+        api_enabled = False
+
+if not api_enabled:
+    print("SAFETY_SKIP:disabled")
+    exit(0)
+
+knumber = "KNUMBER"          # Replace with actual K-number
+product_code = "PRODUCTCODE" # Replace with product code from Step 2
+
+def fda_query(endpoint, search, limit=5, count_field=None):
+    params = {"search": search, "limit": str(limit)}
+    if count_field:
+        params["count"] = count_field
+    if api_key:
+        params["api_key"] = api_key
+    url = f"https://api.fda.gov/device/{endpoint}.json?{urllib.parse.urlencode(params)}"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return {"results": []}
+        return {"error": str(e)}
+    except Exception as e:
+        return {"error": str(e)}
+
+# 1. MAUDE event count by type for the product code
+print("--- MAUDE EVENTS ---")
+maude = fda_query("event", f'device.product_code:"{product_code}"', count_field="event_type.exact")
+if "results" in maude:
+    total = sum(r["count"] for r in maude["results"])
+    print(f"MAUDE_TOTAL:{total}")
+    for r in maude["results"]:
+        print(f"MAUDE_TYPE:{r['term']}:{r['count']}")
+elif "error" in maude:
+    print(f"MAUDE_ERROR:{maude['error']}")
+else:
+    print("MAUDE_TOTAL:0")
+
+# 2. Recall check for this specific K-number
+print("--- RECALLS ---")
+recalls = fda_query("recall", f'k_number:"{knumber}"', limit=10)
+if recalls.get("results"):
+    print(f"RECALL_COUNT:{len(recalls['results'])}")
+    for r in recalls["results"]:
+        status = r.get("recall_status", "Unknown")
+        classification = r.get("classification", "Unknown")
+        reason = r.get("reason_for_recall", "N/A")[:100]
+        date = r.get("event_date_initiated", "N/A")
+        print(f"RECALL:{classification}|{status}|{date}|{reason}")
+else:
+    print("RECALL_COUNT:0")
+
+# 3. Also check recalls for the product code (broader)
+pc_recalls = fda_query("recall", f'product_code:"{product_code}"', count_field="classification.exact")
+if "results" in pc_recalls:
+    total_pc = sum(r["count"] for r in pc_recalls["results"])
+    print(f"PC_RECALL_TOTAL:{total_pc}")
+    for r in pc_recalls["results"]:
+        print(f"PC_RECALL_CLASS:{r['term']}:{r['count']}")
+PYEOF
+```
+
+**Report in the output**:
+
+- **MAUDE Events** (product code): X total adverse events (Y Injury, Z Malfunction, W Death)
+  - If >0 deaths: Flag prominently
+  - If >100 total events: Note "high event volume — consider running `/fda:safety --product-code CODE` for detailed analysis"
+- **Recalls** (this device): X recalls found — or "No recalls"
+  - For each recall: Class (I/II/III), status (Ongoing/Completed), date, reason summary
+- **Recalls** (product code): X total recalls across all devices with this product code
+
+If the API is disabled or unreachable, skip this section silently (this data is not available from flat files).
+
 ### Step 6: OCR Error Suggestions
 
 If a number is NOT found in the primary database, suggest possible OCR corrections:
@@ -191,16 +376,22 @@ grep -i "CORRECTED_NUMBER" /mnt/c/510k/Python/PredicateExtraction/pmn*.txt 2>/de
 
 For each number, provide a consolidated report:
 
-**KNUMBER** — [FOUND/NOT FOUND]
-- **FDA Database**: Record details or "Not found"
-- **Applicant**: Company name (from 510k_download.csv)
-- **Decision**: Date, decision code (from 510k_download.csv)
+**KNUMBER** — [FOUND/NOT FOUND] (source: openFDA API / flat files)
+- **Applicant**: Company name
+- **Device Name**: Official device name
+- **Decision**: Date, decision code, description
 - **Product Code**: Code and description
-- **Review Time**: Days (from 510k_download.csv)
+- **Clearance Type**: Traditional / Special / Abbreviated
+- **Advisory Committee**: Review panel
+- **Review Time**: Days (received to decision)
+- **Third Party Review**: Yes/No
+- **Statement/Summary**: Which type of public document
 - **Predicates**: List of cited predicates — or clear explanation of why unavailable
 - **Cited By**: Other devices that cite this as a predicate
+- **MAUDE Events**: X total (Y Injury, Z Malfunction) for this product code — or "API unavailable"
+- **Recalls**: X recalls for this device / Y total for product code — or "None found"
 - **PDF Text**: Cached (X chars) / Not cached — with actionable guidance
-- **URL**: FDA submission link (from 510k_download.csv)
+- **URL**: FDA submission link
 
 **IMPORTANT**: For every field where data is unavailable, explain WHY it's unavailable and HOW to get it. Never just say "Not found" without context.
 

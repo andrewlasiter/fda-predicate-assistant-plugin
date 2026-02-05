@@ -1,7 +1,7 @@
 ---
 description: View or modify FDA predicate assistant settings and data directory paths
-allowed-tools: Read, Write
-argument-hint: "[--show | --set KEY VALUE | --migrate-cache]"
+allowed-tools: Read, Write, Bash
+argument-hint: "[--show | --set KEY VALUE | --test-api | --migrate-cache]"
 ---
 
 # FDA Predicate Assistant Configuration
@@ -29,6 +29,8 @@ Settings are stored in: `~/.claude/fda-predicate-assistant.local.md`
 | `cache_days` | `5` | Days to cache FDA database files |
 | `default_year` | `null` | Default year filter (null = all years) |
 | `default_product_code` | `null` | Default product code filter |
+| `openfda_api_key` | `null` | openFDA API key for higher rate limits (120K/day vs 1K/day) |
+| `openfda_enabled` | `true` | Enable/disable openFDA API calls (set false for offline-only mode) |
 
 ## Commands
 
@@ -52,6 +54,99 @@ If `$ARGUMENTS` starts with `--set`, parse KEY and VALUE, then update the settin
 
 Validate the key is one of the known settings before writing. For directory paths, verify the directory exists.
 
+Special handling for `openfda_api_key`:
+- Accept the key value and store it in settings
+- After storing, run a quick validation by hitting the 510k endpoint with `limit=1` to confirm the key works
+- Report success/failure
+
+### Test openFDA API
+
+If `$ARGUMENTS` is `--test-api`, test connectivity to all 7 openFDA Device API endpoints.
+
+Use the query template from `references/openfda-api.md`:
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re, time
+
+# Read settings for API key
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = None
+api_enabled = True
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    m = re.search(r'openfda_api_key:\s*(\S+)', content)
+    if m and m.group(1) != 'null':
+        api_key = m.group(1)
+    m = re.search(r'openfda_enabled:\s*(\S+)', content)
+    if m and m.group(1).lower() == 'false':
+        api_enabled = False
+
+if not api_enabled:
+    print("openFDA API is DISABLED (openfda_enabled: false)")
+    print("Enable with: /fda:configure --set openfda_enabled true")
+    exit(0)
+
+endpoints = [
+    ("510k", 'k_number:"K241335"'),
+    ("classification", 'product_code:"KGN"'),
+    ("event", 'device.product_code:"KGN"'),
+    ("recall", 'product_code:"KGN"'),
+    ("pma", 'pma_number:"P190001"'),
+    ("registrationlisting", 'products.product_code:"KGN"'),
+    ("udi", 'product_codes.code:"KGN"'),
+]
+
+print("openFDA Device API Connectivity Test")
+print("=" * 50)
+print(f"API Key: {'Configured' if api_key else 'Not set (1K/day limit)'}")
+print(f"Rate Tier: {'120K/day (with key)' if api_key else '1K/day (no key)'}")
+print()
+
+passed = 0
+failed = 0
+for endpoint, search in endpoints:
+    params = {"search": search, "limit": "1"}
+    if api_key:
+        params["api_key"] = api_key
+    url = f"https://api.fda.gov/device/{endpoint}.json?{urllib.parse.urlencode(params)}"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+    start = time.time()
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read())
+            elapsed = (time.time() - start) * 1000
+            total = data.get("meta", {}).get("results", {}).get("total", "?")
+            print(f"  {endpoint:25s}  OK  ({elapsed:.0f}ms, {total} total records)")
+            passed += 1
+    except urllib.error.HTTPError as e:
+        elapsed = (time.time() - start) * 1000
+        if e.code == 404:
+            print(f"  {endpoint:25s}  OK  ({elapsed:.0f}ms, 0 results for test query)")
+            passed += 1
+        else:
+            print(f"  {endpoint:25s}  FAIL  (HTTP {e.code}: {e.reason})")
+            failed += 1
+    except Exception as e:
+        elapsed = (time.time() - start) * 1000
+        print(f"  {endpoint:25s}  FAIL  ({e})")
+        failed += 1
+    time.sleep(0.5)  # Brief pause between requests
+
+print()
+print(f"Results: {passed}/7 endpoints reachable, {failed} failed")
+if failed == 0:
+    print("All endpoints operational.")
+elif failed == 7:
+    print("No endpoints reachable — check network connectivity.")
+else:
+    print("Some endpoints failed — may be temporary. Retry in a few minutes.")
+PYEOF
+```
+
+Report the results to the user.
+
 ## Settings File Format
 
 The settings file uses YAML frontmatter:
@@ -71,6 +166,8 @@ workers: 4
 cache_days: 5
 default_year: null
 default_product_code: null
+openfda_api_key: null
+openfda_enabled: true
 ---
 
 # FDA Predicate Assistant Settings
@@ -101,6 +198,11 @@ This file stores your preferences for the FDA 510(k) pipeline.
 
 - **default_year**: Set to filter by year automatically
 - **default_product_code**: Set to filter by product code automatically
+
+## openFDA API
+
+- **openfda_api_key**: API key for higher rate limits (get free key at https://open.fda.gov/apis/authentication/)
+- **openfda_enabled**: Set to false to disable all API calls (offline mode)
 ```
 
 ### Migrate Cache Format

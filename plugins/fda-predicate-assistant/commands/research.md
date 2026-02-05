@@ -65,10 +65,85 @@ ls /mnt/c/510k/Python/510kBF/fda_data/foiaclass.txt /mnt/c/510k/Python/Predicate
 
 ## Step 2: Product Code Profile
 
-Look up the product code in foiaclass.txt (if available):
+### 2A: openFDA API Classification (Primary)
+
+Query the classification endpoint for the richest data. Uses the template from `references/openfda-api.md`:
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re
+
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = None
+api_enabled = True
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    m = re.search(r'openfda_api_key:\s*(\S+)', content)
+    if m and m.group(1) != 'null':
+        api_key = m.group(1)
+    m = re.search(r'openfda_enabled:\s*(\S+)', content)
+    if m and m.group(1).lower() == 'false':
+        api_enabled = False
+
+product_code = "PRODUCTCODE"  # Replace
+
+if api_enabled:
+    def fda_query(endpoint, search, limit=10, count_field=None):
+        params = {"search": search, "limit": str(limit)}
+        if count_field:
+            params["count"] = count_field
+        if api_key:
+            params["api_key"] = api_key
+        url = f"https://api.fda.gov/device/{endpoint}.json?{urllib.parse.urlencode(params)}"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                return json.loads(resp.read())
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                return {"results": []}
+            return {"error": f"HTTP {e.code}"}
+        except Exception as e:
+            return {"error": str(e)}
+
+    # Classification lookup
+    result = fda_query("classification", f'product_code:"{product_code}"')
+    if result.get("results"):
+        r = result["results"][0]
+        print(f"DEVICE_NAME:{r.get('device_name', 'N/A')}")
+        print(f"DEVICE_CLASS:{r.get('device_class', 'N/A')}")
+        print(f"REGULATION:{r.get('regulation_number', 'N/A')}")
+        print(f"PANEL:{r.get('medical_specialty_description', r.get('review_panel', 'N/A'))}")
+        print(f"DEFINITION:{r.get('definition', 'N/A')}")
+        print(f"GMP_EXEMPT:{r.get('gmp_exempt_flag', 'N/A')}")
+        print(f"THIRD_PARTY_FLAG:{r.get('third_party_flag', 'N/A')}")
+        print(f"SOURCE:openFDA API")
+    else:
+        print("API_FALLBACK:true")
+
+    # Also get total 510(k) clearance count from the API
+    import time
+    time.sleep(0.5)
+    count_result = fda_query("510k", f'product_code:"{product_code}"', limit=1)
+    total = count_result.get("meta", {}).get("results", {}).get("total", 0)
+    print(f"TOTAL_CLEARANCES:{total}")
+else:
+    print("API_FALLBACK:true")
+PYEOF
+```
+
+### 2B: Flat-File Fallback
+
+If API is unavailable, fall back to foiaclass.txt:
 
 ```bash
 grep "^PRODUCTCODE" /mnt/c/510k/Python/510kBF/fda_data/foiaclass.txt /mnt/c/510k/Python/PredicateExtraction/foiaclass.txt 2>/dev/null
+```
+
+And count total clearances from flat files:
+```bash
+grep -c "|PRODUCTCODE|" /mnt/c/510k/Python/PredicateExtraction/pmn96cur.txt /mnt/c/510k/Python/PredicateExtraction/pmn9195.txt 2>/dev/null
 ```
 
 Report:
@@ -76,12 +151,8 @@ Report:
 - **Device class** (I, II, III)
 - **Regulation number** (21 CFR section)
 - **Advisory committee** (review panel)
-- **Definition** (if available in foiaclass)
-
-Then count total clearances for this product code:
-```bash
-grep -c "|PRODUCTCODE|" /mnt/c/510k/Python/PredicateExtraction/pmn96cur.txt /mnt/c/510k/Python/PredicateExtraction/pmn9195.txt 2>/dev/null
-```
+- **Definition** (if available)
+- **Total clearances** (all-time)
 
 ## Step 3: Regulatory Intelligence
 
@@ -109,6 +180,94 @@ grep "PRODUCTCODE" /mnt/c/510k/Python/510kBF/510k_download.csv 2>/dev/null
 ```
 
 Additional metadata available: expedited review, review advisory committee details.
+
+## Step 3.5: Safety Intelligence (API)
+
+**If the openFDA API is available**, query MAUDE event counts and recall data for this product code. This provides critical safety context for predicate selection and testing strategy.
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re, time
+
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = None
+api_enabled = True
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    m = re.search(r'openfda_api_key:\s*(\S+)', content)
+    if m and m.group(1) != 'null':
+        api_key = m.group(1)
+    m = re.search(r'openfda_enabled:\s*(\S+)', content)
+    if m and m.group(1).lower() == 'false':
+        api_enabled = False
+
+if not api_enabled:
+    print("SAFETY_SKIP:api_disabled")
+    exit(0)
+
+product_code = "PRODUCTCODE"  # Replace
+
+def fda_query(endpoint, search, limit=10, count_field=None):
+    params = {"search": search, "limit": str(limit)}
+    if count_field:
+        params["count"] = count_field
+    if api_key:
+        params["api_key"] = api_key
+    url = f"https://api.fda.gov/device/{endpoint}.json?{urllib.parse.urlencode(params)}"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return {"results": []}
+        return {"error": f"HTTP {e.code}"}
+    except Exception as e:
+        return {"error": str(e)}
+
+# MAUDE event count by type
+print("=== MAUDE SUMMARY ===")
+events = fda_query("event", f'device.product_code:"{product_code}"', count_field="event_type.exact")
+if "results" in events:
+    total = sum(r["count"] for r in events["results"])
+    print(f"TOTAL_EVENTS:{total}")
+    for r in events["results"]:
+        print(f"EVENT_TYPE:{r['term']}:{r['count']}")
+else:
+    print("TOTAL_EVENTS:0")
+
+# Recall count by classification
+time.sleep(0.5)
+print("\n=== RECALL SUMMARY ===")
+recalls = fda_query("recall", f'product_code:"{product_code}"', count_field="classification.exact")
+if "results" in recalls:
+    total_r = sum(r["count"] for r in recalls["results"])
+    print(f"TOTAL_RECALLS:{total_r}")
+    for r in recalls["results"]:
+        print(f"RECALL_CLASS:{r['term']}:{r['count']}")
+else:
+    print("TOTAL_RECALLS:0")
+
+# Active recalls
+time.sleep(0.5)
+active = fda_query("recall", f'product_code:"{product_code}"+AND+recall_status:"Ongoing"', limit=5)
+if active.get("results"):
+    print(f"\nACTIVE_RECALLS:{len(active['results'])}")
+    for r in active["results"]:
+        print(f"ACTIVE:{r.get('recalling_firm','N/A')}|{r.get('classification','N/A')}|{r.get('reason_for_recall','N/A')[:100]}")
+else:
+    print("\nACTIVE_RECALLS:0")
+PYEOF
+```
+
+**Include in the research report as a brief safety summary:**
+- Total MAUDE events (by type) and events-per-clearance ratio
+- Total recalls (by class) and any active recalls
+- If high event rate or Class I recalls: Flag as a pre-submission discussion point
+- If death events >0: Flag prominently
+
+**For deeper analysis**: Suggest `/fda:safety --product-code CODE` in the Recommendations section. Do NOT run the full safety analysis inline (it's too detailed for the research report).
 
 ## Step 4: Predicate Landscape
 
@@ -553,15 +712,87 @@ Structure the research package as:
 
 **For standard depth or higher**: After identifying the top 3-5 predicate candidates and fetching their PDFs, automatically include the detailed validation profile for each — the SAME information `/fda:validate` would show. Do NOT tell the user to run `/fda:validate` separately.
 
+### API-Enhanced Predicate Profiles
+
+**If the openFDA API is available**, query `/device/510k.json` for each top predicate to get full metadata. This is faster and more complete than grep on flat files:
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re, time
+
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = None
+api_enabled = True
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    m = re.search(r'openfda_api_key:\s*(\S+)', content)
+    if m and m.group(1) != 'null':
+        api_key = m.group(1)
+    m = re.search(r'openfda_enabled:\s*(\S+)', content)
+    if m and m.group(1).lower() == 'false':
+        api_enabled = False
+
+# Replace with actual top predicate K-numbers
+top_predicates = ["K241335", "K234567", "K345678"]
+
+for knumber in top_predicates:
+    if api_enabled:
+        params = {"search": f'k_number:"{knumber}"', "limit": "1"}
+        if api_key:
+            params["api_key"] = api_key
+        url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.loads(resp.read())
+                if data.get("results"):
+                    r = data["results"][0]
+                    print(f"=== {knumber} ===")
+                    print(f"APPLICANT:{r.get('applicant', 'N/A')}")
+                    print(f"DEVICE_NAME:{r.get('device_name', 'N/A')}")
+                    print(f"DECISION:{r.get('decision_code', 'N/A')} on {r.get('decision_date', 'N/A')}")
+                    print(f"PRODUCT_CODE:{r.get('product_code', 'N/A')}")
+                    print(f"CLEARANCE_TYPE:{r.get('clearance_type', 'N/A')}")
+                    print(f"ADVISORY_COMMITTEE:{r.get('advisory_committee_description', 'N/A')}")
+                    print(f"THIRD_PARTY:{r.get('third_party', 'N/A')}")
+                    print(f"STATEMENT_OR_SUMMARY:{r.get('statement_or_summary', 'N/A')}")
+                    dr = r.get('date_received', '')
+                    dd = r.get('decision_date', '')
+                    if dr and dd and len(dr) == 8 and len(dd) == 8:
+                        from datetime import datetime
+                        try:
+                            days = (datetime.strptime(dd, '%Y%m%d') - datetime.strptime(dr, '%Y%m%d')).days
+                            print(f"REVIEW_DAYS:{days}")
+                        except:
+                            pass
+                    print(f"SOURCE:openFDA API")
+                else:
+                    print(f"=== {knumber} ===")
+                    print(f"API_FOUND:false")
+        except Exception as e:
+            print(f"=== {knumber} ===")
+            print(f"API_ERROR:{e}")
+        time.sleep(0.5)
+    else:
+        print(f"=== {knumber} ===")
+        print("API_SKIP:disabled")
+PYEOF
+```
+
+If the API is unavailable, fall back to `grep` on flat files (pmn*.txt) as before.
+
 For each top predicate candidate, include in the report:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 {KNUMBER} — DETAILED PROFILE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Applicant: {from pmn database}
+Applicant: {from API or pmn database}
 Decision: {SESE/DENG/etc.} on {date} ({review_days} days)
 Product Code: {CODE} | Type: {Traditional/Special/etc.} | Summary: {Yes/No}
+Advisory Committee: {panel}
+Third Party Review: {Yes/No}
 FDA URL: https://www.accessdata.fda.gov/cdrh_docs/pdf{YY}/{KNUMBER}.pdf
 
 Indications for Use:
@@ -569,6 +800,8 @@ Indications for Use:
 
 Predicates cited by this device: {list from PDF text}
 Cited BY these other devices: {list from citation analysis}
+MAUDE Events (product code): {count} total
+Recalls (this device): {count} or None
 PDF Summary: {text_length} chars available ({extraction status})
 ```
 

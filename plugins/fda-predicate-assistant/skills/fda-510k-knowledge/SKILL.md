@@ -1,7 +1,7 @@
 ---
 name: FDA 510(k) Knowledge
 description: Use this skill when discussing 510(k) submissions, predicate devices, substantial equivalence, FDA clearance, K-numbers, PMA approval, De Novo pathways, product codes, or medical device classification.
-version: 1.2.0
+version: 1.3.0
 ---
 
 # FDA 510(k) Regulatory Knowledge
@@ -152,9 +152,44 @@ Possible causes:
 - Non-standard document format
 - Redacted information
 
+## openFDA API Integration
+
+The plugin integrates with all 7 openFDA Device API endpoints for real-time data access:
+
+### Endpoints Available
+| Endpoint | Purpose | Used By |
+|----------|---------|---------|
+| `/device/510k` | 510(k) clearance lookups | validate, research, compare-se |
+| `/device/classification` | Device classification, product codes | research |
+| `/device/event` | MAUDE adverse events | safety, validate, research, analyze |
+| `/device/recall` | Device recalls | safety, validate, research |
+| `/device/pma` | PMA approvals | validate (P-numbers) |
+| `/device/registrationlisting` | Facility registrations | (available for queries) |
+| `/device/udi` | Unique Device Identification | (available for queries) |
+
+### Configuration
+- **API key**: Optional, stored in settings (`openfda_api_key`). Without key: 1K requests/day. With key: 120K/day.
+- **Kill switch**: `openfda_enabled: false` disables all API calls for offline environments.
+- **Fallback**: All commands fall back to flat files (pmn*.txt, foiaclass.txt) when the API is unavailable.
+- **Test connectivity**: `/fda:configure --test-api` tests all 7 endpoints.
+
+### API-Enhanced Commands
+- **`/fda:validate`**: API-first validation with MAUDE event counts and recall checks
+- **`/fda:safety`** (NEW): Full MAUDE + recall analysis for pre-submission preparation
+- **`/fda:research`**: API classification, safety intelligence, API-enriched predicate profiles
+- **`/fda:compare-se`**: API fallback for predicate metadata when flat files don't have the record
+- **`/fda:analyze`**: Optional API enrichment with event counts per device
+- **`/fda:status`**: Reports API connectivity, key status, and rate limit tier
+- **`/fda:configure`**: `--test-api`, `--set openfda_api_key`, `--set openfda_enabled`
+
+### Reference
+See `references/openfda-api.md` for the full API reference with query templates, field mappings, and error handling patterns.
+
 ## Resources
 
 For detailed reference information, see:
+- `references/openfda-api.md` - openFDA Device API reference (all 7 endpoints)
 - `references/device-classes.md` - Device classification details
 - `references/predicate-types.md` - Predicate selection guidance
 - `references/common-issues.md` - Troubleshooting extraction problems
+- `references/section-patterns.md` - PDF section detection patterns

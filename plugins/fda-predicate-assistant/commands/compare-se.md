@@ -143,6 +143,57 @@ Add a 5-second delay between downloads if fetching multiple PDFs.
 
 ### Also load FDA database records
 
+**Try the openFDA API first** (richer data), then fall back to flat files:
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re
+
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = None
+api_enabled = True
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    m = re.search(r'openfda_api_key:\s*(\S+)', content)
+    if m and m.group(1) != 'null':
+        api_key = m.group(1)
+    m = re.search(r'openfda_enabled:\s*(\S+)', content)
+    if m and m.group(1).lower() == 'false':
+        api_enabled = False
+
+knumber = "KNUMBER"  # Replace per device
+
+if api_enabled:
+    params = {"search": f'k_number:"{knumber}"', "limit": "1"}
+    if api_key:
+        params["api_key"] = api_key
+    url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read())
+            if data.get("results"):
+                r = data["results"][0]
+                print(f"APPLICANT:{r.get('applicant', 'N/A')}")
+                print(f"DEVICE_NAME:{r.get('device_name', 'N/A')}")
+                print(f"DECISION_DATE:{r.get('decision_date', 'N/A')}")
+                print(f"DECISION_CODE:{r.get('decision_code', 'N/A')}")
+                print(f"PRODUCT_CODE:{r.get('product_code', 'N/A')}")
+                print(f"CLEARANCE_TYPE:{r.get('clearance_type', 'N/A')}")
+                print(f"STATEMENT_OR_SUMMARY:{r.get('statement_or_summary', 'N/A')}")
+                print(f"SOURCE:api")
+            else:
+                print("SOURCE:fallback")
+    except:
+        print("SOURCE:fallback")
+else:
+    print("SOURCE:fallback")
+PYEOF
+```
+
+If the API returned `SOURCE:fallback`, use flat files:
+
 ```bash
 grep "KNUMBER" /mnt/c/510k/Python/PredicateExtraction/pmn96cur.txt 2>/dev/null
 ```

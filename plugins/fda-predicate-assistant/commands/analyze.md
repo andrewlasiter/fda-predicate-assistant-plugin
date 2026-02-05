@@ -125,9 +125,62 @@ Provide a structured report:
 5. **Issues Found** — Problems requiring attention (OCR errors, missing data, zero-predicate submissions)
 6. **Recommendations** — Actionable next steps
 
+## Step 4: API Enrichment (Optional)
+
+**If the openFDA API is enabled** and the user is analyzing a specific product code or K-number, offer to enrich the analysis with live API data:
+
+### MAUDE Event Counts per Device
+
+When analyzing predicate relationships, add adverse event context from the API:
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re
+
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = None
+api_enabled = True
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    m = re.search(r'openfda_api_key:\s*(\S+)', content)
+    if m and m.group(1) != 'null':
+        api_key = m.group(1)
+    m = re.search(r'openfda_enabled:\s*(\S+)', content)
+    if m and m.group(1).lower() == 'false':
+        api_enabled = False
+
+if not api_enabled:
+    print("API_SKIP:disabled")
+    exit(0)
+
+product_code = "PRODUCTCODE"  # Replace
+
+# Event count by type for this product code
+params = {"search": f'device.product_code:"{product_code}"', "limit": "1", "count": "event_type.exact"}
+if api_key:
+    params["api_key"] = api_key
+url = f"https://api.fda.gov/device/event.json?{urllib.parse.urlencode(params)}"
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+try:
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        data = json.loads(resp.read())
+        if data.get("results"):
+            total = sum(r["count"] for r in data["results"])
+            print(f"MAUDE_TOTAL:{total}")
+            for r in data["results"]:
+                print(f"EVENT_TYPE:{r['term']}:{r['count']}")
+except:
+    print("MAUDE_ERROR:unreachable")
+PYEOF
+```
+
+Include this as an "Adverse Event Context" subsection when analyzing product codes or predicate hubs. Flag devices or product codes with disproportionately high event counts.
+
 ## Tips
 
 - Use `wc -l` for quick row counts on large CSV files
 - Use `head -1` to read column headers before parsing
 - For large files, use Grep to search rather than reading the whole file
 - Cross-reference K-numbers between sources to build complete device profiles
+- If the openFDA API is available, use it to enrich analysis with MAUDE event counts and recall data
