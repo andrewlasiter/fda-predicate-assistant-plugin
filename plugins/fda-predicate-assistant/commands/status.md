@@ -1,7 +1,6 @@
 ---
 description: Show available FDA pipeline data, file freshness, script availability, and record counts
 allowed-tools: Bash, Read, Glob, Grep
-argument-hint: ""
 ---
 
 # FDA Pipeline Status
