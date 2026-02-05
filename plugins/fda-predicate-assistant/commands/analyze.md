@@ -56,7 +56,7 @@ Always start by checking which data files exist:
 ls -la /mnt/c/510k/Python/510kBF/510k_download.csv /mnt/c/510k/Python/510kBF/merged_data.csv /mnt/c/510k/Python/PredicateExtraction/output.csv /mnt/c/510k/Python/PredicateExtraction/supplement.csv /mnt/c/510k/Python/PredicateExtraction/pdf_data.json /mnt/c/510k/Python/PredicateExtraction/error_log.txt 2>/dev/null
 ```
 
-Report to the user which sources are available before proceeding.
+**Only report sources that have relevant data for the user's query.** If a file exists but contains no records matching the user's product code or device, skip it silently. Don't list empty or irrelevant files.
 
 ## Step 2: Analyze Based on Available Sources
 
@@ -71,7 +71,10 @@ Report to the user which sources are available before proceeding.
 - Expedited review usage
 - Statement vs Summary distribution
 
-### If `output.csv` exists → Predicate Analysis
+### Predicate Analysis (from `output.csv` OR extracted from `pdf_data.json`)
+
+If `output.csv` exists, use it directly. If it does NOT exist but `pdf_data.json` does, **extract predicates inline** by scanning PDF text for K-number citations (regex `K\d{6}`). Do NOT tell the user to run a separate command.
+
 - Total submissions analyzed and unique predicates found
 - Average predicates per submission
 - Most frequently cited predicate devices (predicate hubs)

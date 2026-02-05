@@ -52,7 +52,7 @@ ls /mnt/c/510k/Python/510k_projects/*/query.json 2>/dev/null
 
 If found, suggest using that project's data.
 
-**Required**: `pdf_data.json` must exist (in project or legacy location). If not, tell the user to run `/fda:extract stage2` first.
+**Required**: `pdf_data.json` must exist (in project or legacy location). If not, tell the user: "No PDF text is available for analysis yet. Use `/fda:extract` to download and process PDFs for this product code."
 
 **Helpful**: `510k_download.csv` provides metadata (product code, applicant, decision date, Statement vs Summary) for filtering. If unavailable, filtering is limited to filename patterns.
 
