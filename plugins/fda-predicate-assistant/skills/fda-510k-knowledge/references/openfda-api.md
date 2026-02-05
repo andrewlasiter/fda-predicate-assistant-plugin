@@ -101,6 +101,30 @@ def fda_api(endpoint, search, limit=10, count_field=None):
         return {"error": str(e)}
 ```
 
+## Device Number to Endpoint Routing
+
+When validating or looking up a device number, route to the correct endpoint based on the number prefix:
+
+| Device Number Type | Format | API Endpoint | Search Field | Notes |
+|--------------------|--------|-------------|--------------|-------|
+| **K-numbers** (510(k)) | K + 6 digits | `/device/510k` | `k_number` | Primary path |
+| **P-numbers** (PMA) | P + 6 digits | `/device/pma` | `pma_number` | Class III devices |
+| **DEN numbers** (De Novo) | DEN + 6 digits | `/device/510k` | `k_number` | Some indexed here; no dedicated De Novo endpoint |
+| **N-numbers** (Pre-Amendments) | N + 4-5 digits | *Not in openFDA* | — | Use flat files (pmn*.txt) only |
+
+**Pattern for routing in code:**
+```python
+number_upper = device_number.upper()
+if number_upper.startswith('P'):
+    endpoint, field = "pma", "pma_number"
+elif number_upper.startswith('DEN'):
+    endpoint, field = "510k", "k_number"  # some DEN numbers indexed here
+elif number_upper.startswith('K'):
+    endpoint, field = "510k", "k_number"
+else:  # N-numbers
+    # Skip API — use flat file lookup only
+```
+
 ## 7 Endpoints Reference
 
 ### 1. `/device/510k` — 510(k) Clearances

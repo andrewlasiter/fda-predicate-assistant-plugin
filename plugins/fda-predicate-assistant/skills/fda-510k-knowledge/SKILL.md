@@ -121,6 +121,11 @@ Not all cited devices are predicates. Reference devices may be cited for:
 - Format: DEN + 6 digits (e.g., DEN200001)
 - Novel low/moderate risk devices without predicates
 
+### N-Numbers (Pre-Amendments)
+- Format: N + 4-5 digits (e.g., N0012)
+- Legacy devices marketed before the 1976 Medical Device Amendments
+- Not available in openFDA API — flat files (pmn*.txt) only
+
 ## Product Codes
 
 FDA assigns 3-letter product codes indicating:

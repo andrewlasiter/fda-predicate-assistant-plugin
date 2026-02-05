@@ -43,7 +43,7 @@ If no project is specified, fall back to legacy locations.
 Determine the analysis mode from `$ARGUMENTS`:
 
 1. **File path** (contains `/` or `.csv` or `.json`) → Analyze that specific file
-2. **K-number** (matches `K\d{6}`) → Look up that device across all sources
+2. **Device number** (matches K-number `K\d{6}`, P-number `P\d{6}`, DEN number `DEN\d{6}`, or N-number `N\d{4,5}`) → Look up that device across all sources
 3. **Product code** (3 uppercase letters like `KGN`) → Filter all data by that code
 4. **Device/company name** (text string) → Search all data sources for matches
 5. **No arguments** → Discover all available data and provide a comprehensive overview
@@ -73,7 +73,7 @@ ls -la /mnt/c/510k/Python/510kBF/510k_download.csv /mnt/c/510k/Python/510kBF/mer
 
 ### Predicate Analysis (from `output.csv` OR extracted from `pdf_data.json`)
 
-If `output.csv` exists, use it directly. If it does NOT exist but `pdf_data.json` does, **extract predicates inline** by scanning PDF text for K-number citations (regex `K\d{6}`). Do NOT tell the user to run a separate command.
+If `output.csv` exists, use it directly. If it does NOT exist but `pdf_data.json` does, **extract predicates inline** by scanning PDF text for device number citations (regex `\b(?:K\d{6}|P\d{6}|DEN\d{6}|N\d{4,5})\b` with case-insensitive matching). Do NOT tell the user to run a separate command.
 
 - Total submissions analyzed and unique predicates found
 - Average predicates per submission

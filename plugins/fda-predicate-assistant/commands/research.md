@@ -273,7 +273,7 @@ PYEOF
 
 ### Extract predicates directly from PDF text
 
-**Do NOT tell the user to run `/fda:extract stage2`.** Instead, extract predicate K-numbers yourself from cached PDF text.
+**Do NOT tell the user to run `/fda:extract stage2`.** Instead, extract predicate device numbers yourself from cached PDF text.
 
 **Cache format detection**: The system may use either per-device cache (new) or a monolithic pdf_data.json (legacy). Check both:
 
@@ -281,7 +281,7 @@ PYEOF
 import json, re, os
 from collections import Counter
 
-k_pattern = re.compile(r'K\d{6}')
+device_pattern = re.compile(r'\b(?:K\d{6}|P\d{6}|DEN\d{6}|N\d{4,5})\b', re.IGNORECASE)
 cited_by = Counter()
 graph = {}
 
@@ -298,11 +298,11 @@ if os.path.exists(index_file):
             with open(device_path) as f:
                 device_data = json.load(f)
             text = device_data.get('text', '')
-            found_ks = set(k_pattern.findall(text))
-            found_ks.discard(knumber)
-            graph[knumber] = found_ks
-            for k in found_ks:
-                cited_by[k] += 1
+            found_devices = set(m.upper() for m in device_pattern.findall(text))
+            found_devices.discard(knumber.upper())
+            graph[knumber] = found_devices
+            for d in found_devices:
+                cited_by[d] += 1
 else:
     # Legacy: monolithic pdf_data.json
     pdf_json = '/mnt/c/510k/Python/PredicateExtraction/pdf_data.json'
@@ -311,12 +311,12 @@ else:
             data = json.load(f)
         for filename, content in data.items():
             text = content.get('text', '') if isinstance(content, dict) else str(content)
-            source_k = filename.replace('.pdf', '')
-            found_ks = set(k_pattern.findall(text))
-            found_ks.discard(source_k)
-            graph[source_k] = found_ks
-            for k in found_ks:
-                cited_by[k] += 1
+            source_id = filename.replace('.pdf', '').upper()
+            found_devices = set(m.upper() for m in device_pattern.findall(text))
+            found_devices.discard(source_id)
+            graph[source_id] = found_devices
+            for d in found_devices:
+                cited_by[d] += 1
 ```
 
 This gives you the same predicate relationships that `output.csv` would contain, without requiring any separate extraction step.

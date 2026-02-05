@@ -12,7 +12,8 @@ You are validating FDA device numbers against official databases AND enriching r
 
 - **K-numbers (510(k))**: K + 6 digits (e.g., K240717, K991234)
 - **P-numbers (PMA)**: P + 6 digits (e.g., P190001)
-- **N-numbers (De Novo)**: DEN + digits (e.g., DEN200001)
+- **DEN numbers (De Novo)**: DEN + 6 digits (e.g., DEN200001)
+- **N-numbers (Pre-Amendments)**: N + 4-5 digits (e.g., N0012) — older legacy devices
 
 ## Project Support
 
@@ -79,13 +80,30 @@ if not api_enabled:
     print("API_SKIP:disabled")
     exit(0)
 
-knumber = "KNUMBER"  # Replace with actual K-number
+device_number = "DEVICE_NUMBER"  # Replace with actual device number (K, P, DEN, or N)
 
-# Query 510k endpoint
-params = {"search": f'k_number:"{knumber}"', "limit": "1"}
+# Route to the correct endpoint based on device number type
+number_upper = device_number.upper()
+if number_upper.startswith('P'):
+    endpoint = "pma"
+    search_field = "pma_number"
+elif number_upper.startswith('DEN'):
+    # De Novo: some are indexed in the 510k endpoint under k_number
+    endpoint = "510k"
+    search_field = "k_number"
+elif number_upper.startswith('N') and not number_upper.startswith('DEN'):
+    # N-numbers (Pre-Amendments) are NOT in openFDA — skip to flat-file fallback
+    print("API_SKIP:n_number_not_in_openfda")
+    exit(0)
+else:
+    # K-numbers (default)
+    endpoint = "510k"
+    search_field = "k_number"
+
+params = {"search": f'{search_field}:"{device_number}"', "limit": "1"}
 if api_key:
     params["api_key"] = api_key
-url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
+url = f"https://api.fda.gov/device/{endpoint}.json?{urllib.parse.urlencode(params)}"
 req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
 
 try:
@@ -94,8 +112,9 @@ try:
         if data.get("results"):
             r = data["results"][0]
             print(f"API_FOUND:true")
+            print(f"ENDPOINT:{endpoint}")
             print(f"APPLICANT:{r.get('applicant', 'N/A')}")
-            print(f"DEVICE_NAME:{r.get('device_name', 'N/A')}")
+            print(f"DEVICE_NAME:{r.get('device_name', r.get('generic_name', r.get('trade_name', 'N/A')))}")
             print(f"DECISION_DATE:{r.get('decision_date', 'N/A')}")
             print(f"DECISION_CODE:{r.get('decision_code', 'N/A')}")
             print(f"DECISION_DESC:{r.get('decision_description', 'N/A')}")
@@ -119,6 +138,9 @@ try:
                     pass
         else:
             print("API_FOUND:false")
+            # For DEN numbers, also try the pma endpoint as a fallback
+            if number_upper.startswith('DEN'):
+                print("DEN_NOTE:not_found_in_510k_endpoint")
 except urllib.error.HTTPError as e:
     if e.code == 404:
         print("API_FOUND:false")
@@ -154,6 +176,18 @@ For P-numbers (PMA):
 ```bash
 grep -i "PNUMBER" /mnt/c/510k/Python/PredicateExtraction/pma*.txt /mnt/c/510k/Python/510kBF/fda_data/pma*.txt 2>/dev/null
 ```
+
+For DEN numbers (De Novo):
+```bash
+grep -i "DENNUMBER" /mnt/c/510k/Python/PredicateExtraction/pmn*.txt /mnt/c/510k/Python/510kBF/fda_data/pmn*.txt 2>/dev/null
+```
+Note: Some DEN numbers appear in the pmn*.txt files. If not found, the device may only be in the FDA De Novo database (not available as a flat file).
+
+For N-numbers (Pre-Amendments):
+```bash
+grep -i "NNUMBER" /mnt/c/510k/Python/PredicateExtraction/pmn*.txt /mnt/c/510k/Python/510kBF/fda_data/pmn*.txt 2>/dev/null
+```
+Note: N-numbers are legacy Pre-Amendments devices. They are not in openFDA and may not appear in all flat files.
 
 Report: Found/Not Found + full database record if found.
 
