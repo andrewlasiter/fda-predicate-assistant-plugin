@@ -207,3 +207,11 @@ For detailed reference information, see:
 - `references/predicate-types.md` - Predicate selection guidance
 - `references/common-issues.md` - Troubleshooting extraction problems
 - `references/section-patterns.md` - PDF section detection patterns
+
+## Disclaimers (always include when providing regulatory guidance)
+
+When providing analysis, extraction results, or regulatory recommendations, remind users:
+- This tool analyzes **publicly available** FDA data only — it is not for use with private, confidential, or IP-protected documents
+- LLM accuracy is **not guaranteed** — always independently verify device numbers, predicate relationships, and regulatory citations
+- Anything sent through Claude may be used for Anthropic model training depending on account settings — there is no independent means to verify exclusion even when training is disabled
+- This is a **research aid**, not legal or regulatory advice — consult qualified professionals before making submission decisions

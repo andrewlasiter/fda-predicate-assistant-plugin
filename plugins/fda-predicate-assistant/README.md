@@ -23,6 +23,33 @@ A Claude Code plugin that helps you navigate FDA 510(k) submissions. It finds pr
 | `/fda:configure` | Set up API keys, data paths, and preferences |
 | `/fda:status` | Check what data you have and what's available |
 
+## Important Notices
+
+> **This tool is provided for research purposes only.** It analyzes publicly
+> available FDA data (510(k) summaries, classification databases, MAUDE reports,
+> and other records published by the U.S. Food and Drug Administration).
+
+> **Do not use this tool with private, confidential, or IP-protected documents.**
+> All text you provide — including device descriptions, intended use statements,
+> and file contents — is processed by Claude (Anthropic's LLM). Depending on
+> your Anthropic account settings, this content may be used for model training.
+> Even when training is disabled, there is no independent means to verify that
+> data is excluded. Do not submit trade secrets, proprietary designs, or
+> confidential regulatory strategies.
+
+> **LLM accuracy is not guaranteed.** Large language models make mistakes.
+> Device number extraction, predicate identification, section classification,
+> and all other outputs may contain errors, omissions, or hallucinations.
+> **Always independently verify** every device number, predicate relationship,
+> regulatory citation, and testing recommendation before relying on it.
+> Inaccuracy is inherent to this technology — treat all output as a starting
+> point for human review, not a finished product.
+
+> **This is not legal or regulatory advice.** Consult qualified regulatory
+> affairs professionals and legal counsel before making submission decisions.
+> The developers and Anthropic accept no liability for regulatory outcomes
+> based on this tool's output.
+
 ## Quick start
 
 ```

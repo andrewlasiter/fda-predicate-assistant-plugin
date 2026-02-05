@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0] - 2026-02-05
+
+### Added
+- Disclaimers and warnings across all user-facing surfaces:
+  - README.md: "Important Notices" section (privacy, accuracy, training data, not legal advice)
+  - SKILL.md: Always-loaded disclaimer context for regulatory guidance responses
+  - research.md: Disclaimer footer in research report output
+  - compare-se.md: Disclaimer footer in SE comparison table output
+- Section-aware predicate extraction in research command (SE sections weighted 3x)
+- [SE]/[Ref] provenance tags on predicate candidates
+- Extraction confidence transparency caveat in research output
+
 ## [1.1.0] - 2026-02-05
 
 ### Changed
