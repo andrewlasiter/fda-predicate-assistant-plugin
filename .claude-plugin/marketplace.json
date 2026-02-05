@@ -1,19 +1,25 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "local",
-  "description": "Local custom plugins",
+  "name": "fda-tools",
   "owner": {
-    "name": "PredicateExtraction"
+    "name": "PredicateExtraction",
+    "email": "andrewlasiter@users.noreply.github.com"
+  },
+  "metadata": {
+    "description": "FDA regulatory tools for medical device 510(k) analysis, predicate extraction, and submission preparation",
+    "version": "1.0.0"
   },
   "plugins": [
     {
       "name": "fda-predicate-assistant",
+      "source": "./plugins/fda-predicate-assistant",
       "description": "FDA 510(k) predicate extraction and analysis assistant for medical device regulatory workflows",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "PredicateExtraction"
       },
-      "source": "./plugins/fda-predicate-assistant",
+      "license": "MIT",
+      "keywords": ["fda", "510k", "medical-device", "predicate", "regulatory", "extraction"],
       "category": "productivity"
     }
   ]
