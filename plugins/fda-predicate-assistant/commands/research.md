@@ -367,8 +367,50 @@ import json, re, os
 from collections import Counter
 
 device_pattern = re.compile(r'\b(?:K\d{6}|P\d{6}|DEN\d{6}|N\d{4,5})\b', re.IGNORECASE)
-cited_by = Counter()
+
+# Section header that identifies where predicates are formally cited
+se_header = re.compile(r'(?i)(substantial\s+equivalence|se\s+comparison|predicate\s+(comparison|device|analysis|identification)|comparison\s+to\s+predicate|technological\s+characteristics|comparison\s+(table|chart|matrix)|similarities\s+and\s+differences|comparison\s+of\s+(the\s+)?(features|technological|device))')
+
+SE_WINDOW = 2000  # chars after SE header to consider as "SE zone"
+SE_WEIGHT = 3
+GENERAL_WEIGHT = 1
+
+se_cited_by = Counter()       # Device numbers found in SE sections
+general_cited_by = Counter()  # Device numbers found in general text
 graph = {}
+
+def extract_with_context(text, source_id):
+    """Extract device numbers, tagging whether they appear in SE sections."""
+    se_devices = set()
+    general_devices = set()
+
+    # Find SE section boundaries
+    se_zones = []
+    for m in se_header.finditer(text):
+        start = m.start()
+        end = min(m.start() + SE_WINDOW, len(text))
+        se_zones.append((start, end))
+
+    # Check each device number match against SE zones
+    for m in device_pattern.finditer(text):
+        num = m.group().upper()
+        if num == source_id:
+            continue
+        in_se = any(start <= m.start() <= end for start, end in se_zones)
+        if in_se:
+            se_devices.add(num)
+        else:
+            general_devices.add(num)
+
+    # A device found in BOTH zones counts as SE (stronger signal wins)
+    general_only = general_devices - se_devices
+    all_devices = se_devices | general_only
+
+    graph[source_id] = all_devices
+    for d in se_devices:
+        se_cited_by[d] += 1
+    for d in general_only:
+        general_cited_by[d] += 1
 
 # Try per-device cache first (scalable)
 cache_dir = os.path.expanduser('~/fda-510k-data/extraction/cache')
@@ -382,12 +424,7 @@ if os.path.exists(index_file):
         if os.path.exists(device_path):
             with open(device_path) as f:
                 device_data = json.load(f)
-            text = device_data.get('text', '')
-            found_devices = set(m.upper() for m in device_pattern.findall(text))
-            found_devices.discard(knumber.upper())
-            graph[knumber] = found_devices
-            for d in found_devices:
-                cited_by[d] += 1
+            extract_with_context(device_data.get('text', ''), knumber.upper())
 else:
     # Legacy: monolithic pdf_data.json
     pdf_json = os.path.expanduser('~/fda-510k-data/extraction/pdf_data.json')
@@ -397,25 +434,31 @@ else:
         for filename, content in data.items():
             text = content.get('text', '') if isinstance(content, dict) else str(content)
             source_id = filename.replace('.pdf', '').upper()
-            found_devices = set(m.upper() for m in device_pattern.findall(text))
-            found_devices.discard(source_id)
-            graph[source_id] = found_devices
-            for d in found_devices:
-                cited_by[d] += 1
+            extract_with_context(text, source_id)
+
+# Compute weighted score for ranking
+weighted_score = {}
+all_devices = set(se_cited_by.keys()) | set(general_cited_by.keys())
+for d in all_devices:
+    weighted_score[d] = (se_cited_by[d] * SE_WEIGHT) + (general_cited_by[d] * GENERAL_WEIGHT)
+
+# Sort by weighted score (highest first)
+ranked = sorted(weighted_score.items(), key=lambda x: -x[1])
 ```
 
-This gives you the same predicate relationships that `output.csv` would contain, without requiring any separate extraction step.
+This uses **section-aware extraction** to distinguish between device numbers cited in Substantial Equivalence / predicate comparison sections (high confidence) versus those mentioned elsewhere in the document (literature reviews, background, adverse events). Device numbers found in SE sections are weighted 3× higher than those in general text, so actual predicate citations rank above incidental mentions. All device numbers are still captured — section context only affects ranking weight.
 
 ### Also check output.csv and merged_data.csv if they exist AND have relevant data
 
 These are supplementary sources. Only use them if they contain records for the requested product code.
 
 ### Rank predicate devices by:
-1. **Citation frequency** — How often is this device cited as a predicate?
-2. **Recency** — When was the predicate cleared? More recent = stronger
-3. **Chain depth** — Is the predicate itself well-established (cited by many others)?
-4. **Same applicant** — Predicates from the same company may indicate product line evolution
-5. **Device similarity** — Match device name keywords to user's device description
+1. **Section context** — Devices cited in SE/predicate comparison sections weighted 3× over general text mentions
+2. **Citation frequency** — How often cited (weighted by section context)
+3. **Recency** — When was the predicate cleared? More recent = stronger
+4. **Chain depth** — Is the predicate itself well-established (cited by many others)?
+5. **Same applicant** — Predicates from the same company may indicate product line evolution
+6. **Device similarity** — Match device name keywords to user's device description
 
 ### Build predicate chains
 
@@ -464,17 +507,31 @@ Based on the analysis, recommend the **top 3-5 predicate candidates** with ratio
 ```
 Recommended Predicates for [PRODUCT CODE]:
 
-1. K123456 (Company A, 2023) — STRONGEST
-   - Cited by 12 other devices
+1. K123456 (Company A, 2023) — STRONGEST [SE]
+   - Cited in SE sections by 12 devices, general text by 3 more
    - Most recent clearance with same intended use
    - Traditional 510(k) with Summary available
    - Review time: 95 days
 
-2. K234567 (Company B, 2021) — STRONG
-   - Cited by 8 other devices
+2. K234567 (Company B, 2021) — STRONG [SE]
+   - Cited in SE sections by 8 devices
    - Broader indications (your device fits within)
    - Has detailed clinical data in summary
    - Review time: 120 days
+
+4. K567890 (Company D, 2019) — MODERATE [Ref]
+   - Cited in general text by 5 devices (not found in any SE section)
+   - ⚠ Verify this is an actual predicate — may be a reference device
+
+Extraction Confidence
+─────────────────────
+Device numbers found in Substantial Equivalence / Predicate Comparison
+sections are weighted 3× higher than those found in general body text
+(literature reviews, background, adverse events).
+
+Devices marked [SE] were cited in predicate-specific sections.
+Devices marked [Ref] were found only in general text — verify these
+are actual predicates before relying on them.
 ```
 
 If the user provided `--intended-use`, compare their intended use against the indications associated with each predicate candidate.
