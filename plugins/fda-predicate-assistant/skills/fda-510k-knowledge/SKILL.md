@@ -1,12 +1,46 @@
 ---
 name: FDA 510(k) Knowledge
 description: Use this skill when discussing 510(k) submissions, predicate devices, substantial equivalence, FDA clearance, K-numbers, PMA approval, De Novo pathways, product codes, or medical device classification.
-version: 1.0.0
+version: 1.1.0
 ---
 
 # FDA 510(k) Regulatory Knowledge
 
-You have expertise in FDA medical device regulations, particularly the 510(k) premarket notification process.
+You have expertise in FDA medical device regulations, particularly the 510(k) premarket notification process. You also know how the local data pipeline works and where to find data.
+
+## Data Pipeline Overview
+
+This project uses a two-stage pipeline for FDA 510(k) predicate analysis:
+
+### Stage 1: 510kBF (Batch Fetch)
+- **Script:** `/mnt/c/510k/Python/510kBF/510BAtchFetch Working2.py`
+- **Purpose:** Filter the FDA device catalog by year, product code, applicant, etc., then download 510(k) PDF documents
+- **Outputs:**
+  - `510k_download.csv` — Full metadata (24 cols: KNUMBER, APPLICANT, DECISIONDATE, PRODUCTCODE, TYPE, STATEORSUMM, REVIEWADVISECOMM, THIRDPARTY, EXPEDITEDREVIEW, etc.)
+  - `Applicant_ProductCode_Tables.xlsx` — Analytics workbook (3 sheets)
+  - `merged_data.csv` — K-number + up to 6 predicates (7 cols)
+  - Downloaded PDFs in: `510ks/YEAR/APPLICANT/PRODUCTCODE/TYPE/`
+
+### Stage 2: PredicateExtraction
+- **Script:** `/mnt/c/510k/Python/PredicateExtraction/Test79.py` (latest version)
+- **Purpose:** Extract predicate device numbers from PDF documents using text extraction, regex parsing, and OCR error correction
+- **Outputs:**
+  - `output.csv` — K-number, ProductCode, DocType, Predicate1..Predicate100
+  - `supplement.csv` — Devices with supplement suffixes
+  - `pdf_data.json` — Cached PDF text keyed by filename
+  - `error_log.txt` — Failed PDFs
+
+### Key Data Locations
+
+| Data | Path |
+|------|------|
+| 510kBF scripts & output | `/mnt/c/510k/Python/510kBF/` |
+| PredicateExtraction scripts & output | `/mnt/c/510k/Python/PredicateExtraction/` |
+| Downloaded PDFs | `/mnt/c/510k/Python/510kBF/510ks/` |
+| Organized PDFs (by year) | `/mnt/c/510k/Python/PredicateExtraction/2024/`, `2025/` |
+| FDA database files | `/mnt/c/510k/Python/PredicateExtraction/pmn*.txt` |
+
+When answering questions about specific devices, check these data sources for real information before relying solely on general knowledge.
 
 ## Core Concepts
 
