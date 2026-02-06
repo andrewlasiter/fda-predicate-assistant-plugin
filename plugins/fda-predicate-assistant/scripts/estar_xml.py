@@ -41,41 +41,50 @@ except ImportError:
 
 # --- XFA Field Mappings ---
 
-# Maps XFA field paths to structured import_data.json keys
+# Maps XFA field path suffixes (case-insensitive) to structured import_data.json keys.
+# Both XFA-style (ApplicantName) and standard XML (applicantName) tags are handled
+# by performing case-insensitive suffix matching.
 FIELD_MAP = {
     # Applicant info
-    "ApplicantName": "applicant_name",
-    "ContactName": "contact_name",
-    "Address": "address",
-    "Phone": "phone",
-    "Email": "email",
-    "Date": "submission_date",
-    "DeviceName": "device_trade_name",
-    "CommonName": "device_common_name",
+    "applicantname": "applicant_name",
+    "contactname": "contact_name",
+    "address": "address",
+    "phone": "phone",
+    "email": "email",
+    "date": "submission_date",
+    "devicename": "device_trade_name",
+    "commonname": "device_common_name",
     # Classification
-    "ProductCode": "product_code",
-    "RegulationNumber": "regulation_number",
-    "DeviceClass": "device_class",
-    "Panel": "review_panel",
-    "SubmissionType": "submission_type",
+    "productcode": "product_code",
+    "regulationnumber": "regulation_number",
+    "deviceclass": "device_class",
+    "panel": "review_panel",
+    "panelcode": "review_panel",
+    "submissiontype": "submission_type",
+    "submissionnumber": "submission_number",
     # IFU (FDA 3881)
-    "IndicationsText": "indications_for_use",
-    "Prescription": "prescription_otc",
+    "indicationstext": "indications_for_use",
+    "indication": "indications_for_use",
+    "prescription": "prescription_otc",
     # Content
-    "DescriptionText": "device_description_text",
-    "PrincipleOfOperation": "principle_of_operation",
-    "ComparisonNarrative": "se_discussion_text",
-    "IntendedUseComparison": "intended_use_comparison",
-    "TechCharComparison": "tech_comparison",
-    "TestingSummary": "performance_summary",
-    "IFUText": "ifu_text",
-    "SoftwareLevel": "software_doc_level",
-    "Method": "sterilization_method",
-    "ClaimedLife": "shelf_life_claim",
+    "descriptiontext": "device_description_text",
+    "description": "device_description_text",
+    "principleofoperation": "principle_of_operation",
+    "comparisonnarrative": "se_discussion_text",
+    "intendeduse": "intended_use_comparison",
+    "techchrcomparison": "tech_comparison",
+    "testingsummary": "performance_summary",
+    "ifutext": "ifu_text",
+    "softwarelevel": "software_doc_level",
+    "method": "sterilization_method",
+    "sterilization": "sterilization_method",
+    "claimedlife": "shelf_life_claim",
+    "shelflife": "shelf_life_claim",
+    "materials": "biocompat_materials",
     # Biocompatibility
-    "ContactType": "biocompat_contact_type",
-    "ContactDuration": "biocompat_contact_duration",
-    "MaterialList": "biocompat_materials",
+    "contacttype": "biocompat_contact_type",
+    "contactduration": "biocompat_contact_duration",
+    "materiallist": "biocompat_materials",
 }
 
 # K-number extraction pattern
@@ -218,47 +227,81 @@ def parse_xml_data(xml_string):
         "raw_fields": {},
     }
 
-    # Extract all text nodes with their paths
+    # Track the submission number to filter it from predicates later
+    submission_number = None
+
+    # Extract all text nodes with their paths (case-insensitive field matching)
     def walk(element, path=""):
+        nonlocal submission_number
         if element.name is None:
             return
         current_path = f"{path}.{element.name}" if path else element.name
-        text = element.get_text(strip=True)
-        if text:
-            result["raw_fields"][current_path] = text
-            # Map known fields
+        # Only use leaf-node text (direct text, not recursive) for field mapping
+        direct_text = element.string
+        full_text = element.get_text(strip=True)
+        leaf_text = direct_text.strip() if direct_text and direct_text.strip() else None
+
+        if full_text:
+            result["raw_fields"][current_path] = full_text
+
+        # Map known fields using leaf text (avoids concatenated parent text)
+        if leaf_text:
+            path_lower = current_path.lower()
+            tag_lower = element.name.lower()
             for field_suffix, mapped_key in FIELD_MAP.items():
-                if current_path.endswith(field_suffix):
-                    _route_field(result, mapped_key, text)
+                if path_lower.endswith(field_suffix) or tag_lower == field_suffix:
+                    _route_field(result, mapped_key, leaf_text)
+                    if mapped_key == "submission_number":
+                        submission_number = leaf_text
+
         for child in element.children:
             if hasattr(child, "name") and child.name:
                 walk(child, current_path)
 
     walk(soup)
 
-    # Extract predicate K-numbers from SE section fields
+    # Extract predicate K-numbers from predicate-related fields
+    # Use find_all to handle duplicate elements (e.g., multiple <predicate> tags)
+    predicate_tags = soup.find_all(re.compile(r"(?i)predicate|kNumber|knumber"))
+    for tag in predicate_tags:
+        text = tag.get_text(strip=True)
+        knumbers_in_tag = KNUMBER_PATTERN.findall(text)
+        for kn in knumbers_in_tag:
+            if kn not in [p.get("k_number") for p in result["predicates"]]:
+                result["predicates"].append({"k_number": kn, "source": "xfa_xml"})
+
+    # Also scan SE-related raw fields
     se_text = ""
     for path, value in result["raw_fields"].items():
-        if "SE." in path or "Predicate" in path or "predicate" in path:
+        path_lower = path.lower()
+        if "se." in path_lower or "predicate" in path_lower or "comparison" in path_lower:
             se_text += " " + value
     knumbers = KNUMBER_PATTERN.findall(se_text)
     for kn in knumbers:
         if kn not in [p.get("k_number") for p in result["predicates"]]:
             result["predicates"].append({"k_number": kn, "source": "xfa_xml"})
 
-    # Also scan all text for K-numbers as fallback
+    # Fallback: scan all text for K-numbers
     all_text = " ".join(result["raw_fields"].values())
     all_knumbers = KNUMBER_PATTERN.findall(all_text)
     for kn in all_knumbers:
         if kn not in [p.get("k_number") for p in result["predicates"]]:
             result["predicates"].append({"k_number": kn, "source": "full_text_scan"})
 
+    # Filter out the submission number from predicates (it's not a predicate)
+    if submission_number:
+        result["predicates"] = [
+            p for p in result["predicates"]
+            if p["k_number"] != submission_number
+        ]
+
     # Detect sections from narrative content
     for path, value in result["raw_fields"].items():
         if len(value) > 50:  # Only consider substantial text blocks
             for section_name, pattern in SECTION_PATTERNS.items():
                 if pattern.search(path) or (len(value) > 200 and pattern.search(value[:200])):
-                    result["sections"][section_name] = value
+                    if section_name not in result["sections"]:
+                        result["sections"][section_name] = value
 
     return result
 
@@ -355,6 +398,13 @@ def generate_xml(project_dir, template_type="nIVD", output_file=None):
     project_dir = Path(project_dir)
     if not project_dir.exists():
         print(f"ERROR: Project directory not found: {project_dir}")
+        sys.exit(1)
+
+    # Check for empty project (no data files)
+    data_files = [f for f in project_dir.iterdir() if f.is_file() and f.suffix in ('.json', '.csv', '.md')]
+    if not data_files:
+        print(f"WARNING: Project directory has no data files: {project_dir}")
+        print("Run /fda:import or /fda:extract first to populate project data.")
         sys.exit(1)
 
     # Collect project data

@@ -287,7 +287,7 @@ If no `--intended-use` provided, include a template:
 
 ```
 IFU Claim-to-Testing Mapping:
-[INSERT your proposed IFU text to generate claim-to-testing mapping]
+[TODO: Company-specific — insert your proposed IFU text to generate claim-to-testing mapping]
 Tip: Provide --intended-use "your IFU text" to auto-generate this table.
 ```
 

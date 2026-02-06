@@ -253,7 +253,7 @@ Generates Section 1 of the eSTAR: Cover Letter.
 Generates Section 4 of the eSTAR: Truthful and Accuracy Statement.
 
 **Required data**: applicant_name from import_data.json
-**Output**: Standard certification text per 21 CFR 807.87(j). Minimal auto-population — mostly a template requiring authorized signature.
+**Output**: Standard certification text per 21 CFR 807.87(l). Minimal auto-population — mostly a template requiring authorized signature.
 
 ### 16. financial-certification
 
