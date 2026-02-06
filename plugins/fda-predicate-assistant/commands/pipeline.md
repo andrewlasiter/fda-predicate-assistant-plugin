@@ -73,9 +73,99 @@ else:
 PYEOF
 ```
 
+## Pre-Flight Validation
+
+Before starting any pipeline steps, perform these checks:
+
+1. **Project directory writable**: Verify `$PROJECTS_DIR/$PROJECT_NAME/` can be created/written to. If not, ERROR and halt.
+2. **Product code valid**: Query openFDA classification for the product code. If not found, WARN but continue (flat-file fallback may work).
+3. **Full-auto requirements**: If `--full-auto` is active, verify `--device-description` and `--intended-use` are provided (or can be synthesized from `--project` data). If missing, ERROR: "In --full-auto mode, --device-description and --intended-use are required for steps 5-7."
+4. **Dependencies installed**: Run the dependencies check (Python packages). If missing, attempt `pip install` before starting.
+
+## Step Criticality Classification
+
+Steps are classified as **CRITICAL** or **NON-CRITICAL**:
+
+| Step | Name | Criticality | On Failure |
+|------|------|-------------|------------|
+| 1 | Extract | **CRITICAL** | HALT pipeline — no data to work with |
+| 2 | Review | **CRITICAL** | HALT pipeline — predicate validation required for downstream |
+| 3 | Safety | NON-CRITICAL | Continue with DEGRADED warning |
+| 4 | Guidance | NON-CRITICAL | Continue with DEGRADED warning |
+| 5 | Pre-Sub Plan | NON-CRITICAL | Continue with DEGRADED warning |
+| 6 | Submission Outline | NON-CRITICAL | Continue with DEGRADED warning |
+| 7 | SE Comparison | NON-CRITICAL | Continue with DEGRADED warning |
+
+**CRITICAL step failure** = Pipeline halts immediately. Report which step failed, what the error was, and which downstream steps were skipped.
+
+**NON-CRITICAL step failure** = Pipeline continues. Mark the step as `DEGRADED` in the completion report. Downstream steps that depend on the failed step's output will have reduced data quality (noted in their own output).
+
+## Argument Threading Table
+
+Arguments provided to `/fda:pipeline` MUST be threaded to downstream steps:
+
+| Argument | Steps That Receive It |
+|----------|----------------------|
+| `--product-code` | 1 (extract), 3 (safety), 4 (guidance), 5 (presub), 6 (outline), 7 (compare-se) |
+| `--project` | 1 (extract), 2 (review), 4 (guidance), 5 (presub), 6 (outline), 7 (compare-se) |
+| `--device-description` | 4 (guidance), 5 (presub), 6 (outline), 7 (compare-se) |
+| `--intended-use` | 5 (presub), 6 (outline), 7 (compare-se) |
+| `--years` | 1 (extract) |
+| `--full-auto` | 2 (review as --full-auto), 5 (presub), 6 (outline), 7 (compare-se) |
+
+**Verify each step invocation includes all threaded arguments.** Missing a threaded argument (e.g., not passing `--device-description` to step 5) causes placeholder issues downstream.
+
 ## Pipeline Steps
 
 Execute the following steps in order. Before each step, check if its output already exists (skip if so, unless `--force` is set). After each step, record timing and status.
+
+### Step 0: Product Code Auto-Identification (if needed)
+
+**Runs when**: `--product-code` not provided but `--device-description` is available.
+
+Auto-identify the product code from the device description:
+
+1. **openFDA classification search**: Query `https://api.fda.gov/device/classification.json` with keywords from the device description
+2. **foiaclass.txt keyword matching**: Grep `foiaclass.txt` for key terms from the device description
+3. **Rank candidates**: Score by keyword match relevance, return top 5 candidates
+4. **Auto-select**: Use the highest-ranked candidate. Log: "Auto-identified product code: {CODE} ({device_name}) from device description. Confidence: {score}."
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re
+
+# Extract keywords from device description
+description = "DEVICE_DESCRIPTION"  # Replace
+keywords = [w for w in description.lower().split() if len(w) > 3 and w not in {'with', 'that', 'this', 'from', 'have', 'been', 'used', 'device'}]
+search_terms = '+AND+'.join(f'"{kw}"' for kw in keywords[:5])
+
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = os.environ.get('OPENFDA_API_KEY')
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    if not api_key:
+        m = re.search(r'openfda_api_key:\s*(\S+)', content)
+        if m and m.group(1) != 'null':
+            api_key = m.group(1)
+
+params = {"search": f'device_name:{search_terms}', "limit": "5"}
+if api_key:
+    params["api_key"] = api_key
+url = f"https://api.fda.gov/device/classification.json?{urllib.parse.urlencode(params)}"
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+try:
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        data = json.loads(resp.read())
+        if data.get("results"):
+            for i, r in enumerate(data["results"]):
+                print(f"CANDIDATE:{i+1}|{r.get('product_code','?')}|{r.get('device_name','?')}|{r.get('device_class','?')}|{r.get('regulation_number','?')}")
+except Exception as e:
+    print(f"ERROR:{e}")
+PYEOF
+```
+
+If auto-identification fails, ERROR: "Could not identify product code from device description. Provide --product-code explicitly."
 
 ### Step 1/7: Extract (Download PDFs + Extract Predicates)
 
@@ -85,7 +175,7 @@ Execute the following steps in order. Before each step, check if its output alre
 
 **Produces**: output.csv, supplement.csv, pdf_data.json, 510k_download.csv
 
-**On failure**: Log error. Pipeline can continue to Step 3 (safety) using API-only data, but Steps 2, 5, 7 will have limited data.
+**On failure**: **CRITICAL — HALT PIPELINE.** Report: "PIPELINE HALTED: Step 1 (Extract) failed. No extraction data available for downstream steps. Error: {error}. Skipped steps: 2-7."
 
 Report: "Step 1/7: Extract — {status} ({N} records in output.csv, {N} PDFs processed)"
 
@@ -99,7 +189,7 @@ Report: "Step 1/7: Extract — {status} ({N} records in output.csv, {N} PDFs pro
 
 **Produces**: review.json, output_reviewed.csv
 
-**On failure**: Log error. Pipeline continues — later steps fall back to unreviewed predicates.
+**On failure**: **CRITICAL — HALT PIPELINE.** Report: "PIPELINE HALTED: Step 2 (Review) failed. Predicate validation is required for SE comparison and submission planning. Error: {error}. Skipped steps: 3-7."
 
 Report: "Step 2/7: Review — {status} ({N} accepted, {N} rejected, {N} deferred)"
 
@@ -111,7 +201,7 @@ Report: "Step 2/7: Review — {status} ({N} accepted, {N} rejected, {N} deferred
 
 **Produces**: Console output only (safety summary)
 
-**On failure**: Log warning. Pipeline continues.
+**On failure**: NON-CRITICAL — Log warning, mark as DEGRADED, continue. Report: "Step 3/7: Safety — DEGRADED (API unavailable or error: {error}). Downstream steps will lack safety intelligence data."
 
 Report: "Step 3/7: Safety — {status} ({N} MAUDE events, {N} recalls)"
 
@@ -125,7 +215,7 @@ If `--device-description` provided, add: `--device-description "{TEXT}"`
 
 **Produces**: guidance_cache/ directory with guidance_index.json, requirements_matrix.json
 
-**On failure**: Log error. Pipeline continues — later steps fall back to predicate-only data.
+**On failure**: NON-CRITICAL — Log warning, mark as DEGRADED, continue. Report: "Step 4/7: Guidance — DEGRADED (error: {error}). Submission outline and pre-sub plan will have reduced guidance data."
 
 Report: "Step 4/7: Guidance — {status} ({N} device-specific, {N} cross-cutting guidance documents)"
 
@@ -142,7 +232,7 @@ If `--intended-use` provided, add: `--intended-use "{TEXT}"`
 
 **Produces**: presub_plan.md
 
-**On failure**: Log error. Pipeline continues.
+**On failure**: NON-CRITICAL — Log warning, mark as DEGRADED, continue. Report: "Step 5/7: Pre-Sub Plan — DEGRADED (error: {error})."
 
 Report: "Step 5/7: Pre-Sub Plan — {status}"
 
@@ -159,7 +249,7 @@ If `--intended-use` provided, add: `--intended-use "{TEXT}"`
 
 **Produces**: submission_outline.md
 
-**On failure**: Log error. Pipeline continues.
+**On failure**: NON-CRITICAL — Log warning, mark as DEGRADED, continue. Report: "Step 6/7: Submission Outline — DEGRADED (error: {error})."
 
 Report: "Step 6/7: Submission Outline — {status}"
 
@@ -178,9 +268,22 @@ If `--intended-use` provided, add: `--intended-use "{TEXT}"`
 
 **Produces**: se_comparison.md
 
-**On failure**: Log error. This is the last step.
+**On failure**: NON-CRITICAL — Log warning, mark as DEGRADED. Report: "Step 7/7: SE Comparison — DEGRADED (error: {error})."
 
 Report: "Step 7/7: SE Comparison — {status} ({N} predicates compared)"
+
+## Audit Logging
+
+The pipeline writes audit log entries per the schema in `references/audit-logging.md`:
+
+1. **At pipeline start**: Write `pipeline_started` entry with all arguments and pre-flight validation results
+2. **Before each step**: Write `step_started` entry
+3. **After each step**: Write `step_completed`, `step_failed`, `step_skipped`, or `step_degraded` entry with timing
+4. **At pipeline end**: Write `pipeline_completed` or `pipeline_halted` entry with full summary
+
+All entries append to `$PROJECTS_DIR/$PROJECT_NAME/audit_log.jsonl`.
+
+At pipeline completion, also write `$PROJECTS_DIR/$PROJECT_NAME/pipeline_audit.json` with the consolidated summary (see `references/audit-logging.md` for schema).
 
 ## Pipeline Completion Report
 

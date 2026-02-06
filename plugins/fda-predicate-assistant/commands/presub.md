@@ -185,7 +185,16 @@ Limit to 5-7 questions per FDA recommendation.
 
 ### Placeholder Resolution
 
-Before generating the document, resolve all placeholders:
+Before generating the document, resolve all placeholders using this priority system:
+
+#### Full-Auto Validation
+
+**If `--full-auto` is active:**
+- `--device-description` and `--intended-use` are **REQUIRED**. If either is missing:
+  - If `--project` is provided: attempt to synthesize from `query.json` product_codes + openFDA classification data (device name, definition, regulation). Log: "Synthesized device description from openFDA classification for {product_code}."
+  - If synthesis fails or no `--project`: **ERROR**: "In --full-auto mode, --device-description and --intended-use are required. Provide both arguments or use --project with product code data for auto-synthesis."
+
+#### Standard Placeholder Rules
 
 **If `--device-description` provided:**
 - Replace `[INSERT: Detailed description of your device...]` with the provided description
@@ -200,7 +209,12 @@ Before generating the document, resolve all placeholders:
 - Replace `[INSERT: Proposed predicate device(s)...]` with top accepted predicates from review.json
 - Replace `[INSERT: Proposed testing strategy...]` with requirements from guidance_cache
 
-**Remaining placeholders** that cannot be auto-filled should be changed from `[INSERT: ...]` to `[TODO: Company-specific — {description}]` to clearly distinguish auto-fillable vs truly-needs-human items.
+#### Final Placeholder Conversion
+
+**ALL remaining `[INSERT: ...]` placeholders** MUST be converted to `[TODO: Company-specific — {description}]` before writing the output file. No `[INSERT: ...]` placeholders should survive in the final output. This ensures:
+- Users can clearly see what needs human input vs what was auto-filled
+- Automated tools can grep for `[TODO:` to find remaining work items
+- The document is always complete (no empty/broken sections)
 
 Write the `presub_plan.md` document using the Pre-Sub format from `references/submission-structure.md`:
 
@@ -381,6 +395,17 @@ After receiving FDA feedback:
 FDA data. It is a starting point — not a final document. Review with your
 regulatory affairs team before submitting to FDA. This is not regulatory advice.
 ```
+
+## Audit Logging
+
+After generating the Pre-Sub plan, write audit log entries per `references/audit-logging.md`:
+
+- For each resolved placeholder: write a `placeholder_resolved` entry with what was filled and from which data source
+- For each remaining placeholder converted: write a `placeholder_converted` entry
+- For any synthesized data: write a `data_synthesized` entry
+- At completion: write a `document_generated` entry with the output file path
+
+Append all entries to `$PROJECTS_DIR/$PROJECT_NAME/audit_log.jsonl`.
 
 ## Step 5: Write Output
 

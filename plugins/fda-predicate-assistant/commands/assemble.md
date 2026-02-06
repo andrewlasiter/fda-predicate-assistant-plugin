@@ -130,8 +130,41 @@ For each eSTAR section, check if project data can populate it:
 
 For each section:
 1. Create a `README.md` in the section folder describing what's needed
-2. If data available, copy/link the relevant file
-3. If template needed, generate a starter template
+2. If data available, **auto-write content** into the section (not just copy the file):
+   - **Section 06 (Device Description)**: If `--device-description` provided or presub_plan.md exists, write the device description prose into `06_device_description/device_description.md`. Mark as `DRAFT — AI-generated`.
+   - **Section 07 (SE Comparison)**: If se_comparison.md exists, copy it into `07_se_comparison/se_comparison.md`. Mark as `DRAFT — AI-generated`.
+   - **Section 08 (Standards)**: If guidance_cache exists, write a standards conformity declaration listing each standard and its status into `08_standards_conformity/standards_declaration.md`. Mark as `DRAFT — AI-generated`.
+   - **Section 12 (Biocompatibility)**: If test_plan.md or guidance_cache has biocompatibility requirements, write a biocompatibility plan summary into `12_biocompatibility/biocompat_plan.md`. Mark as `TEMPLATE — manual completion`.
+   - **Section 15 (Performance)**: If test_plan.md exists, write the performance testing plan into `15_performance_testing/performance_plan.md`. Mark as `DRAFT — AI-generated`.
+3. If template needed (no data available), generate a starter template
+4. Mark each section clearly as one of:
+   - `DRAFT — AI-generated from project data` (has content, needs verification)
+   - `TEMPLATE — manual completion required` (has structure, no content)
+   - `READY — data populated` (directly from user input)
+
+### Cybersecurity Section Auto-Detection
+
+Check if cybersecurity documentation is needed based on the device description and product code:
+
+```python
+desc = (device_description or "").lower()
+product_code = "CODE"  # From project
+
+cyber_trigger = any(kw in desc for kw in [
+    "software", "firmware", "wireless", "bluetooth", "wifi", "connected",
+    "app", "samd", "algorithm", "cloud", "network", "usb", "rf",
+    "iot", "telemetry", "digital"
+])
+```
+
+If cybersecurity is triggered:
+1. Create `13_software/cybersecurity/` subdirectory
+2. Generate templates from `references/cybersecurity-framework.md`:
+   - `threat_model.md` — Threat model template
+   - `sbom_template.md` — SBOM scaffold
+   - `patch_plan.md` — Vulnerability management plan
+3. Mark as `TEMPLATE — manual completion required`
+4. Note in eSTAR index: "Cybersecurity documentation required — see Section 13"
 
 ## Step 4: Generate eSTAR Index
 

@@ -252,6 +252,43 @@ CRITICAL ALERTS:
 Alerts saved to: ~/fda-510k-data/monitor_alerts/{today}.json
 ```
 
+## Subcommand: --watch-standards
+
+Track FDA recognized consensus standards changes that affect your projects.
+
+### How it works
+
+1. Read the project's `guidance_cache/standards_list.json` to get the list of applicable standards
+2. Query FDA's standards database for updates:
+
+```
+WebSearch: site:fda.gov "recognized consensus standards" update 2026
+WebSearch: site:fda.gov "{standard_name}" recognition medical device 2025 OR 2026
+```
+
+3. For each standard in the project:
+   - Check if a newer version has been recognized by FDA
+   - Check if the current version has been withdrawn
+   - Check transition deadlines
+   - Assess impact on project requirements
+
+4. Generate standards impact report:
+
+```markdown
+## Standards Watch Report
+
+| Standard | Current | Latest Recognized | Status | Impact |
+|----------|---------|-------------------|--------|--------|
+| ISO 10993-1 | 2018 | 2024 | UPDATE AVAILABLE | Update biocompat plan |
+| IEC 62304 | 2015 | 2015 | CURRENT | No action |
+| ISO 11135 | 2014 | 2014 | CURRENT | No action |
+| ASTM F1980 | 2016 | 2021 | UPDATE AVAILABLE | Review aging protocol |
+```
+
+5. Save results to `~/fda-510k-data/monitor_alerts/{today}.json` with `type: "standard_update"`
+
+See `references/standards-tracking.md` for standard families and alert schema.
+
 ## Subcommand: --alerts
 
 Read alert files from `~/fda-510k-data/monitor_alerts/` and display recent alerts. If `--since` provided, filter by date.

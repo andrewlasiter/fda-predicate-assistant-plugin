@@ -227,25 +227,51 @@ Each step builds on previous data but degrades gracefully if run independently.
 - `/fda:status` — Check pipeline data, file freshness, API connectivity
 - `/fda:configure` — View/modify settings, manage exclusion list
 
-## Available Commands (13)
+## Available Commands (26)
 
+### Core Pipeline
 | Command | Purpose |
 |---------|---------|
-| `/fda:extract` | Run the two-stage pipeline (download PDFs + extract predicates) |
-| `/fda:research` | Comprehensive 510(k) submission research package |
-| `/fda:review` | Interactive predicate review with confidence scoring and risk flags |
+| `/fda:pipeline` | Run the full 7-step pipeline autonomously |
+| `/fda:extract` | Download 510(k) PDFs and extract predicate relationships |
+| `/fda:review` | Score, flag, and accept/reject extracted predicates |
+| `/fda:safety` | MAUDE adverse events and recall history |
 | `/fda:guidance` | Look up FDA guidance documents and extract requirements |
-| `/fda:presub` | Plan a Pre-Submission meeting with FDA |
+| `/fda:presub` | Generate a Pre-Submission meeting package |
 | `/fda:submission-outline` | Generate 510(k) submission outline with gap analysis |
 | `/fda:compare-se` | Generate Substantial Equivalence comparison tables |
-| `/fda:validate` | Validate device numbers against FDA databases |
-| `/fda:safety` | Analyze adverse events (MAUDE) and recall history |
-| `/fda:analyze` | Analyze FDA data from any pipeline stage |
-| `/fda:summarize` | Summarize sections from 510(k) summary PDFs |
-| `/fda:configure` | View/modify settings, API key setup, exclusion list |
-| `/fda:status` | Show available data, file freshness, script availability |
 
-## Resources
+### Research and Analysis
+| Command | Purpose |
+|---------|---------|
+| `/fda:research` | Full submission research — predicates, testing, competitive landscape |
+| `/fda:validate` | Validate device numbers against FDA databases |
+| `/fda:analyze` | Statistics and patterns across extraction results |
+| `/fda:summarize` | Compare sections across 510(k) summary PDFs |
+| `/fda:ask` | Natural language Q&A about FDA regulatory topics |
+| `/fda:literature` | PubMed/WebSearch literature review with gap analysis |
+| `/fda:lineage` | Predicate citation chain tracer across generations |
+
+### Planning and Decision Support
+| Command | Purpose |
+|---------|---------|
+| `/fda:pathway` | Recommend optimal regulatory pathway with scoring |
+| `/fda:test-plan` | Risk-based testing plan with gap analysis |
+| `/fda:pccp` | Predetermined Change Control Plan for AI/ML devices |
+| `/fda:monitor` | Watch FDA databases for new clearances, recalls, events |
+| `/fda:draft` | Generate regulatory prose for submission sections |
+
+### Assembly, Validation, and Management
+| Command | Purpose |
+|---------|---------|
+| `/fda:assemble` | Assemble eSTAR-structured submission package from project data |
+| `/fda:traceability` | Requirements Traceability Matrix (guidance → risks → tests → evidence) |
+| `/fda:consistency` | Cross-document consistency validation across project files |
+| `/fda:portfolio` | Cross-project dashboard — shared predicates, common guidance |
+| `/fda:configure` | Set up API keys, data paths, and preferences |
+| `/fda:status` | Check what data you have and what's available |
+
+## Resources (17 references)
 
 For detailed reference information, see:
 - `references/openfda-api.md` - openFDA Device API reference (all 7 endpoints)
@@ -256,6 +282,15 @@ For detailed reference information, see:
 - `references/confidence-scoring.md` - Predicate confidence scoring algorithm
 - `references/guidance-lookup.md` - FDA guidance document lookup reference
 - `references/submission-structure.md` - 510(k) submission structure and Pre-Sub format
+- `references/path-resolution.md` - Plugin root resolution patterns
+- `references/estar-structure.md` - eSTAR section structure and applicability matrix
+- `references/pathway-decision-tree.md` - Regulatory pathway decision flow and scoring
+- `references/test-plan-framework.md` - ISO 14971 risk categories and device-type test lists
+- `references/pccp-guidance.md` - FDA PCCP guidance overview and modification categories
+- `references/audit-logging.md` - JSONL audit log schema and pipeline consolidated log
+- `references/predicate-lineage.md` - Chain Health Scoring and lineage patterns
+- `references/standards-tracking.md` - FDA recognized consensus standards tracking
+- `references/cybersecurity-framework.md` - Cybersecurity documentation framework and templates
 
 ## Disclaimers (always include when providing regulatory guidance)
 

@@ -24,12 +24,14 @@ From the arguments, extract:
 - `--infer` — Auto-detect predicates from project data instead of requiring explicit input
 
 If no `--predicates` provided:
-- If `--infer` AND `--project NAME` specified:
+- If `--infer` AND `--project NAME` specified, use this fallback chain (try each in order, stop at first success):
   1. Check `$PROJECTS_DIR/$PROJECT_NAME/review.json` for accepted predicates → use top 3 by score
-  2. Check `$PROJECTS_DIR/$PROJECT_NAME/output.csv` → find most-cited predicates
-  3. If inference succeeds: log "Inferred predicates: {K-numbers} from {source}"
-  4. If inference fails: **ERROR**: "Could not infer predicates. Provide --predicates K123456 or run /fda:review first."
-- If no `--infer` and no `--predicates`: ask the user. If they're unsure, suggest running `/fda:research` first.
+  2. Check `$PROJECTS_DIR/$PROJECT_NAME/output.csv` → find most-cited predicates (top 3 by citation count across all source documents)
+  3. Check `$PROJECTS_DIR/$PROJECT_NAME/pdf_data.json` or extraction cache → grep for any K-numbers found in SE sections
+  4. If all three fail: **ERROR**: "Could not infer predicates from project data. No accepted predicates in review.json, no citations in output.csv, and no K-numbers in extraction cache. Provide --predicates K123456 explicitly."
+  **NEVER fall back to asking the user when `--infer` is set.** The `--infer` flag means "figure it out from data or fail."
+- If no `--infer` and no `--predicates` and NOT `--full-auto`: ask the user. If they're unsure, suggest running `/fda:research` first.
+- If no `--infer` and no `--predicates` and `--full-auto`: **ERROR**: "In --full-auto mode, predicates must be provided via --predicates or inferred via --infer. Cannot prompt for predicates."
 
 ## Step 1: Identify Product Code & Select Template
 
@@ -364,6 +366,10 @@ echo "SE comparison table written to /path/to/output.md"
 
 ## Step 6: Interactive Refinement
 
+**IMPORTANT: Skip this entire step if `--full-auto` is active OR if both `--device-description` and `--intended-use` were provided.** In those cases, the table is as complete as it can be — proceed directly to Step 7.
+
+### If NOT --full-auto AND missing device details: Interactive Refinement
+
 After generating the initial table, offer:
 
 ```markdown
@@ -434,6 +440,16 @@ What is your device's sensor duration?
 | Sterilization | Method, standard | Sterilization section |
 | Shelf Life | Duration, conditions | Shelf Life section |
 | Clinical Data | Study type, N, outcomes | Clinical section |
+
+## Audit Logging
+
+After generating the SE comparison table, write audit log entries per `references/audit-logging.md`:
+
+- If predicates were inferred: write a `predicate_inferred` entry with source (review.json/output.csv/cache)
+- For each auto-populated cell: write a `cell_auto_populated` entry with the data source
+- At completion: write a `table_generated` entry with predicate count, row count, and cells requiring input/review counts
+
+Append all entries to `$PROJECTS_DIR/$PROJECT_NAME/audit_log.jsonl` (if `--project` specified).
 
 ## Step 7: Integration with Submission Outline
 

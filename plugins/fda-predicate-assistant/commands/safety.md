@@ -45,7 +45,29 @@ print(f"API_KEY:{'yes' if api_key else 'no'}")
 PYEOF
 ```
 
-If API is disabled, report: "The `/fda:safety` command requires openFDA API access. Enable with: `/fda:configure --set openfda_enabled true`"
+If API is disabled or unreachable, **degrade gracefully** instead of blocking:
+
+1. **Check for local MAUDE data first**: Look for any locally cached safety data in the project directory:
+   ```bash
+   ls "$PROJECTS_DIR/$PROJECT_NAME/safety_cache/" 2>/dev/null
+   ```
+
+2. **If local data exists**: Use it. Report: "Using cached safety data from {date}. Enable API for real-time data: `/fda:configure --set openfda_enabled true`"
+
+3. **If no local data and API disabled**: Generate a structured warning output instead of erroring:
+   ```json
+   {
+     "safety_data_available": false,
+     "reason": "openFDA API disabled and no cached safety data found",
+     "product_code": "{CODE}",
+     "recommendation": "Enable API with /fda:configure --set openfda_enabled true for safety intelligence",
+     "risk_assessment": "UNKNOWN — safety data not available",
+     "generated_at": "{timestamp}"
+   }
+   ```
+   Report this as a warning, NOT an error. The command completes successfully with a "no data" result rather than crashing. Downstream pipeline steps can check `safety_data_available: false` and adjust accordingly.
+
+4. **If API enabled but request fails** (timeout, HTTP error): Retry once after 5 seconds. If still failing, produce the same structured warning with `"reason": "openFDA API request failed: {error}"`.
 
 ## Step 1: Product Code Context
 

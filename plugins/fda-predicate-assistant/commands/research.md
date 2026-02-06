@@ -22,8 +22,28 @@ From `$ARGUMENTS`, extract:
 - `--project NAME` — Use data from a specific project folder
 - `--infer` — Auto-detect product code from project data instead of requiring explicit input
 - `--competitor-deep` — Extended competitive analysis: applicant frequency, technology trends, market timeline, IFU evolution
+- `--identify-code` — Auto-identify product code from `--device-description` text (no product code required). Searches openFDA classification + foiaclass.txt, returns top 5 candidates ranked by relevance.
 
-If no product code provided:
+If `--identify-code` is set:
+1. Require `--device-description` (error if missing)
+2. Extract keywords from the device description
+3. Query openFDA classification API: `device_name:{keywords}`
+4. Also grep foiaclass.txt for matching terms
+5. Rank results by keyword overlap score
+6. Present top 5 candidates:
+   ```
+   Product Code Identification Results:
+   Rank  Code  Device Name                     Class  Regulation    Score
+   1     OVE   Intervertebral Fusion Device    II     888.3080      95%
+   2     OVF   Cervical Disc Prosthesis        III    888.3082      72%
+   3     ORC   Spinal Plate                    II     888.3070      65%
+   4     MAX   Bone Void Filler                II     888.3045      40%
+   5     OOQ   Spinal Spacer                   II     888.3075      38%
+   ```
+7. If `--full-auto`: auto-select rank 1 and continue with that product code
+8. Otherwise: present candidates and let user confirm
+
+If no product code provided and no `--identify-code`:
 - If `--infer` AND `--project NAME` specified:
   1. Check `$PROJECTS_DIR/$PROJECT_NAME/query.json` for `product_codes` field → use first code
   2. Check `$PROJECTS_DIR/$PROJECT_NAME/output.csv` → find most-common product code in data

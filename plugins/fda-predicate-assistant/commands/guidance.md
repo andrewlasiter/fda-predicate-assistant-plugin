@@ -111,7 +111,22 @@ print("CACHED:false")
 PYEOF
 ```
 
-If `--offline` and no cache found, report: "No cached guidance data found for {product_code}. Run `/fda:guidance {product_code} --save` first to cache guidance for offline use."
+If `--offline` and no cache found, **fall back to skill reference data**:
+
+1. Read the `references/guidance-lookup.md` skill reference file (via `$FDA_PLUGIN_ROOT/skills/fda-510k-knowledge/references/guidance-lookup.md`)
+2. Match the product code family/panel to generic cross-cutting guidance recommendations from the reference tables
+3. Generate a "Reference-Based Guidance Summary" with the following banner at the top:
+
+```
+⚠ REFERENCE-BASED GUIDANCE — Generated from bundled reference data, NOT from current FDA guidance documents.
+Verify all recommendations against current FDA guidance at fda.gov before use in any submission.
+Last reference update: [date from reference file header or "unknown"]
+```
+
+4. Include all applicable cross-cutting guidance from the reference tables (biocompatibility, sterilization, etc.) based on device class and known characteristics
+5. Mark all entries as `[Reference-based]` instead of having specific guidance document URLs
+
+This ensures `--offline` mode always produces useful output, even without a prior `--save` cache. Only fail with an error if the reference file itself is missing (plugin installation issue).
 
 ### Online: Query openFDA Classification API
 

@@ -132,10 +132,13 @@ Parse `$ARGUMENTS` to determine which stage(s) to run:
 - `stage1` → Run only BatchFetch (download PDFs)
 - `stage2` → Run only PredicateExtraction (extract predicates)
 - `both` → Run Stage 1 then Stage 2
-- No stage argument:
-  - If `--project` is provided → Default to `both` (log: "No stage specified, defaulting to 'both' (--project provided)")
-  - If no `--project` → Default to `stage1` (log: "No stage specified, defaulting to 'stage1'")
+- No stage argument — three explicit cases:
+  1. **`--project` is provided** → Default to `both` (log: "No stage specified, defaulting to 'both' (--project provided)")
+  2. **No `--project` but `--product-codes` provided** → Default to `stage1` (log: "No stage specified, defaulting to 'stage1' (no project context)")
+  3. **Neither `--project` nor `--product-codes`** → Default to `stage1` (log: "No stage specified, defaulting to 'stage1'")
   - **NEVER prompt the user for stage selection**
+
+**Full-auto requirement**: If `--full-auto` is active, `--project` is **REQUIRED**. Error if missing: "In --full-auto mode, --project is required to organize pipeline outputs. Usage: /fda:extract both --project NAME --product-codes CODE --full-auto"
 
 Also parse filter arguments: `--product-codes`, `--years`, `--applicants`, `--committees`, `--decision-codes`, `--project`
 

@@ -1,5 +1,39 @@
 # Changelog
 
+## [4.0.0] - 2026-02-05
+
+### Added — Tier 1: Full Autonomy Fixes
+- Guard all `AskUserQuestion` calls behind explicit `--full-auto` conditionals in review, compare-se, presub, submission-outline
+- `--infer` fallback chain in compare-se: review.json → output.csv (top 3 by citation) → pdf_data.json → ERROR (never prompts)
+- `--full-auto` validation: require `--device-description` and `--intended-use` in presub and submission-outline (with synthesis fallback from query.json + openFDA)
+- Placeholder conversion: all surviving `[INSERT: ...]` → `[TODO: Company-specific — ...]` across presub, submission-outline, compare-se
+- Pipeline step criticality: Steps 1-2 (extract/review) CRITICAL (halt on failure), Steps 3-7 NON-CRITICAL (continue with DEGRADED warning)
+- Pipeline pre-flight validation: writable project dir, valid product code, full-auto requirements, dependency check
+- Pipeline argument threading table: explicit mapping of every arg to downstream steps
+- Guidance offline fallback: reference-based guidance summary from skill reference data when cache unavailable
+- Safety graceful degradation: structured JSON warning with `safety_data_available: false` when API unavailable
+- Extract stage defaults: 3 explicit cases, `--full-auto` requires `--project`
+- Headless mode in `predicate_extractor.py`: skip manual download messages, one-line error + `sys.exit(2)` on failure
+- Audit logging infrastructure: `references/audit-logging.md` schema, JSONL append per command, consolidated `pipeline_audit.json`
+
+### Added — Tier 2: Best-in-Class Feature Parity
+- `/fda:lineage` — Predicate citation chain tracer (up to 5 generations, recall checking, Chain Health Score 0-100)
+- `/fda:draft` — Regulatory prose generator for 6 submission sections with citation tracking
+- `/fda:literature` — PubMed/WebSearch literature review with gap analysis vs guidance requirements
+- `/fda:traceability` — Requirements Traceability Matrix (guidance → risks → tests → evidence)
+- `/fda:consistency` — Cross-document consistency validation (8 checks, PASS/WARN/FAIL, optional --fix)
+- eSTAR auto-population in `/fda:assemble`: Sections 6/7/8/12/15 auto-written from project data (DRAFT/TEMPLATE/READY markers)
+- Cybersecurity auto-detection in `/fda:assemble`: threat model, SBOM, and patch plan templates for software/connected devices
+- `--watch-standards` in `/fda:monitor`: track FDA recognized consensus standards changes and impact on projects
+- `--identify-code` in `/fda:research`: auto-identify product code from device description via openFDA + foiaclass.txt
+- Pipeline Step 0: auto-identify product code when `--product-code` not provided but `--device-description` available
+
+### Added — References
+- `audit-logging.md` — JSONL audit log schema and pipeline consolidated log format
+- `predicate-lineage.md` — Chain Health Scoring methodology and lineage patterns
+- `standards-tracking.md` — FDA recognized consensus standards families and alert schema
+- `cybersecurity-framework.md` — Cybersecurity documentation framework, templates, and applicable standards
+
 ## [3.0.0] - 2026-02-06
 
 ### Added — Tier 1: Autonomy

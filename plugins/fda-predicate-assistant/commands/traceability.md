@@ -1,0 +1,218 @@
+---
+description: Generate a requirements traceability matrix mapping guidance requirements to risks, tests, and evidence — identifies gaps in submission coverage
+allowed-tools: Bash, Read, Glob, Grep, Write
+argument-hint: "--project NAME [--product-code CODE] [--output FILE]"
+---
+
+# FDA 510(k) Requirements Traceability Matrix
+
+## Resolve Plugin Root
+
+**Before running any bash commands that reference `$FDA_PLUGIN_ROOT`**, resolve the plugin install path:
+
+```bash
+FDA_PLUGIN_ROOT=$(python3 -c "
+import json, os
+f = os.path.expanduser('~/.claude/plugins/installed_plugins.json')
+if os.path.exists(f):
+    d = json.load(open(f))
+    for k, v in d.get('plugins', {}).items():
+        if k.startswith('fda-predicate-assistant@'):
+            for e in v:
+                p = e.get('installPath', '')
+                if os.path.isdir(p):
+                    print(p); exit()
+print('')
+")
+echo "FDA_PLUGIN_ROOT=$FDA_PLUGIN_ROOT"
+```
+
+---
+
+You are generating a Requirements Traceability Matrix (RTM) that maps FDA guidance requirements to risks, tests, and evidence. This is a key regulatory deliverable that demonstrates complete coverage of all requirements.
+
+**KEY PRINCIPLE: Every requirement must trace to either a test, a risk mitigation, or an explicit justification for exclusion.** Gaps in traceability are submission risks.
+
+## Parse Arguments
+
+From `$ARGUMENTS`, extract:
+
+- `--project NAME` (required) — Project with pipeline data
+- `--product-code CODE` — Product code (auto-detect from project if not specified)
+- `--output FILE` — Write matrix to file (default: traceability_matrix.md in project folder)
+- `--infer` — Auto-detect product code from project data
+- `--format md|csv|json` — Output format (default: md)
+
+## Step 1: Gather Requirements Sources
+
+### From guidance_cache (if available)
+
+```bash
+python3 << 'PYEOF'
+import json, os, re
+
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+projects_dir = os.path.expanduser('~/fda-510k-data/projects')
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        m = re.search(r'projects_dir:\s*(.+)', f.read())
+        if m: projects_dir = os.path.expanduser(m.group(1).strip())
+
+project = "PROJECT"  # Replace
+pdir = os.path.join(projects_dir, project)
+
+# Load requirements matrix
+req_path = os.path.join(pdir, 'guidance_cache', 'requirements_matrix.json')
+if os.path.exists(req_path):
+    with open(req_path) as f:
+        reqs = json.load(f)
+    for r in reqs:
+        print(f"REQ:{r.get('category','?')}|{r.get('requirement','?')}|{r.get('standard','?')}|{r.get('priority','?')}")
+else:
+    print("REQUIREMENTS:not_found")
+
+# Load standards list
+std_path = os.path.join(pdir, 'guidance_cache', 'standards_list.json')
+if os.path.exists(std_path):
+    with open(std_path) as f:
+        stds = json.load(f)
+    for s in stds:
+        print(f"STD:{s.get('standard','?')}|{s.get('purpose','?')}|{s.get('required','?')}")
+else:
+    print("STANDARDS:not_found")
+PYEOF
+```
+
+### From safety data (risk identification)
+
+```bash
+# Check for safety intelligence data
+cat "$PROJECTS_DIR/$PROJECT_NAME/safety_cache/safety_summary.json" 2>/dev/null || echo "SAFETY:not_found"
+```
+
+### From test plan (if available)
+
+```bash
+cat "$PROJECTS_DIR/$PROJECT_NAME/test_plan.md" 2>/dev/null || echo "TEST_PLAN:not_found"
+```
+
+### From submission outline (gap analysis)
+
+```bash
+cat "$PROJECTS_DIR/$PROJECT_NAME/submission_outline.md" 2>/dev/null || echo "OUTLINE:not_found"
+```
+
+## Step 2: Build Requirements List
+
+Compile all requirements from available sources:
+
+1. **Guidance requirements**: From guidance_cache/requirements_matrix.json
+2. **Cross-cutting requirements**: From `references/guidance-lookup.md` (biocompatibility, sterilization, shelf life, etc.)
+3. **Safety-identified risks**: From safety data (common failure modes → requirements)
+4. **IFU claim requirements**: From intended use → each claim needs supporting evidence
+
+Assign each requirement a unique ID: `REQ-{category}-{number}` (e.g., REQ-BIOCOMPAT-001)
+
+## Step 3: Map to Risks
+
+For each requirement, identify associated risks:
+
+| Risk Source | How to Identify |
+|-------------|----------------|
+| Safety data | Common failure modes from MAUDE analysis |
+| Guidance | Risks called out in guidance documents |
+| Device description | Material, electrical, software risks |
+| IFU claims | Clinical claims requiring evidence |
+| Predicate history | Recalled predicates → failure modes |
+
+Assign risk IDs: `RISK-{number}` (e.g., RISK-001)
+
+## Step 4: Map to Tests and Evidence
+
+For each requirement, identify the test or evidence that addresses it:
+
+| Evidence Type | Source |
+|--------------|--------|
+| Bench testing | test_plan.md, guidance requirements |
+| Biocompatibility | ISO 10993 test plan |
+| Sterilization | Sterilization validation plan |
+| Shelf life | Accelerated aging plan |
+| Clinical | Literature review, clinical study |
+| Predicate precedent | Predicate testing from SE comparison |
+
+Assign test IDs: `TEST-{category}-{number}` (e.g., TEST-BIOCOMPAT-001)
+
+## Step 5: Generate Traceability Matrix
+
+```markdown
+# Requirements Traceability Matrix
+## {Device Description} — Product Code {CODE}
+
+**Generated:** {date}
+**Project:** {project_name}
+**Requirements sources:** {list}
+
+---
+
+## Full Traceability Matrix
+
+| Req ID | Requirement | Source | Risk ID | Risk | Test ID | Test/Evidence | Status |
+|--------|------------|--------|---------|------|---------|---------------|--------|
+| REQ-BIOCOMPAT-001 | ISO 10993-5 Cytotoxicity | Cross-cutting guidance | RISK-001 | Cytotoxic reaction | TEST-BIOCOMPAT-001 | ISO 10993-5 testing | PLANNED |
+| REQ-BIOCOMPAT-002 | ISO 10993-10 Sensitization | Cross-cutting guidance | RISK-002 | Allergic reaction | TEST-BIOCOMPAT-002 | ISO 10993-10 testing | PLANNED |
+| REQ-STERIL-001 | Sterilization validation | Cross-cutting guidance | RISK-003 | Non-sterile device | TEST-STERIL-001 | ISO 11135 validation | PLANNED |
+| REQ-PERF-001 | {Device-specific test} | Device guidance | RISK-004 | {failure mode} | TEST-PERF-001 | {test method} | PLANNED |
+| REQ-IFU-001 | {IFU claim} evidence | IFU analysis | RISK-005 | Unsupported claim | TEST-CLIN-001 | Literature review | GAP |
+
+---
+
+## Coverage Summary
+
+| Category | Requirements | With Tests | With Risks | Gaps |
+|----------|-------------|-----------|-----------|------|
+| Biocompatibility | {N} | {N} | {N} | {N} |
+| Sterilization | {N} | {N} | {N} | {N} |
+| Performance | {N} | {N} | {N} | {N} |
+| Clinical | {N} | {N} | {N} | {N} |
+| **Total** | **{N}** | **{N}** | **{N}** | **{N}** |
+
+## Gaps Requiring Attention
+
+{For each requirement without a mapped test:}
+- **{Req ID}**: {Requirement} — No test or evidence mapped.
+  → Recommendation: {specific action}
+
+## Risk-to-Requirement Mapping
+
+{For each risk without a mapped requirement:}
+- **{Risk ID}**: {Risk} — Identified from {source} but no formal requirement addresses it.
+  → Recommendation: {specific action}
+```
+
+## Step 6: Write Output
+
+Write to `$PROJECTS_DIR/$PROJECT_NAME/traceability_matrix.md` (or specified output).
+
+Also write `traceability_matrix.json` for programmatic use:
+
+```json
+{
+  "version": 1,
+  "generated_at": "2026-02-05T12:00:00Z",
+  "project": "PROJECT_NAME",
+  "requirements": [...],
+  "risks": [...],
+  "tests": [...],
+  "traces": [
+    {"requirement": "REQ-BIOCOMPAT-001", "risk": "RISK-001", "test": "TEST-BIOCOMPAT-001", "status": "PLANNED"}
+  ],
+  "gaps": [...]
+}
+```
+
+## Error Handling
+
+- **No project**: ERROR: "Project name required."
+- **No guidance data**: Generate matrix from cross-cutting requirements only. Note: "Run /fda:guidance first for device-specific requirements."
+- **No safety data**: Generate matrix without risk mapping. Note: "Run /fda:safety for risk identification from MAUDE data."
+- **No test plan**: Generate requirements and risks, mark all tests as "NOT PLANNED". Note: "Run /fda:test-plan for test planning."

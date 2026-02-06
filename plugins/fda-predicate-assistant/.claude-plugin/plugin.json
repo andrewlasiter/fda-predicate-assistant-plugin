@@ -1,6 +1,6 @@
 {
   "name": "fda-predicate-assistant",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "FDA 510(k) predicate extraction, analysis, and autonomous submission planning assistant for medical device regulatory workflows",
   "author": {
     "name": "PredicateExtraction"

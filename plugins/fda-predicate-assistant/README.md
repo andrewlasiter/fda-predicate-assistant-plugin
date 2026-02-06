@@ -33,6 +33,8 @@ A Claude Code plugin that helps you navigate FDA 510(k) submissions. It finds pr
 | `/fda:analyze` | Statistics and patterns across your extraction results |
 | `/fda:summarize` | Compare sections (testing, IFU, device description) across devices |
 | `/fda:ask` | Natural language Q&A about FDA regulatory topics |
+| `/fda:literature` | PubMed/WebSearch literature review with gap analysis vs guidance |
+| `/fda:lineage` | Trace predicate citation chains across generations with health scoring |
 
 ### Planning and Decision Support
 
@@ -42,12 +44,15 @@ A Claude Code plugin that helps you navigate FDA 510(k) submissions. It finds pr
 | `/fda:test-plan` | Generate a risk-based testing plan with gap analysis |
 | `/fda:pccp` | Generate a Predetermined Change Control Plan (AI/ML devices) |
 | `/fda:monitor` | Watch FDA databases for new clearances, recalls, and MAUDE events |
+| `/fda:draft` | Generate regulatory prose for submission sections with citations |
 
-### Assembly and Management
+### Assembly, Validation, and Management
 
 | Command | Purpose |
 |---------|---------|
 | `/fda:assemble` | Assemble an eSTAR-structured submission package from project data |
+| `/fda:traceability` | Requirements Traceability Matrix (guidance → risks → tests → evidence) |
+| `/fda:consistency` | Cross-document consistency validation across project files |
 | `/fda:portfolio` | Cross-project dashboard — shared predicates, common guidance, timelines |
 | `/fda:configure` | Set up API keys, data paths, and preferences |
 | `/fda:status` | Check what data you have and what's available |

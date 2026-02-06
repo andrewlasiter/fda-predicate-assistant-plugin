@@ -295,7 +295,16 @@ Tip: Provide --intended-use "your IFU text" to auto-generate this table.
 
 ### Placeholder Resolution
 
-Before generating the outline, resolve all template placeholders:
+Before generating the outline, resolve all template placeholders using this priority system:
+
+#### Full-Auto Validation
+
+**If `--full-auto` is active:**
+- `--device-description` and `--intended-use` are **REQUIRED**. If either is missing:
+  - If `--project` is provided: attempt to synthesize from `query.json` product_codes + openFDA classification data (device name, definition, regulation). Log: "Synthesized device description from openFDA classification for {product_code}."
+  - If synthesis fails or no `--project`: **ERROR**: "In --full-auto mode, --device-description and --intended-use are required. Provide both arguments or use --project with product code data for auto-synthesis."
+
+#### Standard Placeholder Rules
 
 **If `--device-description` provided:**
 - Populate the Device Description section with the provided text
@@ -309,7 +318,9 @@ Before generating the outline, resolve all template placeholders:
 - Populate gap analysis from guidance_cache
 - Populate standards from guidance requirements matrix
 
-**Remaining unknowns** should use `[TODO: Company-specific — {description}]` format, NOT `[INSERT: ...]`.
+#### Final Placeholder Conversion
+
+**ALL remaining `[INSERT: ...]` placeholders** MUST be converted to `[TODO: Company-specific — {description}]` before writing the output file. No `[INSERT: ...]` placeholders should survive in the final output. This ensures users can clearly distinguish auto-filled content from items requiring human input.
 
 Write the complete submission outline document:
 
@@ -434,6 +445,16 @@ FDA data and guidance documents. It is a planning tool — not a regulatory
 submission. Review with your regulatory affairs team. Verify all section
 requirements against current FDA guidance. This is not regulatory advice.
 ```
+
+## Audit Logging
+
+After generating the submission outline, write audit log entries per `references/audit-logging.md`:
+
+- For each resolved placeholder: write a `placeholder_resolved` entry
+- For each remaining placeholder converted: write a `placeholder_converted` entry
+- At completion: write a `document_generated` entry with the output file path and section applicability summary
+
+Append all entries to `$PROJECTS_DIR/$PROJECT_NAME/audit_log.jsonl`.
 
 ## Step 6: Write Output
 

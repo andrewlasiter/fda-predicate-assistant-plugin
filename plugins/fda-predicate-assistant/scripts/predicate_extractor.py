@@ -61,36 +61,43 @@ def download_and_parse_csv(urls, pma_url, data_dir=None):
         if not os.path.exists(filename):
             missing_files.append(filename)
 
+    # Check if running in headless mode (--headless flag or --directory provided)
+    is_headless = '--headless' in sys.argv or '--directory' in sys.argv or '-d' in sys.argv
+
     if missing_files:
-        print("\n" + "="*60)
-        print("DOWNLOAD ISSUE DETECTED")
-        print("="*60)
-        print("The automated download is being blocked by FDA's servers.")
-        print("This is likely due to anti-bot protection.")
-        print("\nMissing files:")
-        for filename in missing_files:
-            corresponding_url = None
-            if filename == 'pma.txt':
-                corresponding_url = pma_url
-            else:
-                for url in urls:
-                    if url.split('/')[-1].replace('.zip', '.txt') == filename:
-                        corresponding_url = url
-                        break
-            print(f"  - {filename} (from {corresponding_url})")
+        if is_headless:
+            # In headless mode: skip manual instructions, just attempt download
+            print(f"Missing {len(missing_files)} FDA database file(s). Attempting automated download...")
+        else:
+            print("\n" + "="*60)
+            print("DOWNLOAD ISSUE DETECTED")
+            print("="*60)
+            print("The automated download is being blocked by FDA's servers.")
+            print("This is likely due to anti-bot protection.")
+            print("\nMissing files:")
+            for filename in missing_files:
+                corresponding_url = None
+                if filename == 'pma.txt':
+                    corresponding_url = pma_url
+                else:
+                    for url in urls:
+                        if url.split('/')[-1].replace('.zip', '.txt') == filename:
+                            corresponding_url = url
+                            break
+                print(f"  - {filename} (from {corresponding_url})")
 
-        print("\nPLEASE MANUALLY DOWNLOAD these files:")
-        print("1. Open each URL in your web browser")
-        print("2. Download the .zip files")
-        print("3. Extract them to this directory:")
-        print(f"   {os.getcwd()}")
-        print("4. Re-run this script")
-        print("\nURLs to download:")
-        for url in urls + [pma_url]:
-            print(f"  {url}")
-        print("="*60)
+            print("\nPLEASE MANUALLY DOWNLOAD these files:")
+            print("1. Open each URL in your web browser")
+            print("2. Download the .zip files")
+            print("3. Extract them to this directory:")
+            print(f"   {os.getcwd()}")
+            print("4. Re-run this script")
+            print("\nURLs to download:")
+            for url in urls + [pma_url]:
+                print(f"  {url}")
+            print("="*60)
 
-        print("\nAttempting automated download with delays...")
+            print("\nAttempting automated download with delays...")
 
     for i, url in enumerate(urls):
         filename = url.split('/')[-1].replace('.zip', '.txt')
@@ -176,13 +183,17 @@ def download_and_parse_csv(urls, pma_url, data_dir=None):
         print(f"Warning: Could not download or find file {pma_filename}")
 
     if not csv_data and not knumbers and not pma_numbers:
-        print("\n" + "!"*60)
-        print("WARNING: No FDA database files were loaded!")
-        print("The script will still process PDFs but won't be able to:")
-        print("- Validate K-numbers, P-numbers, or N-numbers")
-        print("- Identify product codes")
-        print("- Classify devices as predicates vs reference devices")
-        print("!"*60)
+        if is_headless:
+            print("ERROR: No FDA database files loaded. Cannot validate device numbers in headless mode.")
+            sys.exit(2)
+        else:
+            print("\n" + "!"*60)
+            print("WARNING: No FDA database files were loaded!")
+            print("The script will still process PDFs but won't be able to:")
+            print("- Validate K-numbers, P-numbers, or N-numbers")
+            print("- Identify product codes")
+            print("- Classify devices as predicates vs reference devices")
+            print("!"*60)
 
     if data_dir:
         os.chdir(original_cwd)

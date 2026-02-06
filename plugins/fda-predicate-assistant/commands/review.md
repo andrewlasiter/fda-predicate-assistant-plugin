@@ -451,9 +451,11 @@ Full-Auto Review Results:
   Total: {N} predicates processed with 0 user interactions
 ```
 
-**Important**: When `--full-auto` is active, skip the entire "Interactive review" subsection. Do NOT present individual predicate cards or call AskUserQuestion.
+**CRITICAL**: When `--full-auto` is active, proceed directly to **Step 6: Write Outputs**. Do NOT enter the "Interactive review" subsection below. Do NOT present individual predicate cards. Do NOT call AskUserQuestion under any circumstances. All decisions have been made deterministically above.
 
-### Interactive review
+### If NOT --full-auto mode: Interactive review
+
+**IMPORTANT: This entire subsection is SKIPPED when `--full-auto` is active.** The `--full-auto` path above handles all decisions deterministically. Only enter this block for `--auto` (partial) or default (fully interactive) modes.
 
 For each predicate that needs manual review (or all predicates if `--auto` not set), present:
 
@@ -499,6 +501,16 @@ If the user accepts or rejects, ask for optional rationale:
 Optional: Add a note about your decision for K234567?
 (Press Enter to skip, or type your rationale)
 ```
+
+## Audit Logging
+
+After all predicate decisions are made, write audit log entries per `references/audit-logging.md`:
+
+- For each predicate decision: write a `predicate_accepted`, `predicate_rejected`, or `predicate_deferred` entry with the score, rationale, and data sources used
+- For each reclassification: write a `predicate_reclassified` entry
+- At completion: write a `review_completed` entry with summary counts
+
+Append all entries to `$PROJECTS_DIR/$PROJECT_NAME/audit_log.jsonl`.
 
 ## Step 6: Write Outputs
 
