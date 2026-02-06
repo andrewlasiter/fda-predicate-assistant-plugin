@@ -10,14 +10,21 @@ AI-powered tools for FDA medical device regulatory work. Built for regulatory af
 
 ## Install
 
-In Claude Code or Claude Desktop, type:
+From your terminal:
+
+```bash
+claude plugin marketplace add andrewlasiter/fda-predicate-assistant-plugin
+claude plugin install fda-predicate-assistant@fda-tools
+```
+
+Or from inside a Claude Code or Claude Desktop session:
 
 ```
 /plugin marketplace add andrewlasiter/fda-predicate-assistant-plugin
 /plugin install fda-predicate-assistant@fda-tools
 ```
 
-Start a new session to load the plugin.
+Start a new session after installing to load the plugin.
 
 ## What You Can Do
 

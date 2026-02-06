@@ -14,43 +14,33 @@ From predicate research to eSTAR assembly — 26 commands that handle the data w
 
 ## Installation
 
-### Claude Code (CLI)
+### From your terminal
 
-Open Claude Code, then type these two commands:
+```bash
+claude plugin marketplace add andrewlasiter/fda-predicate-assistant-plugin
+claude plugin install fda-predicate-assistant@fda-tools
+```
+
+### From inside a Claude Code or Claude Desktop session
 
 ```
 /plugin marketplace add andrewlasiter/fda-predicate-assistant-plugin
 /plugin install fda-predicate-assistant@fda-tools
 ```
 
-Start a new session to load the plugin.
-
-### Claude Desktop
-
-In the Claude Desktop chat window, type the same two commands:
-
-```
-/plugin marketplace add andrewlasiter/fda-predicate-assistant-plugin
-/plugin install fda-predicate-assistant@fda-tools
-```
-
-Restart the session after installing.
+Start a new session after installing to load the plugin.
 
 ### Co-work / Autonomous Sessions
 
-Co-work uses your existing plugin installation — install from Claude Code or Desktop first (steps above). Once installed, the plugin is automatically available in all Co-work sessions.
-
-Use the `--full-auto` flag so the pipeline runs without prompts:
-
-```
-/fda:pipeline OVE --project my-device --full-auto \
-  --device-description "Cervical interbody fusion cage" \
-  --intended-use "For fusion of the cervical spine"
-```
+Co-work uses your existing plugin installation — install using either method above first. Once installed, the plugin is automatically available in all Co-work sessions.
 
 ### Verify It Works
 
-Type `/fda:status` — you should see a summary of available FDA data files, script availability, and record counts.
+```
+/fda:status
+```
+
+You should see a summary of available FDA data files, script availability, and record counts.
 
 ---
 
