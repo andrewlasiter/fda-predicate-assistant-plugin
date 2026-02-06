@@ -1,5 +1,29 @@
 # Changelog
 
+## [4.1.1] - 2026-02-06
+
+### Fixed
+- LYZ product code removed from wound dressing list in section-patterns.md (LYZ is "Vinyl Patient Examination Glove", not a wound dressing)
+- plugin.json version aligned from 4.0.0 to 4.1.1
+- All command/agent/reference version strings bumped from v4.1.0 to v4.1.1
+
+## [4.1.0] - 2026-02-06
+
+### Changed
+- Retired "Level of Concern" references (concept retired by FDA)
+- eSTAR mandatory date corrected to October 1, 2023
+- `/fda:test-plan` expanded to 11+ device types with device-specific test batteries
+- `/fda:pccp` updated with real examples and expanded guidance
+
+### Added
+- Basic/Enhanced performance framework for software devices
+- MDUFA V fee schedule references
+- PubMed E-utilities integration in `/fda:literature`
+- Section 524B cybersecurity requirements in `/fda:safety` and `/fda:assemble`
+- DEN number handling in `/fda:validate`
+- Peer device benchmarking in `/fda:research`
+- 5 new skill references: rta-checklist, pubmed-api, special-controls, clinical-data-framework, post-market-requirements
+
 ## [4.0.0] - 2026-02-05
 
 ### Added — Tier 1: Full Autonomy Fixes
