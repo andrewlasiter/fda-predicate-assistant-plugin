@@ -105,18 +105,25 @@ Per FDA guidance "Recommended Content of a Traditional 510(k) Submission":
     14b. Material Characterization
     14c. ISO 10993 Test Reports (or summaries)
 15. Software Documentation (if applicable)
-    15a. Level of Concern
+    15a. Software Documentation Level (Basic or Enhanced)
     15b. Software Description
     15c. Software Risk Analysis
-    15d. Software Requirements Specification (SRS)
-    15e. Architecture Design Chart
-    15f. Software Design Specification (SDS)
-    15g. Traceability Analysis
+    15d. Software Requirements Specification (SRS) [Enhanced only]
+    15e. Architecture Design Chart [Enhanced only]
+    15f. Software Design Specification (SDS) [Enhanced only]
+    15g. Traceability Analysis [Enhanced only]
     15h. Software Development Environment Description
     15i. V&V Documentation
-    15j. Revision Level History
+    15j. Revision Level History [Enhanced only]
     15k. Unresolved Anomalies (Bug List)
     15l. Cybersecurity Documentation (if connected/networked)
+    Note: Per FDA guidance "Content of Premarket Submissions for
+    Device Software Functions" (Sep 2023), the previous "Level of
+    Concern" framework (Minor/Moderate/Major) has been retired and
+    replaced with a two-tier documentation level: Basic or Enhanced.
+    Basic-level documentation applies to most lower-risk software;
+    Enhanced requires additional detail (SRS, architecture, SDS,
+    traceability, revision history).
 16. Electromagnetic Compatibility (EMC) and Electrical Safety (if applicable)
     16a. IEC 60601-1 Compliance
     16b. IEC 60601-1-2 EMC Test Report

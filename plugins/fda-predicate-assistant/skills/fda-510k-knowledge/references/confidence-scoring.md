@@ -62,7 +62,7 @@ How recently was this device cleared/approved?
 | > 15 years | 2 | Very old — consider finding a more recent alternative |
 | Unknown date | 5 | Cannot determine age (default to moderate) |
 
-**Calculate from**: Decision date in `pmn*.txt` flat files or openFDA `/device/510k` endpoint `decision_date` field.
+**Calculate from**: Decision date in `pmn*.txt` flat files or openFDA `/device/510k` endpoint `decision_date` field. For DEN-prefixed numbers, use the openFDA `/device/denovo` endpoint (DEN numbers are not in `pmn*.txt` files).
 
 ### 5. Clean Regulatory History (10 points)
 
@@ -104,6 +104,8 @@ Risk flags are independent of the confidence score. A device can have a high con
 | `EXCLUDED` | Device is on the user's exclusion list | Local `exclusion_list.json` file | USER |
 | `STATEMENT_ONLY` | Only a 510(k) Statement filed (no Summary — limited public data) | `statement_or_summary` field | LOW |
 | `SUPPLEMENT` | Device number has a supplement suffix (e.g., K123456/S001) | Number format check | LOW |
+| `DEN_DEVICE` | Device is a De Novo authorization (DEN-prefix) — first-generation, no predicate chain | `/device/denovo` endpoint or number format | INFO |
+| `DEN_NO_PREDICATES` | De Novo device had no predicate by definition — chain starts here | De Novo classification | INFO |
 
 ### Flag Display Format
 
@@ -158,6 +160,13 @@ The extraction script (`predicate_extractor.py`) classifies devices based on pro
 | (new device found) | Yes | — | **Predicate** (new finding from SE section) |
 | (new device found) | No | Yes | **Reference** (new finding from general text) |
 
+### DEN Number Handling
+
+DEN-prefixed device numbers require special treatment:
+- **Lookup**: Use openFDA `/device/denovo` endpoint (not `/device/510k`). DEN numbers do not appear in `pmn*.txt` flat files.
+- **Reclassification**: DEN devices are valid predicates for subsequent 510(k) submissions. If a DEN number is found in an SE section, classify it as a predicate.
+- **No chain penalty**: De Novo devices are by definition chain starters — they had no predicate. Do not penalize chain depth = 0 for DEN devices (see Extended Scoring below).
+
 This reclassification uses the same SE_HEADER + SE_WINDOW=2000 + SE_WEIGHT=3x logic proven in `research.md`.
 
 ## Extended Scoring Components (v2.1)
@@ -174,6 +183,7 @@ Predicates with longer citation chains are more defensible — they represent es
 | 2 generations (cited by at least 1 device as predicate) | +3 | Moderate lineage |
 | 1 generation (cited but not as predicate by others) | +1 | Minimal lineage |
 | 0 (not cited by any other device) | +0 | No chain evidence |
+| DEN device (chain starter by definition — De Novo had no predicate) | +3 | Chain origin — no penalty for depth=0 |
 
 ### SE Table Presence Score (+5 pts max)
 

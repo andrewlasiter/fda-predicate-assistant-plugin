@@ -12,46 +12,105 @@ Changes to recognized standards can affect:
 
 ## Key Standard Families for Medical Devices
 
-### Biocompatibility (ISO 10993 series)
+### Quality Management
 | Standard | Title | Key for |
 |----------|-------|---------|
-| ISO 10993-1 | Biological evaluation framework | All devices |
-| ISO 10993-5 | Cytotoxicity | All patient-contact |
-| ISO 10993-10 | Sensitization and irritation | All patient-contact |
-| ISO 10993-11 | Systemic toxicity | Implants, prolonged contact |
-| ISO 10993-12 | Sample preparation | Test methodology |
-
-### Sterilization
-| Standard | Title | Key for |
-|----------|-------|---------|
-| ISO 11135 | EO sterilization | Most sterile devices |
-| ISO 11137 | Radiation sterilization | Alternative method |
-| ISO 17665 | Moist heat sterilization | Reusable devices |
-
-### Electrical Safety
-| Standard | Title | Key for |
-|----------|-------|---------|
-| IEC 60601-1 | General safety | All powered devices |
-| IEC 60601-1-2 | EMC | All powered devices |
-| IEC 62304 | Software lifecycle | Software devices |
-| IEC 62366 | Usability engineering | All devices |
+| ISO 13485:2016 | Medical devices — Quality management systems | All medical device manufacturers (foundational QMS standard) |
+| 21 CFR 820 | Quality System Regulation (cGMP) | US market requirement for all manufacturers |
 
 ### Risk Management
 | Standard | Title | Key for |
 |----------|-------|---------|
-| ISO 14971 | Risk management | All devices |
+| ISO 14971:2019 | Application of risk management to medical devices | All devices — required by virtually all submissions |
 
-### Packaging & Aging
+### Biocompatibility (ISO 10993 series)
 | Standard | Title | Key for |
 |----------|-------|---------|
-| ASTM F1980 | Accelerated aging | Devices with shelf life |
-| ISO 11607 | Packaging for sterile devices | Sterile devices |
+| ISO 10993-1:2018 | Biological evaluation — Part 1: Evaluation and testing framework | All patient-contacting devices |
+| ISO 10993-3:2014 | Tests for genotoxicity, carcinogenicity, and reproductive toxicity | Implants, prolonged contact |
+| ISO 10993-4:2017 | Selection of tests for interactions with blood | Blood-contacting devices |
+| ISO 10993-5:2009 | Tests for in vitro cytotoxicity | All patient-contacting devices |
+| ISO 10993-6:2016 | Tests for local effects after implantation | Implantable devices |
+| ISO 10993-7:2008 | EO sterilization residuals | EO-sterilized devices |
+| ISO 10993-10:2021 | Tests for sensitization and irritation | All patient-contacting devices |
+| ISO 10993-11:2017 | Tests for systemic toxicity | Implants, prolonged contact |
+| ISO 10993-12:2021 | Sample preparation and reference materials | Test methodology (all bio testing) |
+| ISO 10993-17:2023 | Toxicological risk assessment of medical device constituents | Chemical characterization |
+| ISO 10993-18:2020 | Chemical characterization of materials | Material characterization |
+
+### Sterilization
+| Standard | Title | Key for |
+|----------|-------|---------|
+| ISO 11135:2014 | EO sterilization — requirements for validation | Most sterile devices |
+| ISO 11137-1:2006/A2:2019 | Radiation sterilization — requirements | Alternative sterilization method |
+| ISO 11137-2:2013 | Radiation sterilization — establishing dose | Dose setting/substantiation |
+| ISO 17665-1:2006 | Moist heat sterilization — requirements | Reusable devices, steam sterilization |
+| ISO 11737-1:2018 | Bioburden determination | All sterile devices (pre-sterilization bioburden) |
+| ISO 11737-2:2019 | Sterility testing | Sterility test validation |
+
+### Electrical Safety (IEC 60601 family)
+| Standard | Title | Key for |
+|----------|-------|---------|
+| IEC 60601-1:2005+A1:2012+A2:2020 | General requirements for basic safety and essential performance | All powered medical devices |
+| IEC 60601-1-2:2014+A1:2020 | EMC — requirements and tests | All powered medical devices |
+| IEC 60601-1-6:2010+A1:2013+A2:2020 | Usability | All powered medical devices |
+| IEC 60601-1-8:2006+A1:2012+A2:2020 | Alarm systems — general requirements | Devices with alarm functions |
+| IEC 60601-1-11:2015+A1:2020 | Home healthcare environment | Devices intended for home use |
+| IEC 60601-1-12:2014+A1:2020 | Emergency medical services environment | EMS/transport devices |
+
+#### Key IEC 60601-2-* Particular Standards
+| Standard | Title | Key for |
+|----------|-------|---------|
+| IEC 60601-2-24:2012 | Infusion pumps and controllers | Infusion devices |
+| IEC 60601-2-25:2011 | Electrocardiographs | ECG devices |
+| IEC 60601-2-27:2011 | Electrocardiographic monitoring equipment | Patient monitors |
+| IEC 60601-2-34:2011 | Invasive blood pressure monitoring | Blood pressure devices |
+| IEC 60601-2-47:2012 | Ambulatory electrocardiographic systems | Holter monitors |
+
+### Software
+| Standard | Title | Key for |
+|----------|-------|---------|
+| IEC 62304:2006+A1:2015 | Medical device software — Software lifecycle | All software-containing devices |
+| IEC 82304-1:2016 | Health software — General requirements | Standalone health software |
+
+### Usability / Human Factors
+| Standard | Title | Key for |
+|----------|-------|---------|
+| IEC 62366-1:2015+A1:2020 | Medical devices — Usability engineering | All devices with user interface |
 
 ### Cybersecurity
 | Standard | Title | Key for |
 |----------|-------|---------|
-| AAMI TIR57 | Cybersecurity risk management | Connected devices |
-| IEC 81001-5-1 | Health software security | Software devices |
+| AAMI TIR57:2016/(R)2022 | Cybersecurity risk management for medical devices | Connected devices |
+| IEC 81001-5-1:2021 | Health software — security | Software devices |
+| IEC 62443-4-1:2018 | Secure product development lifecycle | Network-connected devices |
+| UL 2900-1 | Software cybersecurity — general | Voluntary, recognized by FDA |
+
+### Packaging & Aging
+| Standard | Title | Key for |
+|----------|-------|---------|
+| ASTM F1980 | Standard guide for accelerated aging | Devices with shelf life |
+| ISO 11607-1:2019 | Packaging for terminally sterilized medical devices — Part 1: Requirements | Sterile devices |
+| ISO 11607-2:2019 | Packaging — Part 2: Validation for forming, sealing, and assembly | Sterile devices |
+
+### Labeling
+| Standard | Title | Key for |
+|----------|-------|---------|
+| ISO 15223-1:2021 | Medical devices — Symbols to be used with information — Part 1 | All device labeling with symbols |
+| IEC 60417 (DB) | Graphical symbols for use on equipment | Powered device labeling |
+| ISO 20417:2021 | Information to be supplied by the manufacturer | All device labeling |
+
+### Clinical Investigation
+| Standard | Title | Key for |
+|----------|-------|---------|
+| ISO 14155:2020 | Clinical investigation of medical devices for human subjects | Any clinical study for devices |
+
+### IVD-Specific
+| Standard | Title | Key for |
+|----------|-------|---------|
+| ISO 15189:2022 | Medical laboratories — Requirements for quality and competence | IVD/clinical laboratory devices |
+| ISO 18113-1:2022 | IVD medical devices — Information supplied by manufacturer — Part 1 | IVD labeling |
+| ISO 15197:2013 | IVD — Requirements for blood-glucose monitoring systems | Glucose monitors |
 
 ## Monitor --watch-standards Usage
 

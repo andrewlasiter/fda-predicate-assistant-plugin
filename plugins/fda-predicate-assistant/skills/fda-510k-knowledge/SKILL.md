@@ -61,7 +61,7 @@ A 510(k) is a premarket submission made to FDA to demonstrate that a device is *
 **Key points:**
 - Required for most Class II devices and some Class I devices
 - Submission must establish substantial equivalence to a predicate
-- FDA has 90 days to review (standard) or 30 days (special 510(k))
+- FDA targets 90 days for review (MDUFA performance goal, not a legal deadline) or 30 days (special 510(k))
 - Clearance allows commercial distribution in the US
 
 ### Predicate Device
@@ -117,7 +117,7 @@ Not all cited devices are predicates. Reference devices may be cited for:
 ### K-Numbers (510(k))
 - Format: K + 6 digits (e.g., K240717)
 - First 2 digits = fiscal year
-- K24xxxx = cleared in FY2024
+- K24xxxx = assigned in FY2024 (FDA fiscal year starts October 1; K-number is assigned at submission, not clearance)
 
 ### P-Numbers (PMA)
 - Format: P + 6 digits (e.g., P190001)
@@ -140,9 +140,10 @@ FDA assigns 3-letter product codes indicating:
 - Regulation number
 
 Examples:
-- **DXY**: Cardiovascular diagnostic devices
-- **FRN**: Dental devices
-- **LYZ**: Orthopedic implants
+- **QAS**: Picture Archiving and Communications System (PACS) — Radiology panel
+- **DQY**: Percutaneous Transluminal Coronary Balloon Catheter — Cardiovascular panel
+- **HQF**: Orthodontic Bracket — Dental panel
+- **OVE**: Intervertebral Fusion Device — Orthopedic panel
 
 ## Common Extraction Issues
 
@@ -271,27 +272,32 @@ Each step builds on previous data but degrades gracefully if run independently.
 | `/fda:configure` | Set up API keys, data paths, and preferences |
 | `/fda:status` | Check what data you have and what's available |
 
-## Resources (18 references)
+## Resources (23 references)
 
 For detailed reference information, see:
 - `references/output-formatting.md` - FDA Professional CLI output formatting guide (rules R1-R12)
 - `references/openfda-api.md` - openFDA Device API reference (all 7 endpoints)
 - `references/device-classes.md` - Device classification details
-- `references/predicate-types.md` - Predicate selection guidance
+- `references/predicate-types.md` - Predicate selection and defensibility guidance
 - `references/common-issues.md` - Troubleshooting extraction problems
 - `references/section-patterns.md` - PDF section detection patterns
-- `references/confidence-scoring.md` - Predicate confidence scoring algorithm
+- `references/confidence-scoring.md` - Predicate confidence scoring algorithm (with DEN handling)
 - `references/guidance-lookup.md` - FDA guidance document lookup reference
 - `references/submission-structure.md` - 510(k) submission structure and Pre-Sub format
 - `references/path-resolution.md` - Plugin root resolution patterns
-- `references/estar-structure.md` - eSTAR section structure and applicability matrix
-- `references/pathway-decision-tree.md` - Regulatory pathway decision flow and scoring
-- `references/test-plan-framework.md` - ISO 14971 risk categories and device-type test lists
-- `references/pccp-guidance.md` - FDA PCCP guidance overview and modification categories
+- `references/estar-structure.md` - eSTAR section structure, mandatory filing date, and applicability matrix
+- `references/pathway-decision-tree.md` - Regulatory pathway decision flow, scoring, exemptions, and breakthrough designation
+- `references/test-plan-framework.md` - ISO 14971 risk categories and device-type test lists (10+ device types)
+- `references/pccp-guidance.md` - FDA PCCP guidance, regulatory citations, and real-world examples
 - `references/audit-logging.md` - JSONL audit log schema and pipeline consolidated log
 - `references/predicate-lineage.md` - Chain Health Scoring and lineage patterns
-- `references/standards-tracking.md` - FDA recognized consensus standards tracking
-- `references/cybersecurity-framework.md` - Cybersecurity documentation framework and templates
+- `references/standards-tracking.md` - FDA recognized consensus standards tracking (with version numbers)
+- `references/cybersecurity-framework.md` - Cybersecurity documentation framework, Section 524B, and templates
+- `references/rta-checklist.md` - Refuse to Accept (RTA) checklist and prevention guide
+- `references/pubmed-api.md` - NCBI E-utilities API reference for structured PubMed searches
+- `references/special-controls.md` - Class II special controls identification and conformance
+- `references/clinical-data-framework.md` - Clinical data decision tree and evidence types
+- `references/post-market-requirements.md` - Post-market obligations (MDR, recalls, registration, surveillance)
 
 ## Disclaimers (always include when providing regulatory guidance)
 

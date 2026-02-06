@@ -184,6 +184,41 @@ For each modification implemented under this PCCP:
 > Verify independently. Not regulatory advice.
 ```
 
+## Example Output: CADe SaMD for Diabetic Retinopathy Screening
+
+Below is an example of populated PCCP tables for a Computer-Aided Detection (CADe) SaMD:
+
+**Modification Table Example:**
+
+| Category | Description | Risk Impact | Validation Approach |
+|----------|-------------|-------------|---------------------|
+| Algorithm retraining | Retraining with expanded dataset (new imaging devices, demographics) | Medium | Performance on locked test set must meet or exceed baseline |
+| Architecture update | Replace CNN backbone (e.g., ResNet-50 → EfficientNet-B4) | Medium | Full analytical validation + clinical validation subset |
+| Threshold adjustment | Adjust sensitivity/specificity operating point within defined range | Low | Performance on locked test set, clinical impact analysis |
+| Input expansion | Add support for new fundus camera models | Low | Cross-device equivalence testing on paired images |
+
+**V&V Table Example:**
+
+| Test | Method | Acceptance Criteria | Frequency |
+|------|--------|---------------------|-----------|
+| Analytical accuracy | Locked test set (N=1000, demographically balanced) | Sensitivity ≥ 87%, Specificity ≥ 90% | Per algorithm change |
+| Clinical validation | Retrospective reader study (3 ophthalmologists, N=500) | AUC ≥ 0.95 | Per major architecture change |
+| Bias assessment | Stratified performance by age, sex, ethnicity, camera model | No subgroup sensitivity < 80% | Per retraining |
+| Regression testing | Prior version test cases pass at equal or better rate | ≤ 2% regression on any metric | Per any change |
+
+**Boundary Definition Example:**
+
+Changes WITHIN this PCCP scope:
+- Retraining on fundus images from FDA-cleared camera models
+- Architecture modifications that maintain input/output format
+- Sensitivity threshold adjustment within 85-95% range
+
+Changes OUTSIDE this PCCP scope (require new submission):
+- Adding new imaging modalities (e.g., OCT)
+- Expanding to new disease detection (beyond diabetic retinopathy)
+- Changing from screening aid to autonomous diagnosis
+- Performance below minimum acceptance criteria on any metric
+
 ## Step 4: Write Output
 
 Default path: `$PROJECTS_DIR/$PROJECT_NAME/pccp_plan.md`

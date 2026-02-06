@@ -185,9 +185,22 @@ Store the classification data — you'll need `device_name`, `device_class`, `re
 
 **Skip for `--offline` mode (use cache) or `--depth quick`.**
 
-### WebSearch for guidance documents
+### 2A: Structured FDA Guidance Database Search
 
-Run targeted searches using the classification data:
+First, try the FDA's searchable guidance database using structured URL patterns:
+
+```
+WebFetch: url="https://www.fda.gov/medical-devices/device-advice-comprehensive-regulatory-assistance/guidance-documents-medical-devices-and-radiation-emitting-products" prompt="Find guidance documents related to regulation number {regulation_number} or device type {device_name}. List each guidance title, status (final/draft), and date."
+```
+
+If the regulation number is known, also search:
+```
+WebFetch: url="https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfCFR/CFRSearch.cfm?fr={regulation_number}" prompt="Extract the device classification name, class, and any referenced special controls or guidance documents from this CFR section."
+```
+
+### 2B: WebSearch Fallback
+
+If structured search returns no results or is insufficient, fall back to WebSearch:
 
 **Query 1** (always): Regulation-specific guidance
 ```
@@ -339,7 +352,7 @@ Use the standard FDA Professional CLI format (see `references/output-formatting.
   FDA Guidance Analysis
   {PRODUCT_CODE} — {DEVICE_NAME}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Class: {class} | 21 CFR {regulation} | v4.0.0
+  Generated: {date} | Class: {class} | 21 CFR {regulation} | v4.1.0
 
 DEVICE CLASSIFICATION
 ────────────────────────────────────────

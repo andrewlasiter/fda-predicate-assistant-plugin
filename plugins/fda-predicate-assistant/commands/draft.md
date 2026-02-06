@@ -29,7 +29,9 @@ echo "FDA_PLUGIN_ROOT=$FDA_PLUGIN_ROOT"
 
 ---
 
-You are generating regulatory prose drafts for specific sections of a 510(k) submission. Unlike outline/template commands, this produces actual submission-quality text with citations.
+You are generating regulatory prose drafts for specific sections of a 510(k) submission. Unlike outline/template commands, this produces first-draft regulatory prose that requires professional review, verification, and refinement before submission.
+
+> **WARNING: LLM-generated prose carries confabulation risk.** Every factual claim, citation, and regulatory reference in the output must be independently verified by a qualified regulatory affairs professional before use in any submission. `[Source: ...]` tags reference internal plugin data files, not authoritative regulatory citations.
 
 **KEY PRINCIPLE: Every claim must cite its source.** Use project data (review.json, guidance_cache, se_comparison.md) to substantiate every assertion. Mark unverified claims as `[CITATION NEEDED]`.
 
@@ -142,7 +144,7 @@ Generates the full 510(k) Summary (per 21 CFR 807.92) — combines device descri
 3. **DRAFT disclaimer**: Every generated section starts with:
    ```
    ⚠ DRAFT — AI-generated regulatory prose. Review with regulatory affairs team before submission.
-   Generated: {date} | Project: {name} | Plugin: fda-predicate-assistant v4.0.0
+   Generated: {date} | Project: {name} | Plugin: fda-predicate-assistant v4.1.0
    ```
 4. **Unverified claims**: Anything that cannot be substantiated from project data gets `[CITATION NEEDED]` or `[TODO: Company-specific — verify]`.
 5. **No fabrication**: Never invent test results, clinical data, or device specifications. If data isn't available, say so.

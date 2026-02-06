@@ -87,28 +87,132 @@ search_terms["safety_terms"] = [
 
 ## Step 2: Execute Searches
 
-### PubMed via WebSearch
+### 2A: PubMed via NCBI E-utilities API (Clinical Evidence)
 
-For each search category, run targeted WebSearch queries:
+Use the NCBI E-utilities API for structured, reproducible PubMed searches. See `references/pubmed-api.md` for endpoint details and MeSH term mapping.
 
-**Clinical evidence**:
+**Check for NCBI API key** (optional — increases rate limit from 3 to 10 requests/sec):
+
+```bash
+python3 << 'PYEOF'
+import os, re
+ncbi_key = os.environ.get('NCBI_API_KEY')
+if not ncbi_key:
+    settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+    if os.path.exists(settings_path):
+        with open(settings_path) as f:
+            m = re.search(r'ncbi_api_key:\s*(\S+)', f.read())
+            if m and m.group(1) != 'null':
+                ncbi_key = m.group(1)
+print(f"NCBI_KEY:{'yes' if ncbi_key else 'no'}")
+PYEOF
+```
+
+**Search PubMed using E-utilities:**
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re, time, xml.etree.ElementTree as ET
+
+# Get NCBI API key
+ncbi_key = os.environ.get('NCBI_API_KEY')
+if not ncbi_key:
+    settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+    if os.path.exists(settings_path):
+        with open(settings_path) as f:
+            m = re.search(r'ncbi_api_key:\s*(\S+)', f.read())
+            if m and m.group(1) != 'null':
+                ncbi_key = m.group(1)
+
+device_name = "DEVICE_NAME"  # Replace from Step 1
+intended_use = "INTENDED_USE"  # Replace or empty
+
+base_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
+
+def esearch(query, retmax=20):
+    """Search PubMed and return PMIDs."""
+    params = {
+        "db": "pubmed",
+        "term": query,
+        "retmax": str(retmax),
+        "retmode": "json",
+        "sort": "relevance",
+        "tool": "fda-predicate-assistant",
+        "email": "plugin@example.com"
+    }
+    if ncbi_key:
+        params["api_key"] = ncbi_key
+    url = f"{base_url}/esearch.fcgi?{urllib.parse.urlencode(params)}"
+    req = urllib.request.Request(url, headers={"User-Agent": "FDA-Plugin/4.1"})
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        data = json.loads(resp.read())
+    return data.get("esearchresult", {})
+
+def efetch(pmids):
+    """Fetch article details for given PMIDs."""
+    params = {
+        "db": "pubmed",
+        "id": ",".join(pmids),
+        "rettype": "abstract",
+        "retmode": "xml",
+        "tool": "fda-predicate-assistant",
+        "email": "plugin@example.com"
+    }
+    if ncbi_key:
+        params["api_key"] = ncbi_key
+    url = f"{base_url}/efetch.fcgi?{urllib.parse.urlencode(params)}"
+    req = urllib.request.Request(url, headers={"User-Agent": "FDA-Plugin/4.1"})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        return ET.parse(resp)
+
+# Search categories with structured queries
+searches = {
+    "clinical": f'("{device_name}"[Title/Abstract]) AND (clinical trial[Publication Type] OR clinical study[Title/Abstract] OR randomized[Title/Abstract])',
+    "safety": f'("{device_name}"[Title/Abstract]) AND (adverse event[Title/Abstract] OR complication[Title/Abstract] OR safety[Title/Abstract])',
+    "biocompat": f'("{device_name}"[Title/Abstract]) AND (biocompatibility[Title/Abstract] OR cytotoxicity[Title/Abstract] OR "ISO 10993"[Title/Abstract])',
+}
+
+results = {}
+for category, query in searches.items():
+    try:
+        sr = esearch(query)
+        pmids = sr.get("idlist", [])
+        total = sr.get("count", "0")
+        print(f"CATEGORY:{category}|TOTAL:{total}|RETURNED:{len(pmids)}")
+        if pmids:
+            results[category] = pmids
+            # Fetch details
+            time.sleep(0.4 if ncbi_key else 1.0)
+            tree = efetch(pmids[:10])  # Fetch top 10
+            for article in tree.findall(".//PubmedArticle"):
+                pmid = article.findtext(".//PMID", "")
+                title = article.findtext(".//ArticleTitle", "N/A")
+                year = article.findtext(".//PubDate/Year", "N/A")
+                journal = article.findtext(".//Journal/Title", "N/A")
+                pub_type = article.findtext(".//PublicationType", "")
+                print(f"ARTICLE:{category}|PMID:{pmid}|YEAR:{year}|TITLE:{title[:120]}|JOURNAL:{journal}|TYPE:{pub_type}")
+        time.sleep(0.4 if ncbi_key else 1.0)
+    except Exception as e:
+        print(f"ESEARCH_ERROR:{category}|{e}")
+
+print(f"\nSEARCH_QUERIES_USED:")
+for cat, q in searches.items():
+    print(f"  {cat}: {q}")
+PYEOF
+```
+
+**If E-utilities API fails**, fall back to WebSearch:
 ```
 WebSearch: "{device_name}" clinical trial OR clinical study site:pubmed.ncbi.nlm.nih.gov
 ```
 
+### 2B: Bench Testing, Standards, and Other Literature (via WebSearch)
+
+For non-PubMed categories, use WebSearch:
+
 **Bench testing**:
 ```
 WebSearch: "{device_name}" bench testing OR mechanical testing OR performance testing
-```
-
-**Biocompatibility**:
-```
-WebSearch: "{device_name}" biocompatibility OR cytotoxicity OR ISO 10993
-```
-
-**Adverse events / complications**:
-```
-WebSearch: "{device_name}" adverse event OR complication OR recall
 ```
 
 **Standards / Guidelines**:
@@ -116,10 +220,16 @@ WebSearch: "{device_name}" adverse event OR complication OR recall
 WebSearch: "{device_name}" "{applicable_standard}" testing
 ```
 
-### For --depth deep: WebFetch on top results
-
+**Adverse events / complications** (supplement MAUDE data):
 ```
-WebFetch: url="{pubmed_url}" prompt="Extract: study type, sample size, device tested, key outcomes, adverse events, and conclusion."
+WebSearch: "{device_name}" adverse event OR complication OR recall
+```
+
+### 2C: Deep Fetch (--depth deep only)
+
+For top PubMed results, fetch full abstracts:
+```
+WebFetch: url="https://pubmed.ncbi.nlm.nih.gov/{PMID}/" prompt="Extract: study type, sample size, device tested, key outcomes, adverse events, and conclusion."
 ```
 
 ## Step 3: Categorize Results
@@ -185,7 +295,7 @@ This is a document-format command (writes to file). Use markdown headings per R1
 ```markdown
 # Literature Review: {Product Code} — {Device Name}
 
-**Generated:** {date} | **Depth:** {quick|standard|deep} | **v4.0.0**
+**Generated:** {date} | **Depth:** {quick|standard|deep} | **v4.1.0**
 
 ---
 
@@ -218,10 +328,14 @@ This is a document-format command (writes to file). Use markdown headings per R1
 {List all search queries executed}
 
 **Databases searched:**
-- PubMed (via WebSearch)
+- PubMed (via NCBI E-utilities API — esearch + efetch)
+- General web (via WebSearch — bench testing, standards)
 - FDA MAUDE (via openFDA API)
 - FDA Recalls (via openFDA API)
 {Others as applicable}
+
+**PubMed API queries (reproducible):**
+{List exact esearch queries with PMIDs returned}
 
 ---
 

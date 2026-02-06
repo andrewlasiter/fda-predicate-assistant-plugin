@@ -167,7 +167,7 @@ Rank pathways by score and present using the standard FDA Professional CLI forma
   FDA Regulatory Pathway Recommendation
   {CODE} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Class: {class} | 21 CFR {regulation} | v4.0.0
+  Generated: {date} | Class: {class} | 21 CFR {regulation} | v4.1.0
 
 RECOMMENDED PATHWAY
 ────────────────────────────────────────

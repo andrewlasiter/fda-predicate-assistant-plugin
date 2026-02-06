@@ -1,11 +1,41 @@
 # Cybersecurity Documentation Framework
 
+## Statutory Basis — Section 524B of FD&C Act
+
+Section 524B of the Federal Food, Drug, and Cosmetic Act (21 U.S.C. 360n-2), enacted as part of the Consolidated Appropriations Act, 2023 (signed December 29, 2022), established **mandatory cybersecurity requirements** for medical devices. Effective **March 29, 2023** (90 days after enactment).
+
+### The 4 Statutory Requirements
+
+Section 524B requires that premarket submissions for "cyber devices" include:
+1. **A plan to monitor, identify, and address** postmarket cybersecurity vulnerabilities and exploits
+2. **A plan for coordinated vulnerability disclosure** — processes for receiving and addressing cybersecurity vulnerability information
+3. **A Software Bill of Materials (SBOM)** — including commercial, open-source, and off-the-shelf components
+4. **Evidence of compliance** with such other requirements as FDA may establish through regulation
+
+### What Is a "Cyber Device"?
+
+Under Section 524B, a "cyber device" is a device that:
+- Includes software validated, installed, or authorized by the sponsor
+- Has the ability to connect to the internet
+- Contains any technological characteristics that could be vulnerable to cybersecurity threats
+
+### RTA Impact
+
+FDA **will Refuse to Accept (RTA)** premarket submissions for cyber devices that lack cybersecurity documentation. This is a statutory requirement, not merely a guidance recommendation.
+
 ## When Cybersecurity Documentation is Required
 
-Per FDA guidance "Cybersecurity in Medical Devices" (2023, updated for eSTAR 5.6+):
+### Statutory Requirement (Section 524B) vs. Guidance Recommendation
+
+| Condition | Basis | Consequence if Missing |
+|-----------|-------|----------------------|
+| Device connects to internet AND includes software | Section 524B (statutory) | RTA — submission will be refused |
+| Device has any connectivity (Bluetooth, WiFi, USB, network) | FDA guidance (recommended) | May receive AI letter; strong expectation |
+| Device exchanges data with other systems | FDA guidance (recommended) | Expected for thorough review |
+| SaMD / software-only device | Both statutory and guidance | RTA for internet-connected SaMD |
 
 ### Trigger Conditions
-A cybersecurity section is required if the device:
+A cybersecurity section is required (per statute and/or guidance) if the device:
 - Contains software or firmware
 - Has wireless connectivity (Bluetooth, WiFi, cellular, RF)
 - Connects to a network (hospital, cloud, internet)
@@ -124,12 +154,47 @@ Product code families likely requiring cybersecurity:
 - Post-EOL risk mitigation: [TODO: plan]
 ```
 
+## Tier 1 vs. Tier 2 Devices
+
+The FDA cybersecurity guidance distinguishes two tiers based on cybersecurity risk:
+
+| Tier | Criteria | Documentation Level |
+|------|----------|-------------------|
+| **Tier 1 (Higher)** | Device can connect to internet/network, AND could cause patient harm if compromised | Full cybersecurity documentation required |
+| **Tier 2 (Standard)** | Device not in Tier 1 but still a cyber device | Documentation required but may be scaled to risk |
+
+**Tier 1 examples:** Infusion pumps with network connectivity, implantable devices with wireless telemetry, cloud-connected SaMD with diagnostic claims
+
+**Tier 2 examples:** Non-connected software tools, devices with only local USB connectivity for configuration
+
+## Premarket vs. Postmarket Obligations Under 524B
+
+### Premarket
+- Threat model and cybersecurity risk assessment
+- SBOM (all components, versions, vulnerabilities)
+- Security architecture and controls documentation
+- Vulnerability management/patch plan
+- Evidence of security testing
+
+### Postmarket
+- Monitor and address known vulnerabilities in a timely manner
+- Maintain coordinated vulnerability disclosure process
+- Provide security patches/updates throughout device lifecycle
+- Report cybersecurity vulnerabilities per MDR requirements (if they constitute a safety issue)
+- Maintain SBOM accuracy as components are updated
+
 ## Applicable Standards
 
-| Standard | Title | When Required |
-|----------|-------|--------------|
-| AAMI TIR57 | Cybersecurity risk management | All software devices |
-| IEC 81001-5-1 | Health software security | All health software |
-| IEC 62443 | Industrial cybersecurity | Network-connected devices |
-| NIST SP 800-171 | Protecting CUI | Government use devices |
-| UL 2900 | Software cybersecurity | Voluntary, recognized by FDA |
+| Standard | Title | When Required | FDA Recognition Status |
+|----------|-------|--------------|----------------------|
+| AAMI TIR57:2016/(R)2022 | Cybersecurity risk management for medical devices | All software devices | Recognized |
+| IEC 81001-5-1:2021 | Health software — security | All health software | Recognized |
+| IEC 62443-4-1:2018 | Security for industrial automation — secure product development lifecycle | Network-connected devices | Recognized |
+| NIST Cybersecurity Framework 2.0 | Cybersecurity risk management framework | Reference framework | Referenced in guidance |
+| NIST SP 800-171 | Protecting CUI | Government use devices | Not formally recognized; referenced |
+| UL 2900-1 | Software cybersecurity for network-connectable products | Voluntary | Recognized |
+| UL 2900-2-1 | Cybersecurity for network-connectable healthcare devices | Healthcare-specific | Recognized |
+| OWASP Top 10 | Web application security risks | Devices with web interfaces | Referenced in guidance |
+| OWASP Medical Device Security | Medical device specific security guidance | All cyber devices | Referenced |
+
+Note: Check FDA's [recognized consensus standards database](https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfStandards/search.cfm) for current recognition status and versions.

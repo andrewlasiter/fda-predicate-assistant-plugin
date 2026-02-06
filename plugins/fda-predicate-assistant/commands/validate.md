@@ -416,7 +416,7 @@ For each number, present a report using the standard FDA Professional CLI format
   FDA Device Validation Report
   {KNUMBER} — {FOUND/NOT FOUND}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Source: {openFDA API / flat files} | v4.0.0
+  Generated: {date} | Source: {openFDA API / flat files} | v4.1.0
 
 DEVICE RECORD
 ────────────────────────────────────────

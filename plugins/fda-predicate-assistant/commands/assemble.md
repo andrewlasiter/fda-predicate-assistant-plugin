@@ -138,9 +138,11 @@ For each section:
    - **Section 15 (Performance)**: If test_plan.md exists, write the performance testing plan into `15_performance_testing/performance_plan.md`. Mark as `DRAFT — AI-generated`.
 3. If template needed (no data available), generate a starter template
 4. Mark each section clearly as one of:
-   - `DRAFT — AI-generated from project data` (has content, needs verification)
-   - `TEMPLATE — manual completion required` (has structure, no content)
-   - `READY — data populated` (directly from user input)
+   - `READY` — Verified by user as submission-appropriate (only set when user explicitly marks a section as verified)
+   - `DRAFT` — AI-generated from project data (has content, requires professional review before submission)
+   - `TEMPLATE` — Structure only, manual completion required (no substantive content)
+   - `PARTIAL` — Some data available, significant gaps remain
+   - `N/A` — Not applicable to this device type
 
 ### Cybersecurity Section Auto-Detection
 
@@ -184,12 +186,17 @@ Write `$ESTAR_DIR/eSTAR_index.md`:
 
 | # | Section | Status | Data Source | Notes |
 |---|---------|--------|-----------|-------|
-| 01 | Cover Letter | {READY/PARTIAL/TEMPLATE/N/A} | {source} | {notes} |
+| 01 | Cover Letter | {READY/DRAFT/PARTIAL/TEMPLATE/N/A} | {source} | {notes} |
 | 02 | Cover Sheet (3514) | TEMPLATE | FDA form | Complete manually |
 | 03 | 510(k) Summary | {status} | {source} | {notes} |
 | ... | ... | ... | ... | ... |
 
-**Overall Readiness: {N}/{total} sections populated**
+**Submission Readiness: {N}/{total} sections READY (verified)**
+**Pipeline Coverage: {N}/{total} sections with content (READY + DRAFT)**
+
+Note: Only READY sections count toward Submission Readiness — these are
+sections the user has verified as submission-appropriate. DRAFT sections
+have AI-generated content that has not yet been verified.
 
 ---
 
@@ -216,19 +223,23 @@ Write `$ESTAR_DIR/eSTAR_index.md`:
   FDA eSTAR Assembly Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Project: {name} | v4.0.0
+  Generated: {date} | Project: {name} | v4.1.0
 
 ASSEMBLY SUMMARY
 ────────────────────────────────────────
 
   Output: {estar_dir}/
 
-  | Status     | Count | Description                    |
-  |------------|-------|--------------------------------|
-  | ✓ Ready    | {N}   | Data available from pipeline   |
-  | ⚠ Partial  | {N}   | Some data, needs completion    |
-  | ○ Template | {N}   | Starter template only          |
-  | — N/A      | {N}   | Not applicable to this device  |
+  | Status     | Count | Description                          |
+  |------------|-------|--------------------------------------|
+  | ✓ Ready    | {N}   | Verified by user, submission-ready   |
+  | ⚠ Draft    | {N}   | AI-generated, needs professional review |
+  | ◐ Partial  | {N}   | Some data, significant gaps remain   |
+  | ○ Template | {N}   | Structure only, manual completion    |
+  | — N/A      | {N}   | Not applicable to this device        |
+
+  Submission Readiness: {N}/{total} verified (READY only)
+  Pipeline Coverage:    {N}/{total} with content (READY + DRAFT)
 
 KEY FILES
 ────────────────────────────────────────

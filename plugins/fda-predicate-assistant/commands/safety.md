@@ -19,6 +19,7 @@ From `$ARGUMENTS`, extract:
 - `--device-name TEXT` (optional) — Filter to specific device generic name
 - `--knumber K123456` (optional) — Focus on a specific device's safety profile
 - `--manufacturer TEXT` (optional) — Filter by manufacturer name
+- `--sample-size N` (optional) — Number of recent event narratives to analyze (default: 25, max: 100)
 
 If no product code provided, ask the user for it.
 
@@ -121,7 +122,89 @@ except:
 PYEOF
 ```
 
+## Step 1B: Peer Device Benchmarking
+
+Query openFDA for peer devices sharing the same `regulation_number` or `review_panel` to establish a safety context baseline:
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re, time
+
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = os.environ.get('OPENFDA_API_KEY')
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    if not api_key:
+        m = re.search(r'openfda_api_key:\s*(\S+)', content)
+        if m and m.group(1) != 'null':
+            api_key = m.group(1)
+
+regulation_number = "REGULATION"  # From Step 1
+product_code = "PRODUCTCODE"  # Replace
+
+def fda_query(endpoint, search, limit=10, count_field=None):
+    params = {"search": search, "limit": str(limit)}
+    if count_field:
+        params["count"] = count_field
+    if api_key:
+        params["api_key"] = api_key
+    url = f"https://api.fda.gov/device/{endpoint}.json?{urllib.parse.urlencode(params)}"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return {"results": []}
+        return {"error": f"HTTP {e.code}"}
+    except Exception as e:
+        return {"error": str(e)}
+
+# Find peer product codes under the same regulation number
+print("=== PEER DEVICE CODES ===")
+peer_result = fda_query("classification", f'regulation_number:"{regulation_number}"', limit=25)
+peer_codes = []
+if "results" in peer_result:
+    for r in peer_result["results"]:
+        pc = r.get("product_code", "")
+        name = r.get("device_name", "N/A")
+        if pc and pc != product_code:
+            peer_codes.append(pc)
+            print(f"PEER:{pc}|{name}")
+
+# Get MAUDE event counts for top peer codes (for benchmarking)
+time.sleep(0.5)
+print("\n=== PEER EVENT COUNTS ===")
+subject_events = 0
+peer_events = {}
+
+# Get subject device event count
+subj_result = fda_query("event", f'device.product_code:"{product_code}"', limit=1)
+subject_events = subj_result.get("meta", {}).get("results", {}).get("total", 0)
+print(f"SUBJECT:{product_code}|{subject_events}")
+
+# Get peer event counts (top 5 peers)
+for pc in peer_codes[:5]:
+    time.sleep(0.3)
+    pr = fda_query("event", f'device.product_code:"{pc}"', limit=1)
+    count = pr.get("meta", {}).get("results", {}).get("total", 0)
+    peer_events[pc] = count
+    print(f"PEER_EVENTS:{pc}|{count}")
+
+# Calculate percentile ranking
+if peer_events:
+    all_counts = sorted([subject_events] + list(peer_events.values()))
+    rank = all_counts.index(subject_events)
+    percentile = (rank / len(all_counts)) * 100
+    print(f"\nPERCENTILE:{percentile:.0f}")
+    print(f"RANK:{rank+1}/{len(all_counts)}")
+PYEOF
+```
+
 ## Step 2: MAUDE Adverse Event Analysis
+
+> **MAUDE data quality warning:** MAUDE reports are voluntarily self-reported by manufacturers, importers, and user facilities. Reports may be incomplete, duplicated, or inaccurate. The absence of reports does not prove absence of events. MAUDE data should inform risk assessment but not be the sole basis for safety conclusions.
 
 ### 2A: Event Count by Type
 
@@ -225,7 +308,7 @@ product_code = "PRODUCTCODE"  # Replace
 
 params = {
     "search": f'device.product_code:"{product_code}"+AND+date_received:[20230101+TO+20261231]',
-    "limit": "25"
+    "limit": "25"  # Default sample size; use --sample-size flag to override (max 100)
 }
 if api_key:
     params["api_key"] = api_key
@@ -423,7 +506,7 @@ Structure the report using the standard FDA Professional CLI format (see `refere
   FDA Safety Intelligence Report
   {CODE} — {DEVICE NAME}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Class: {CLASS} | Regulation: {REG} | v4.0.0
+  Generated: {date} | Class: {CLASS} | Regulation: {REG} | v4.1.0
 
 DEVICE CONTEXT
 ────────────────────────────────────────
@@ -480,6 +563,21 @@ RECALL HISTORY
   Recent Recalls:
   - {Event#}: {Firm} — Class {I/II/III} ({status}) — {reason}
 
+PEER DEVICE COMPARISON
+────────────────────────────────────────
+
+  Regulation: 21 CFR {regulation_number}
+  Peer product codes under same regulation: {N}
+
+  | Product Code | Device Name | MAUDE Events |
+  |-------------|-------------|--------------|
+  | {CODE} (subject) | {name} | {N} |
+  | {peer1} | {name} | {N} |
+  | {peer2} | {name} | {N} |
+
+  Percentile ranking: {N}th percentile among peers
+  ({interpretation — e.g., "Below median event rate for this device family"})
+
 RISK PROFILE
 ────────────────────────────────────────
 
@@ -487,6 +585,7 @@ RISK PROFILE
   Recall Severity: {Low/Moderate/Serious} ({Class I count} Class I recalls)
   Trend:           {Increasing/Stable/Decreasing} event volume
   Death Events:    {N} ({flag if >0})
+  Peer Ranking:    {percentile}th percentile ({above/below} median for regulation family)
 
   Pre-Submission Considerations:
   - {Specific safety considerations based on the data}
