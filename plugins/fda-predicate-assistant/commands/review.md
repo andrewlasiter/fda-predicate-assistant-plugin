@@ -598,7 +598,7 @@ After all predicates are reviewed, present a summary:
   FDA Predicate Review Summary
   Project: {name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v4.1.0
+  Generated: {date} | v4.1.1
 
 RESULTS
 ────────────────────────────────────────

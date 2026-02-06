@@ -106,7 +106,7 @@ For each section you need to extract:
 ```
 **Key metrics to extract:** MARD (%), within 15/15%, within 20/20%, within 40/40%, reportable range, sensor duration, study size (N), number of matched pairs
 
-### Wound Dressings (Product Codes: KGN, FRO, MGP, LYZ)
+### Wound Dressings (Product Codes: KGN, FRO, MGP)
 ```regex
 (?i)(fluid\s+(handling|absorption|management)|moisture\s+vapor\s+transmission\s+rate|mvtr|wvtr|barrier\s+properties|adhesion\s+testing|conformability|antimicrobial\s+(efficacy|testing|effectiveness)|zone\s+of\s+inhibition|mic|mbc|minimum\s+inhibitory|minimum\s+bactericidal|silver\s+(content|release|ion)|collagen\s+(content|source|type)|wound\s+contact|aatcc\s+100|astm\s+d1777|dressing\s+integrity|peel\s+strength|absorbency)
 ```

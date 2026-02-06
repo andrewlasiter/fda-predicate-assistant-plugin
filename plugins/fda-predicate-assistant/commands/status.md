@@ -242,7 +242,7 @@ Present a clean status report using the standard FDA Professional CLI format (se
   FDA Pipeline Status
   Data inventory and connectivity check
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v4.1.0
+  Generated: {date} | v4.1.1
 
 PLUGIN SCRIPTS
 ────────────────────────────────────────

@@ -1046,7 +1046,7 @@ Structure the research package as:
   FDA Submission Research Report
   {PRODUCT_CODE} — {DEVICE_NAME}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Depth: {depth} | v4.1.0
+  Generated: {date} | Depth: {depth} | v4.1.1
 
 PRODUCT CODE PROFILE
 ────────────────────────────────────────

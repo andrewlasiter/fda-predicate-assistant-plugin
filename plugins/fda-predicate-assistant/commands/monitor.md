@@ -154,7 +154,7 @@ Read monitors.json and display:
   FDA Monitor Status
   Device Watch Dashboard
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v4.1.0
+  Generated: {date} | v4.1.1
 
 WATCH CONFIGURATION
 ────────────────────────────────────────
@@ -248,7 +248,7 @@ Report:
   FDA Monitor Check Report
   {product_codes} — Monitoring Results
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Period: {last_check} to {now} | v4.1.0
+  Generated: {date} | Period: {last_check} to {now} | v4.1.1
 
 CHECK RESULTS
 ────────────────────────────────────────
