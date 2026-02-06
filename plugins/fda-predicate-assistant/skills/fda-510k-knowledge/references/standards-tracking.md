@@ -26,13 +26,13 @@ Changes to recognized standards can affect:
 ### Biocompatibility (ISO 10993 series)
 | Standard | Title | Key for |
 |----------|-------|---------|
-| ISO 10993-1:2018 | Biological evaluation — Part 1: Evaluation and testing framework | All patient-contacting devices |
+| ISO 10993-1:2018 (superseded by ISO 10993-1:2025) | Biological evaluation — Part 1: Evaluation and testing framework | All patient-contacting devices |
 | ISO 10993-3:2014 | Tests for genotoxicity, carcinogenicity, and reproductive toxicity | Implants, prolonged contact |
 | ISO 10993-4:2017 | Selection of tests for interactions with blood | Blood-contacting devices |
 | ISO 10993-5:2009 | Tests for in vitro cytotoxicity | All patient-contacting devices |
 | ISO 10993-6:2016 | Tests for local effects after implantation | Implantable devices |
 | ISO 10993-7:2008 | EO sterilization residuals | EO-sterilized devices |
-| ISO 10993-10:2021 | Tests for sensitization and irritation | All patient-contacting devices |
+| ISO 10993-10:2021 | Tests for sensitization | All patient-contacting devices |
 | ISO 10993-11:2017 | Tests for systemic toxicity | Implants, prolonged contact |
 | ISO 10993-12:2021 | Sample preparation and reference materials | Test methodology (all bio testing) |
 | ISO 10993-17:2023 | Toxicological risk assessment of medical device constituents | Chemical characterization |
@@ -42,9 +42,9 @@ Changes to recognized standards can affect:
 | Standard | Title | Key for |
 |----------|-------|---------|
 | ISO 11135:2014 | EO sterilization — requirements for validation | Most sterile devices |
-| ISO 11137-1:2006/A2:2019 | Radiation sterilization — requirements | Alternative sterilization method |
+| ISO 11137-1:2006/A2:2019 (superseded by ISO 11137-1:2025) | Radiation sterilization — requirements | Alternative sterilization method |
 | ISO 11137-2:2013 | Radiation sterilization — establishing dose | Dose setting/substantiation |
-| ISO 17665-1:2006 | Moist heat sterilization — requirements | Reusable devices, steam sterilization |
+| ISO 17665-1:2006 (superseded by ISO 17665:2024) | Moist heat sterilization — requirements | Reusable devices, steam sterilization |
 | ISO 11737-1:2018 | Bioburden determination | All sterile devices (pre-sterilization bioburden) |
 | ISO 11737-2:2019 | Sterility testing | Sterility test validation |
 
@@ -81,7 +81,7 @@ Changes to recognized standards can affect:
 ### Cybersecurity
 | Standard | Title | Key for |
 |----------|-------|---------|
-| AAMI TIR57:2016/(R)2022 | Cybersecurity risk management for medical devices | Connected devices |
+| AAMI TIR57:2016/(R)2023 | Cybersecurity risk management for medical devices | Connected devices |
 | IEC 81001-5-1:2021 | Health software — security | Software devices |
 | IEC 62443-4-1:2018 | Secure product development lifecycle | Network-connected devices |
 | UL 2900-1 | Software cybersecurity — general | Voluntary, recognized by FDA |

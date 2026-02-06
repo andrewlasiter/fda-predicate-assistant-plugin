@@ -62,7 +62,7 @@ How recently was this device cleared/approved?
 | > 15 years | 2 | Very old — consider finding a more recent alternative |
 | Unknown date | 5 | Cannot determine age (default to moderate) |
 
-**Calculate from**: Decision date in `pmn*.txt` flat files or openFDA `/device/510k` endpoint `decision_date` field. For DEN-prefixed numbers, use the openFDA `/device/denovo` endpoint (DEN numbers are not in `pmn*.txt` files).
+**Calculate from**: Decision date in `pmn*.txt` flat files or openFDA `/device/510k` endpoint `decision_date` field. For DEN-prefixed numbers, try the `/device/510k` endpoint first (some DEN numbers are indexed there); if not found, use FDA's De Novo database at accessdata.fda.gov (there is no dedicated `/device/denovo` API endpoint).
 
 ### 5. Clean Regulatory History (10 points)
 
@@ -104,7 +104,7 @@ Risk flags are independent of the confidence score. A device can have a high con
 | `EXCLUDED` | Device is on the user's exclusion list | Local `exclusion_list.json` file | USER |
 | `STATEMENT_ONLY` | Only a 510(k) Statement filed (no Summary — limited public data) | `statement_or_summary` field | LOW |
 | `SUPPLEMENT` | Device number has a supplement suffix (e.g., K123456/S001) | Number format check | LOW |
-| `DEN_DEVICE` | Device is a De Novo authorization (DEN-prefix) — first-generation, no predicate chain | `/device/denovo` endpoint or number format | INFO |
+| `DEN_DEVICE` | Device is a De Novo authorization (DEN-prefix) — first-generation, no predicate chain | DEN-prefix number format check or `/device/510k` lookup | INFO |
 | `DEN_NO_PREDICATES` | De Novo device had no predicate by definition — chain starts here | De Novo classification | INFO |
 
 ### Flag Display Format
@@ -163,7 +163,7 @@ The extraction script (`predicate_extractor.py`) classifies devices based on pro
 ### DEN Number Handling
 
 DEN-prefixed device numbers require special treatment:
-- **Lookup**: Use openFDA `/device/denovo` endpoint (not `/device/510k`). DEN numbers do not appear in `pmn*.txt` flat files.
+- **Lookup**: Try openFDA `/device/510k` endpoint first (some DEN numbers are indexed there). DEN numbers do not appear in `pmn*.txt` flat files. There is no dedicated `/device/denovo` API endpoint; for devices not found via `/device/510k`, use FDA's De Novo database at accessdata.fda.gov.
 - **Reclassification**: DEN devices are valid predicates for subsequent 510(k) submissions. If a DEN number is found in an SE section, classify it as a predicate.
 - **No chain penalty**: De Novo devices are by definition chain starters — they had no predicate. Do not penalize chain depth = 0 for DEN devices (see Extended Scoring below).
 

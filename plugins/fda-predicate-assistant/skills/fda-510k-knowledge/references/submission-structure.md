@@ -74,7 +74,7 @@ Per FDA guidance "Recommended Content of a Traditional 510(k) Submission":
 1.  Cover Letter
 2.  CDRH Premarket Review Submission Cover Sheet (FDA Form 3514)
 3.  510(k) Summary or 510(k) Statement (21 CFR 807.92/807.93)
-4.  Truthful and Accuracy Statement (21 CFR 807.87(j))
+4.  Truthful and Accuracy Statement (21 CFR 807.87(l))
 5.  Class III Summary and Certification (if applicable)
 6.  Financial Certification or Disclosure Statement (21 CFR 54)
 7.  Declarations of Conformity and Summary Reports (if Abbreviated)

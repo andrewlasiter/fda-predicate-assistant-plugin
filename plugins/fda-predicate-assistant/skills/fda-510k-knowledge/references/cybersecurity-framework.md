@@ -4,13 +4,14 @@
 
 Section 524B of the Federal Food, Drug, and Cosmetic Act (21 U.S.C. 360n-2), enacted as part of the Consolidated Appropriations Act, 2023 (signed December 29, 2022), established **mandatory cybersecurity requirements** for medical devices. Effective **March 29, 2023** (90 days after enactment).
 
-### The 4 Statutory Requirements
+### The 3 Core Statutory Requirements
 
 Section 524B requires that premarket submissions for "cyber devices" include:
 1. **A plan to monitor, identify, and address** postmarket cybersecurity vulnerabilities and exploits
 2. **A plan for coordinated vulnerability disclosure** — processes for receiving and addressing cybersecurity vulnerability information
 3. **A Software Bill of Materials (SBOM)** — including commercial, open-source, and off-the-shelf components
-4. **Evidence of compliance** with such other requirements as FDA may establish through regulation
+
+Additionally, Section 524B includes an enabling provision allowing FDA to establish further requirements through regulation.
 
 ### What Is a "Cyber Device"?
 
@@ -187,7 +188,7 @@ The FDA cybersecurity guidance distinguishes two tiers based on cybersecurity ri
 
 | Standard | Title | When Required | FDA Recognition Status |
 |----------|-------|--------------|----------------------|
-| AAMI TIR57:2016/(R)2022 | Cybersecurity risk management for medical devices | All software devices | Recognized |
+| AAMI TIR57:2016/(R)2023 | Cybersecurity risk management for medical devices | All software devices | Recognized |
 | IEC 81001-5-1:2021 | Health software — security | All health software | Recognized |
 | IEC 62443-4-1:2018 | Security for industrial automation — secure product development lifecycle | Network-connected devices | Recognized |
 | NIST Cybersecurity Framework 2.0 | Cybersecurity risk management framework | Reference framework | Referenced in guidance |

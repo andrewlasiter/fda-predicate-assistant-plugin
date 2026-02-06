@@ -1,6 +1,6 @@
 # openFDA Device API Reference
 
-Centralized reference for all 7 openFDA Device API endpoints. All commands should use this as the single source of truth for API queries.
+Centralized reference for the primary openFDA Device API endpoints. All commands should use this as the single source of truth for API queries. Note: openFDA provides 9 device endpoints total (the 7 documented below plus `/device/enforcement` for enforcement reports and `/device/covid19serology` for COVID-19 serology tests); only the 7 most relevant to 510(k) predicate work are covered here.
 
 ## Base Configuration
 
@@ -128,7 +128,7 @@ else:  # N-numbers
     # Skip API — use flat file lookup only
 ```
 
-## 7 Endpoints Reference
+## Primary Endpoints Reference (7 of 9 total)
 
 ### 1. `/device/510k` — 510(k) Clearances
 
@@ -149,7 +149,7 @@ else:  # N-numbers
 | `advisory_committee` | Review panel code | `advisory_committee:"SU"` |
 | `review_advisory_committee` | Review committee (may differ from advisory_committee) | |
 | `clearance_type` | Traditional, Special, etc. | `clearance_type:"Traditional"` |
-| `third_party` | Third party review (note: `third_party` here, `third_party_flag` in classification) | `third_party:"Y"` |
+| `third_party_flag` | Third party review flag | `third_party_flag:"Y"` |
 | `expedited_review_flag` | Expedited review | `expedited_review_flag:"Y"` |
 | `statement_or_summary` | Summary or Statement | `statement_or_summary:"Summary"` |
 | `address_1` | Street address | |
@@ -163,7 +163,7 @@ else:  # N-numbers
 - `k_number`, `applicant`, `contact`, `address_1`, `address_2`, `city`, `state`, `zip_code`, `postal_code`, `country_code`
 - `date_received`, `decision_date`, `decision_code`, `decision_description`
 - `product_code`, `device_name`, `clearance_type`, `advisory_committee`, `advisory_committee_description`, `review_advisory_committee`
-- `third_party`, `expedited_review_flag`, `statement_or_summary`
+- `third_party_flag`, `expedited_review_flag`, `statement_or_summary`
 - `openfda.device_name`, `openfda.device_class`, `openfda.regulation_number`
 
 **Common queries**:
@@ -197,7 +197,7 @@ fda_api("510k", 'applicant:"DEXCOM"+AND+product_code:"QBJ"', limit=50)
 | `implant_flag` | Whether device is an implant | `implant_flag:"Y"` |
 | `life_sustain_support_flag` | Life-sustaining/supporting device | `life_sustain_support_flag:"Y"` |
 | `gmp_exempt_flag` | GMP exemption | `gmp_exempt_flag:"N"` |
-| `third_party_flag` | Third-party review eligible (note: `third_party_flag` here, `third_party` in 510k) | `third_party_flag:"Y"` |
+| `third_party_flag` | Third-party review eligible | `third_party_flag:"Y"` |
 | `submission_type_id` | Submission type | |
 | `review_code` | Review code | |
 | `summary_malfunction_reporting` | Summary malfunction reporting eligibility | |
@@ -593,7 +593,7 @@ FIELD_LABELS = {
     "advisory_committee": "Advisory Committee",
     "advisory_committee_description": "Advisory Committee",
     "review_advisory_committee": "Review Advisory Committee",
-    "third_party": "Third Party Review",
+    "third_party_flag": "Third Party Review",
     "expedited_review_flag": "Expedited Review",
     "statement_or_summary": "Statement/Summary",
     "date_received": "Date Received",
@@ -671,7 +671,11 @@ FIELD_LABELS = {
 }
 
 def format_date(date_str):
-    """Convert YYYYMMDD to YYYY-MM-DD for display."""
+    """Normalize date to YYYY-MM-DD for display.
+
+    API search params use YYYYMMDD but response fields return YYYY-MM-DD.
+    This handles both formats: converts 8-char YYYYMMDD; passes through YYYY-MM-DD unchanged.
+    """
     if date_str and len(date_str) == 8:
         return f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}"
     return date_str or "N/A"
@@ -685,7 +689,7 @@ The openFDA API is NOT consistent with field names across endpoints:
 |---------|--------|---------------|-----|--------|-------|
 | Address | `address_1` | -- | `street_1` | `address_1` | `manufacturer_address_1` |
 | Zip | `zip_code` | -- | `zip` | `postal_code` | `manufacturer_zip_code` |
-| Third party | `third_party` | `third_party_flag` | -- | -- | -- |
+| Third party | `third_party_flag` | `third_party_flag` | -- | -- | -- |
 | K-number | `k_number` (string) | -- | -- | `k_numbers` (array) | -- |
 | Device name | `device_name` | `device_name` | `generic_name` | -- | `device.generic_name` |
 

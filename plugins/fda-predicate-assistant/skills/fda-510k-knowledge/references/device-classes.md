@@ -81,7 +81,7 @@ The FDA classifies medical devices into three classes based on risk level and re
 |--------|--------------|-------------|
 | Pacemaker | DXY | Cardiac rhythm |
 | Heart valve | DRQ | Cardiovascular |
-| Breast implant | QBJ | Implanted prosthesis |
+| Breast implant | MYA | Implanted prosthesis |
 | HIV test | BMA | Critical diagnostic |
 
 ### 510(k) Status

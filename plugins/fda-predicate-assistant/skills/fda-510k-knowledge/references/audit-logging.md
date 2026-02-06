@@ -17,7 +17,7 @@ Each audit log entry is a single JSON object on one line:
 {
   "timestamp": "2026-02-05T12:00:00Z",
   "command": "review",
-  "version": "4.0.0",
+  "version": "4.1.1",
   "mode": "full-auto",
   "action": "predicate_accepted",
   "subject": "K241335",
@@ -107,7 +107,7 @@ from datetime import datetime, timezone
 def append_audit_log(project_dir, entry):
     """Append a single audit entry to the project's audit log."""
     entry.setdefault('timestamp', datetime.now(timezone.utc).isoformat())
-    entry.setdefault('version', '4.0.0')
+    entry.setdefault('version', '4.1.1')
     log_path = os.path.join(project_dir, 'audit_log.jsonl')
     with open(log_path, 'a', encoding='utf-8') as f:
         f.write(json.dumps(entry, ensure_ascii=False) + '\n')
@@ -119,7 +119,7 @@ At pipeline completion, read `audit_log.jsonl` and write a summary `pipeline_aud
 
 ```json
 {
-  "pipeline_version": "4.0.0",
+  "pipeline_version": "4.1.1",
   "project": "OVE_2026",
   "started_at": "2026-02-05T12:00:00Z",
   "completed_at": "2026-02-05T12:15:00Z",

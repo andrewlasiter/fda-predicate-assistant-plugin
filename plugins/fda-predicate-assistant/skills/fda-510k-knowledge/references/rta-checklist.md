@@ -14,7 +14,7 @@ These items are checked before any scientific review. Missing any one can trigge
 | FDA Form 3514 | CDRH Premarket Review Submission Cover Sheet, fully completed | 02 | Incomplete fields, wrong form version |
 | User fee payment | MDUFA fee paid or valid small business waiver | N/A | Fee not submitted before or with application |
 | 510(k) Summary OR Statement | One is required per 21 CFR 807.92/807.93 | 03 | Missing entirely; both included (choose one) |
-| Truthful and Accuracy Statement | Signed statement per 21 CFR 807.87(j) | 04 | Unsigned, wrong signatory, missing date |
+| Truthful and Accuracy Statement | Signed statement per 21 CFR 807.87(l) | 04 | Unsigned, wrong signatory, missing date |
 | Financial Certification/Disclosure | Per 21 CFR 54 for any clinical data | 05 | Omitted when clinical data is included |
 | Indications for Use (Form FDA 3881) | Completed form with IFU text | 09 | Missing form; IFU in narrative but not on form |
 | eSTAR format | Mandatory for submissions received on/after Oct 1, 2023 | All | Non-eSTAR submission format |

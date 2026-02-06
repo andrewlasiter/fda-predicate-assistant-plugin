@@ -46,8 +46,8 @@ PCCPs must clearly define what changes are NOT covered:
 ## Regulatory Citations
 
 - **Statutory basis:** Section 515C of the FD&C Act (added by the Consolidated Appropriations Act, 2023)
-- **Primary guidance:** "Marketing Submission Recommendations for a Predetermined Change Control Plan for Artificial Intelligence/Machine Learning (AI/ML)-Enabled Device Software Functions" (FDA-2019-D-1514)
-- **Regulation:** 21 CFR 807.87(l) — Premarket notification content requirements for PCCPs
+- **Primary guidance:** "Marketing Submission Recommendations for a Predetermined Change Control Plan for Artificial Intelligence/Machine Learning (AI/ML)-Enabled Device Software Functions" (FDA-2023-D-0867)
+- **Regulation:** Section 515C of FD&C Act — statutory basis for PCCPs in premarket submissions
 - **Federal Register:** Published as final guidance; check fda.gov for current version
 
 ## Historical Context: SPS and ACP
@@ -106,7 +106,7 @@ Several AI/ML-enabled devices have been authorized with PCCPs or PCCP-like mecha
 | Device | Company | PCCP Scope | K-number/DEN |
 |--------|---------|-----------|-------------|
 | IDx-DR | Digital Diagnostics (now Digital Diagnostics) | Autonomous AI for diabetic retinopathy; PCCP for algorithm updates | DEN180001 (De Novo) |
-| Caption Health (Caption AI) | Caption Health (now GE HealthCare) | AI-guided cardiac ultrasound; PCCP for model updates | K200022 |
+| Caption Health (Caption AI) | Caption Health (now GE HealthCare) | AI-guided cardiac ultrasound; PCCP for model updates | K200621 |
 | Viz.ai LVO | Viz.ai | AI stroke detection; subsequent clearances expanded scope | Multiple K-numbers |
 
 Note: Specific PCCP details vary by device. Check FDA decision summaries and De Novo orders for the most current information on authorized PCCPs.
