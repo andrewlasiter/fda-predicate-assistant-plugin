@@ -135,7 +135,7 @@ import urllib.request, urllib.parse, json, os, re, time
 # For each device in the chain, check recalls
 devices_to_check = ["K241335", "K200123", "K180456"]  # Replace
 for kn in devices_to_check:
-    params = {"search": f'k_number:"{kn}"', "limit": "1"}
+    params = {"search": f'k_numbers:"{kn}"', "limit": "1"}
     if api_key:
         params["api_key"] = api_key
     url = f"https://api.fda.gov/device/recall.json?{urllib.parse.urlencode(params)}"
@@ -146,7 +146,7 @@ for kn in devices_to_check:
             total = data.get("meta", {}).get("results", {}).get("total", 0)
             if total > 0:
                 r = data["results"][0]
-                print(f"RECALLED:{kn}|{r.get('classification','?')}|{r.get('reason_for_recall','?')[:100]}")
+                print(f"RECALLED:{kn}|{r.get('recall_status','?')}|{r.get('reason_for_recall','?')[:100]}")
             else:
                 print(f"CLEAN:{kn}")
     except:

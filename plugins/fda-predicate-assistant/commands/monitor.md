@@ -1,7 +1,7 @@
 ---
 description: Monitor FDA databases for new clearances, recalls, MAUDE events, and guidance updates for watched product codes
 allowed-tools: Bash, Read, Write, Glob, Grep, WebSearch
-argument-hint: "--check | --add-watch CODE | --remove-watch CODE | --status | --alerts [--product-codes CODE] [--watch-companies NAME] [--project NAME]"
+argument-hint: "--check | --add-watch CODE | --remove-watch CODE | --status | --alerts | --watch-standards [--product-codes CODE] [--watch-companies NAME] [--project NAME]"
 ---
 
 # FDA Real-Time Database Monitor

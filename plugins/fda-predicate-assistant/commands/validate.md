@@ -122,18 +122,20 @@ try:
             print(f"PRODUCT_CODE:{r.get('product_code', 'N/A')}")
             print(f"CLEARANCE_TYPE:{r.get('clearance_type', 'N/A')}")
             print(f"ADVISORY_COMMITTEE:{r.get('advisory_committee_description', r.get('advisory_committee', 'N/A'))}")
-            print(f"THIRD_PARTY:{r.get('third_party', 'N/A')}")
+            print(f"THIRD_PARTY:{r.get('third_party_flag', 'N/A')}")
             print(f"STATEMENT_OR_SUMMARY:{r.get('statement_or_summary', 'N/A')}")
             print(f"DATE_RECEIVED:{r.get('date_received', 'N/A')}")
             print(f"EXPEDITED:{r.get('expedited_review_flag', 'N/A')}")
             # Compute review time
             dr = r.get('date_received', '')
             dd = r.get('decision_date', '')
-            if dr and dd and len(dr) == 8 and len(dd) == 8:
+            if dr and dd:
                 from datetime import datetime
                 try:
-                    d1 = datetime.strptime(dr, '%Y%m%d')
-                    d2 = datetime.strptime(dd, '%Y%m%d')
+                    # API returns YYYY-MM-DD; normalize both formats
+                    fmt = '%Y-%m-%d' if '-' in dr else '%Y%m%d'
+                    d1 = datetime.strptime(dr, fmt)
+                    d2 = datetime.strptime(dd, fmt)
                     print(f"REVIEW_DAYS:{(d2 - d1).days}")
                 except:
                     pass
@@ -349,7 +351,7 @@ def fda_query(endpoint, search, limit=5, count_field=None):
 
 # 1. MAUDE event count by type for the product code
 print("--- MAUDE EVENTS ---")
-maude = fda_query("event", f'device.product_code:"{product_code}"', count_field="event_type.exact")
+maude = fda_query("event", f'device.device_report_product_code:"{product_code}"', count_field="event_type.exact")
 if "results" in maude:
     total = sum(r["count"] for r in maude["results"])
     print(f"MAUDE_TOTAL:{total}")
@@ -362,25 +364,24 @@ else:
 
 # 2. Recall check for this specific K-number
 print("--- RECALLS ---")
-recalls = fda_query("recall", f'k_number:"{knumber}"', limit=10)
+recalls = fda_query("recall", f'k_numbers:"{knumber}"', limit=10)
 if recalls.get("results"):
     print(f"RECALL_COUNT:{len(recalls['results'])}")
     for r in recalls["results"]:
         status = r.get("recall_status", "Unknown")
-        classification = r.get("classification", "Unknown")
         reason = r.get("reason_for_recall", "N/A")[:100]
         date = r.get("event_date_initiated", "N/A")
-        print(f"RECALL:{classification}|{status}|{date}|{reason}")
+        print(f"RECALL:{status}|{date}|{reason}")
 else:
     print("RECALL_COUNT:0")
 
 # 3. Also check recalls for the product code (broader)
-pc_recalls = fda_query("recall", f'product_code:"{product_code}"', count_field="classification.exact")
+pc_recalls = fda_query("recall", f'product_code:"{product_code}"', count_field="recall_status.exact")
 if "results" in pc_recalls:
     total_pc = sum(r["count"] for r in pc_recalls["results"])
     print(f"PC_RECALL_TOTAL:{total_pc}")
     for r in pc_recalls["results"]:
-        print(f"PC_RECALL_CLASS:{r['term']}:{r['count']}")
+        print(f"PC_RECALL_STATUS:{r['term']}:{r['count']}")
 PYEOF
 ```
 

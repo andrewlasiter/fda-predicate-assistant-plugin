@@ -427,8 +427,8 @@ NEXT STEPS
                            total = rdata.get("meta", {}).get("results", {}).get("total", 0)
                            if total > 0:
                                recall = rdata["results"][0]
-                               recalled.append(f"{knumber}|{applicant}|{recall.get('classification', '?')}|{recall.get('reason_for_recall', 'N/A')[:80]}")
-                               print(f"RECALLED:{knumber}|{applicant}|Class {recall.get('classification', '?')}|{recall.get('reason_for_recall', 'N/A')[:80]}")
+                               recalled.append(f"{knumber}|{applicant}|{recall.get('recall_status', '?')}|{recall.get('reason_for_recall', 'N/A')[:80]}")
+                               print(f"RECALLED:{knumber}|{applicant}|{recall.get('recall_status', '?')}|{recall.get('reason_for_recall', 'N/A')[:80]}")
                            else:
                                print(f"CLEAN:{knumber}")
                    except:

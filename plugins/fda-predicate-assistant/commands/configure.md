@@ -159,7 +159,7 @@ if not api_enabled:
 endpoints = [
     ("510k", 'k_number:"K241335"'),
     ("classification", 'product_code:"KGN"'),
-    ("event", 'device.product_code:"KGN"'),
+    ("event", 'device.device_report_product_code:"KGN"'),
     ("recall", 'product_code:"KGN"'),
     ("pma", 'pma_number:"P190001"'),
     ("registrationlisting", 'products.product_code:"KGN"'),

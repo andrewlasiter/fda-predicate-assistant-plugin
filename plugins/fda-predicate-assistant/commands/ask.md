@@ -102,8 +102,8 @@ From `$ARGUMENTS`, extract:
 3. PDF text cache (predicate summary content)
 4. Plugin references (confidence-scoring.md, predicate-types.md)
 
-**Example**: "Is K241335 a good predicate for my cervical fusion cage?"
-→ Look up K241335 → Check product code match → Check recency → Check recall history → Score defensibility
+**Example**: "Is K201145 a good predicate for my cervical fusion cage?"
+→ Look up K201145 → Check product code match → Check recency → Check recall history → Score defensibility
 
 ## Answer Format
 

@@ -235,7 +235,7 @@ fda_api("classification", 'implant_flag:"Y"+AND+medical_specialty:"OR"', limit=5
 |-------|-------------|---------|
 | `device.generic_name` | Device generic name | `device.generic_name:"wound+dressing"` |
 | `device.brand_name` | Brand/trade name | `device.brand_name:"ACME+DRESSING"` |
-| `device.product_code` | Product code | `device.product_code:"KGN"` |
+| `device.device_report_product_code` | Product code | `device.device_report_product_code:"KGN"` |
 | `device.manufacturer_d_name` | Manufacturer | `device.manufacturer_d_name:"MEDTRONIC"` |
 | `event_type` | Injury/Malfunction/Death | `event_type:"Injury"` |
 | `date_received` | FDA received date | `date_received:[20200101+TO+20251231]` |
@@ -303,19 +303,19 @@ fda_api("classification", 'implant_flag:"Y"+AND+medical_specialty:"OR"', limit=5
 **Common queries**:
 ```python
 # Count events by type for a product code
-fda_api("event", 'device.product_code:"KGN"', count_field="event_type.exact")
+fda_api("event", 'device.device_report_product_code:"KGN"', count_field="event_type.exact")
 
 # Recent adverse events for a product code
-fda_api("event", 'device.product_code:"KGN"+AND+date_received:[20230101+TO+20251231]', limit=25)
+fda_api("event", 'device.device_report_product_code:"KGN"+AND+date_received:[20230101+TO+20251231]', limit=25)
 
 # Search narrative text for specific issues
-fda_api("event", 'device.product_code:"KGN"+AND+mdr_text.text:"infection"', limit=10)
+fda_api("event", 'device.device_report_product_code:"KGN"+AND+mdr_text.text:"infection"', limit=10)
 
 # Count events by year
-fda_api("event", 'device.product_code:"KGN"', count_field="date_received")
+fda_api("event", 'device.device_report_product_code:"KGN"', count_field="date_received")
 
 # What problems are reported for this product code?
-fda_api("event", 'device.product_code:"KGN"', count_field="product_problems.exact")
+fda_api("event", 'device.device_report_product_code:"KGN"', count_field="product_problems.exact")
 ```
 
 ### 4. `/device/recall` — Device Recalls
@@ -356,26 +356,25 @@ fda_api("event", 'device.product_code:"KGN"', count_field="product_problems.exac
 **Response fields**:
 - `res_event_number`, `cfres_id`, `product_res_number`
 - `event_date_initiated`, `event_date_created`, `event_date_posted`, `event_date_terminated`
-- `recall_status` (Ongoing, Completed, Terminated)
-- `classification` (Class I, Class II, Class III — recall severity, NOT device class)
+- `recall_status` (Ongoing, Completed, Terminated) — NOTE: `classification` (Class I/II/III recall severity) is in `/device/enforcement`, NOT `/device/recall`
 - `product_description`, `code_info`, `reason_for_recall`, `root_cause_description`
 - `recalling_firm`, `firm_fei_number`, `address_1`, `address_2`, `city`, `state`, `postal_code`, `country`
 - `additional_info_contact`, `action`
 - `product_quantity`, `distribution_pattern`, `voluntary_mandated`
-- `k_number`, `k_numbers[]`, `pma_numbers[]`, `product_code`
+- `k_numbers[]`, `pma_numbers[]`, `product_code` (note: no singular `k_number` in recall API)
 - `other_submission_description`
 - `openfda.device_name`, `openfda.device_class`, `openfda.regulation_number`
 
 **Common queries**:
 ```python
-# Recalls for a specific K-number
-fda_api("recall", 'k_number:"K241335"')
+# Recalls for a specific K-number (note: recall API uses k_numbers plural)
+fda_api("recall", 'k_numbers:"K241335"')
 
 # Recalls for a product code
 fda_api("recall", 'product_code:"KGN"', limit=50)
 
-# Count recalls by classification (severity)
-fda_api("recall", 'product_code:"KGN"', count_field="classification.exact")
+# Count recalls by status
+fda_api("recall", 'product_code:"KGN"', count_field="recall_status.exact")
 
 # Active recalls only
 fda_api("recall", 'product_code:"KGN"+AND+recall_status:"Ongoing"')

@@ -260,7 +260,7 @@ def fda_query(endpoint, search, limit=10, count_field=None):
 
 # MAUDE event count by type
 print("=== MAUDE SUMMARY ===")
-events = fda_query("event", f'device.product_code:"{product_code}"', count_field="event_type.exact")
+events = fda_query("event", f'device.device_report_product_code:"{product_code}"', count_field="event_type.exact")
 if "results" in events:
     total = sum(r["count"] for r in events["results"])
     print(f"TOTAL_EVENTS:{total}")
@@ -272,12 +272,12 @@ else:
 # Recall count by classification
 time.sleep(0.5)
 print("\n=== RECALL SUMMARY ===")
-recalls = fda_query("recall", f'product_code:"{product_code}"', count_field="classification.exact")
+recalls = fda_query("recall", f'product_code:"{product_code}"', count_field="recall_status.exact")
 if "results" in recalls:
     total_r = sum(r["count"] for r in recalls["results"])
     print(f"TOTAL_RECALLS:{total_r}")
     for r in recalls["results"]:
-        print(f"RECALL_CLASS:{r['term']}:{r['count']}")
+        print(f"RECALL_STATUS:{r['term']}:{r['count']}")
 else:
     print("TOTAL_RECALLS:0")
 
@@ -287,7 +287,7 @@ active = fda_query("recall", f'product_code:"{product_code}"+AND+recall_status:"
 if active.get("results"):
     print(f"\nACTIVE_RECALLS:{len(active['results'])}")
     for r in active["results"]:
-        print(f"ACTIVE:{r.get('recalling_firm','N/A')}|{r.get('classification','N/A')}|{r.get('reason_for_recall','N/A')[:100]}")
+        print(f"ACTIVE:{r.get('recalling_firm','N/A')}|{r.get('recall_status','N/A')}|{r.get('reason_for_recall','N/A')[:100]}")
 else:
     print("\nACTIVE_RECALLS:0")
 PYEOF
@@ -1181,14 +1181,15 @@ for knumber in top_predicates:
                     print(f"PRODUCT_CODE:{r.get('product_code', 'N/A')}")
                     print(f"CLEARANCE_TYPE:{r.get('clearance_type', 'N/A')}")
                     print(f"ADVISORY_COMMITTEE:{r.get('advisory_committee_description', 'N/A')}")
-                    print(f"THIRD_PARTY:{r.get('third_party', 'N/A')}")
+                    print(f"THIRD_PARTY:{r.get('third_party_flag', 'N/A')}")
                     print(f"STATEMENT_OR_SUMMARY:{r.get('statement_or_summary', 'N/A')}")
                     dr = r.get('date_received', '')
                     dd = r.get('decision_date', '')
-                    if dr and dd and len(dr) == 8 and len(dd) == 8:
+                    if dr and dd:
                         from datetime import datetime
                         try:
-                            days = (datetime.strptime(dd, '%Y%m%d') - datetime.strptime(dr, '%Y%m%d')).days
+                            fmt = '%Y-%m-%d' if '-' in dr else '%Y%m%d'
+                            days = (datetime.strptime(dd, fmt) - datetime.strptime(dr, fmt)).days
                             print(f"REVIEW_DAYS:{days}")
                         except:
                             pass

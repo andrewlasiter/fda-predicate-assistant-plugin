@@ -180,14 +180,14 @@ subject_events = 0
 peer_events = {}
 
 # Get subject device event count
-subj_result = fda_query("event", f'device.product_code:"{product_code}"', limit=1)
+subj_result = fda_query("event", f'device.device_report_product_code:"{product_code}"', limit=1)
 subject_events = subj_result.get("meta", {}).get("results", {}).get("total", 0)
 print(f"SUBJECT:{product_code}|{subject_events}")
 
 # Get peer event counts (top 5 peers)
 for pc in peer_codes[:5]:
     time.sleep(0.3)
-    pr = fda_query("event", f'device.product_code:"{pc}"', limit=1)
+    pr = fda_query("event", f'device.device_report_product_code:"{pc}"', limit=1)
     count = pr.get("meta", {}).get("results", {}).get("total", 0)
     peer_events[pc] = count
     print(f"PEER_EVENTS:{pc}|{count}")
@@ -244,7 +244,7 @@ def fda_query(endpoint, search, limit=10, count_field=None):
 
 # Event count by type
 print("=== EVENT TYPE DISTRIBUTION ===")
-result = fda_query("event", f'device.product_code:"{product_code}"', count_field="event_type.exact")
+result = fda_query("event", f'device.device_report_product_code:"{product_code}"', count_field="event_type.exact")
 if "results" in result:
     total = sum(r["count"] for r in result["results"])
     print(f"TOTAL_EVENTS:{total}")
@@ -259,7 +259,7 @@ time.sleep(0.5)
 print("\n=== EVENTS BY YEAR ===")
 for year in range(2020, 2027):
     yr_result = fda_query("event",
-        f'device.product_code:"{product_code}"+AND+date_received:[{year}0101+TO+{year}1231]',
+        f'device.device_report_product_code:"{product_code}"+AND+date_received:[{year}0101+TO+{year}1231]',
         limit=1)
     total = yr_result.get("meta", {}).get("results", {}).get("total", 0)
     if total > 0:
@@ -269,7 +269,7 @@ for year in range(2020, 2027):
 # Top device names reporting events
 time.sleep(0.5)
 print("\n=== TOP DEVICE NAMES ===")
-name_result = fda_query("event", f'device.product_code:"{product_code}"',
+name_result = fda_query("event", f'device.device_report_product_code:"{product_code}"',
     count_field="device.generic_name.exact")
 if "results" in name_result:
     for r in name_result["results"][:10]:
@@ -278,7 +278,7 @@ if "results" in name_result:
 # Top manufacturers reporting events
 time.sleep(0.5)
 print("\n=== TOP MANUFACTURERS ===")
-mfr_result = fda_query("event", f'device.product_code:"{product_code}"',
+mfr_result = fda_query("event", f'device.device_report_product_code:"{product_code}"',
     count_field="device.manufacturer_d_name.exact")
 if "results" in mfr_result:
     for r in mfr_result["results"][:10]:
@@ -307,7 +307,7 @@ if os.path.exists(settings_path):
 product_code = "PRODUCTCODE"  # Replace
 
 params = {
-    "search": f'device.product_code:"{product_code}"+AND+date_received:[20230101+TO+20261231]',
+    "search": f'device.device_report_product_code:"{product_code}"+AND+date_received:[20230101+TO+20261231]',
     "limit": "25"  # Default sample size; use --sample-size flag to override (max 100)
 }
 if api_key:
@@ -387,14 +387,14 @@ def fda_query(endpoint, search, limit=10, count_field=None):
     except Exception as e:
         return {"error": str(e)}
 
-# Recall count by classification (severity)
-print("=== RECALL SEVERITY DISTRIBUTION ===")
-class_result = fda_query("recall", f'product_code:"{product_code}"', count_field="classification.exact")
+# Recall count by status
+print("=== RECALL STATUS DISTRIBUTION ===")
+class_result = fda_query("recall", f'product_code:"{product_code}"', count_field="recall_status.exact")
 if "results" in class_result:
     total = sum(r["count"] for r in class_result["results"])
     print(f"TOTAL_RECALLS:{total}")
     for r in class_result["results"]:
-        print(f"RECALL_CLASS:{r['term']}:{r['count']}")
+        print(f"RECALL_STATUS:{r['term']}:{r['count']}")
 else:
     print("TOTAL_RECALLS:0")
 
@@ -413,13 +413,12 @@ recent = fda_query("recall", f'product_code:"{product_code}"', limit=20)
 if recent.get("results"):
     for r in recent["results"]:
         event_num = r.get("res_event_number", "N/A")
-        classification = r.get("classification", "N/A")
         status = r.get("recall_status", "N/A")
         firm = r.get("recalling_firm", "N/A")
         date = r.get("event_date_initiated", "N/A")
         reason = r.get("reason_for_recall", "N/A")[:200]
         product = r.get("product_description", "N/A")[:100]
-        print(f"RECALL:{event_num}|{classification}|{status}|{firm}|{date}")
+        print(f"RECALL:{event_num}|{status}|{firm}|{date}")
         print(f"PRODUCT:{product}")
         print(f"REASON:{reason}")
         print()
@@ -488,11 +487,11 @@ def fda_query(endpoint, search, limit=10):
 
 # Recalls for this specific K-number
 print("=== DEVICE-SPECIFIC RECALLS ===")
-recalls = fda_query("recall", f'k_number:"{knumber}"', limit=10)
+recalls = fda_query("recall", f'k_numbers:"{knumber}"', limit=10)
 if recalls.get("results"):
     print(f"DEVICE_RECALLS:{len(recalls['results'])}")
     for r in recalls["results"]:
-        print(f"RECALL:{r.get('res_event_number','N/A')}|{r.get('classification','N/A')}|{r.get('recall_status','N/A')}|{r.get('reason_for_recall','N/A')[:150]}")
+        print(f"RECALL:{r.get('res_event_number','N/A')}|{r.get('recall_status','N/A')}|{r.get('reason_for_recall','N/A')[:150]}")
 else:
     print("DEVICE_RECALLS:0")
 PYEOF

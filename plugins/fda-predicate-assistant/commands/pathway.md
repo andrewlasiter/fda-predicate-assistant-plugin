@@ -148,7 +148,7 @@ Apply the scoring algorithm. Each pathway gets a score from 0-100:
 | No predicates | Zero or very few clearances for product code | +40 |
 | Novel device | Novel features described | +30 |
 | Low-moderate risk | Class I or II | +20 |
-| Automatic Class II | Could request automatic Class II | +10 |
+| De Novo granted | Could follow a De Novo-granted device as predicate | +10 |
 
 ### PMA Scoring
 

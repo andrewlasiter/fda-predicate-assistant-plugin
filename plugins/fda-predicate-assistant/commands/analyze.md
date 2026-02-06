@@ -212,7 +212,7 @@ if not api_enabled:
 product_code = "PRODUCTCODE"  # Replace
 
 # Event count by type for this product code
-params = {"search": f'device.product_code:"{product_code}"', "limit": "1", "count": "event_type.exact"}
+params = {"search": f'device.device_report_product_code:"{product_code}"', "limit": "1", "count": "event_type.exact"}
 if api_key:
     params["api_key"] = api_key
 url = f"https://api.fda.gov/device/event.json?{urllib.parse.urlencode(params)}"

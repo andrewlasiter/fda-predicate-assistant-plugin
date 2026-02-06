@@ -94,8 +94,8 @@ Risk flags are independent of the confidence score. A device can have a high con
 
 | Flag | Trigger | API Source | Severity |
 |------|---------|------------|----------|
-| `RECALLED` | Any recall found for this specific device (K-number match) | `/device/recall` search by `k_number` or `res_event_number` | HIGH |
-| `RECALLED_CLASS_I` | Class I recall (most serious) | `/device/recall` where `classification:"Class I"` | CRITICAL |
+| `RECALLED` | Any recall found for this specific device (K-number match) | `/device/recall` search by `k_numbers` (plural) or `res_event_number` | HIGH |
+| `RECALLED_CLASS_I` | Class I recall (most serious) | `/device/enforcement` where `classification:"Class I"` (note: recall API has no classification field) | CRITICAL |
 | `PMA_ONLY` | Device number starts with P (PMA, not 510(k)) | Number format check | MEDIUM |
 | `CLASS_III` | Device classification is Class III | `/device/classification` or `foiaclass.txt` | MEDIUM |
 | `OLD` | Decision date > 10 years ago | Decision date from database | LOW |

@@ -341,19 +341,19 @@ for device in devices:
     total_recalls = recalls.get("meta", {}).get("results", {}).get("total", 0)
     if recalls.get("results"):
         for r in recalls["results"][:3]:
-            print(f"RECALL:{r.get('classification', '?')}|{r.get('recall_status', '?')}|{r.get('reason_for_recall', 'N/A')[:80]}")
+            print(f"RECALL:{r.get('recall_status', '?')}|{r.get('res_event_number', '?')}|{r.get('reason_for_recall', 'N/A')[:80]}")
     print(f"TOTAL_RECALLS:{total_recalls}")
 
     time.sleep(0.5)
 
     # Check MAUDE events for this product code
-    events = fda_query("event", f'device.product_code:"{pc}"', limit=1)
+    events = fda_query("event", f'device.device_report_product_code:"{pc}"', limit=1)
     total_events = events.get("meta", {}).get("results", {}).get("total", 0)
     print(f"TOTAL_MAUDE_EVENTS:{total_events}")
 
     # Check for death events specifically
     time.sleep(0.5)
-    deaths = fda_query("event", f'device.product_code:"{pc}"+AND+event_type:"Death"', limit=1)
+    deaths = fda_query("event", f'device.device_report_product_code:"{pc}"+AND+event_type:"Death"', limit=1)
     total_deaths = deaths.get("meta", {}).get("results", {}).get("total", 0)
     print(f"DEATH_EVENTS:{total_deaths}")
 
@@ -402,7 +402,7 @@ For each predicate candidate, check:
 | Flag | Check |
 |------|-------|
 | `RECALLED` | Any recall found in Step 3E |
-| `RECALLED_CLASS_I` | Class I recall in Step 3E |
+| `RECALLED_CLASS_I` | Class I recall found via `/device/enforcement` for same product code |
 | `PMA_ONLY` | Device number starts with `P` |
 | `CLASS_III` | Classification lookup shows Class 3 |
 | `OLD` | Decision date > 10 years ago |
