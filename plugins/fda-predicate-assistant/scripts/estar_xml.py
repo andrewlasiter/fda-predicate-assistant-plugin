@@ -48,10 +48,14 @@ FIELD_MAP = {
     # Applicant info
     "applicantname": "applicant_name",
     "contactname": "contact_name",
-    "address": "address",
+    "applicantaddress": "address",
+    "street": "address_street",
+    "city": "address_city",
+    "state": "address_state",
+    "zip": "address_zip",
+    "country": "address_country",
     "phone": "phone",
     "email": "email",
-    "date": "submission_date",
     "devicename": "device_trade_name",
     "commonname": "device_common_name",
     # Classification
@@ -245,14 +249,19 @@ def parse_xml_data(xml_string):
             result["raw_fields"][current_path] = full_text
 
         # Map known fields using leaf text (avoids concatenated parent text)
+        # Skip FIELD_MAP matching for elements inside predicateDevices or
+        # performanceTesting — those contain predicate/test-specific data
+        # that should NOT overwrite device-level fields.
         if leaf_text:
             path_lower = current_path.lower()
             tag_lower = element.name.lower()
-            for field_suffix, mapped_key in FIELD_MAP.items():
-                if path_lower.endswith(field_suffix) or tag_lower == field_suffix:
-                    _route_field(result, mapped_key, leaf_text)
-                    if mapped_key == "submission_number":
-                        submission_number = leaf_text
+            in_predicate_context = "predicatedevices" in path_lower or "performancetesting" in path_lower
+            if not in_predicate_context:
+                for field_suffix, mapped_key in FIELD_MAP.items():
+                    if path_lower.endswith(field_suffix) or tag_lower == field_suffix:
+                        _route_field(result, mapped_key, leaf_text)
+                        if mapped_key == "submission_number":
+                            submission_number = leaf_text
 
         for child in element.children:
             if hasattr(child, "name") and child.name:
@@ -309,8 +318,19 @@ def parse_xml_data(xml_string):
 def _route_field(result, mapped_key, value):
     """Route a mapped field value to the correct location in result dict."""
     # Applicant fields
-    if mapped_key in ("applicant_name", "contact_name", "address", "phone", "email"):
+    if mapped_key in ("applicant_name", "contact_name", "address",
+                       "address_street", "address_city", "address_state", "address_zip",
+                       "address_country", "phone", "email"):
         result["applicant"][mapped_key] = value
+        # Assemble full address from components when we have street
+        if mapped_key.startswith("address_"):
+            parts = []
+            a = result["applicant"]
+            for k in ("address_street", "address_city", "address_state", "address_zip", "address_country"):
+                if k in a:
+                    parts.append(a[k])
+            if parts:
+                result["applicant"]["address"] = ", ".join(parts)
     # Classification fields
     elif mapped_key in ("product_code", "regulation_number", "device_class", "review_panel",
                         "submission_type", "device_trade_name", "device_common_name", "submission_date"):
