@@ -1,92 +1,44 @@
+![Version](https://img.shields.io/badge/version-4.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Commands](https://img.shields.io/badge/commands-26-orange)
+![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-blueviolet)
+![FDA 510(k)](https://img.shields.io/badge/FDA-510(k)-red)
+
 # FDA Predicate Assistant
 
-A Claude Code plugin that helps you navigate FDA 510(k) submissions. It finds predicate devices, validates device numbers, analyzes safety data, and builds substantial equivalence comparisons — all from within Claude.
+**Your AI-powered regulatory assistant for FDA 510(k) submissions.**
 
-## Install
+From predicate research to eSTAR assembly — 26 commands that handle the data work so you can focus on the science and strategy. Search FDA databases, identify predicates, analyze safety histories, generate substantial equivalence comparisons, and assemble submission-ready documents, all from within Claude.
+
+---
+
+## Installation
+
+### Claude Code (CLI)
+
+Open Claude Code, then type these two commands:
 
 ```
 /plugin marketplace add andrewlasiter/fda-predicate-assistant-plugin
 /plugin install fda-predicate-assistant@fda-tools
 ```
 
-## What it does
+Start a new session to load the plugin.
 
-### Core Pipeline
+### Claude Desktop
 
-| Command | Purpose |
-|---------|---------|
-| `/fda:pipeline` | Run the full 7-step pipeline autonomously (extract → review → safety → guidance → presub → outline → SE) |
-| `/fda:extract` | Download 510(k) PDFs and extract predicate relationships |
-| `/fda:review` | Score, flag, and accept/reject extracted predicates |
-| `/fda:safety` | MAUDE adverse events and recall history for a product code |
-| `/fda:guidance` | Look up FDA guidance documents and map to testing requirements |
-| `/fda:presub` | Generate a Pre-Submission meeting package |
-| `/fda:submission-outline` | Generate a full 510(k) submission outline with gap analysis |
-| `/fda:compare-se` | Generate substantial equivalence comparison tables |
+In the Claude Desktop chat window, type the same two commands:
 
-### Research and Analysis
+```
+/plugin marketplace add andrewlasiter/fda-predicate-assistant-plugin
+/plugin install fda-predicate-assistant@fda-tools
+```
 
-| Command | Purpose |
-|---------|---------|
-| `/fda:research` | Full submission research — predicates, testing, competitive landscape |
-| `/fda:validate` | Look up any device number (K, P, DEN, N) against FDA databases |
-| `/fda:analyze` | Statistics and patterns across your extraction results |
-| `/fda:summarize` | Compare sections (testing, IFU, device description) across devices |
-| `/fda:ask` | Natural language Q&A about FDA regulatory topics |
-| `/fda:literature` | PubMed/WebSearch literature review with gap analysis vs guidance |
-| `/fda:lineage` | Trace predicate citation chains across generations with health scoring |
+Restart the session after installing.
 
-### Planning and Decision Support
+### Co-work / Autonomous Sessions
 
-| Command | Purpose |
-|---------|---------|
-| `/fda:pathway` | Recommend the optimal regulatory pathway with algorithmic scoring |
-| `/fda:test-plan` | Generate a risk-based testing plan with gap analysis |
-| `/fda:pccp` | Generate a Predetermined Change Control Plan (AI/ML devices) |
-| `/fda:monitor` | Watch FDA databases for new clearances, recalls, and MAUDE events |
-| `/fda:draft` | Generate regulatory prose for submission sections with citations |
-
-### Assembly, Validation, and Management
-
-| Command | Purpose |
-|---------|---------|
-| `/fda:assemble` | Assemble an eSTAR-structured submission package from project data |
-| `/fda:traceability` | Requirements Traceability Matrix (guidance → risks → tests → evidence) |
-| `/fda:consistency` | Cross-document consistency validation across project files |
-| `/fda:portfolio` | Cross-project dashboard — shared predicates, common guidance, timelines |
-| `/fda:configure` | Set up API keys, data paths, and preferences |
-| `/fda:status` | Check what data you have and what's available |
-
-## Important Notices
-
-> **This tool is provided for research purposes only.** It analyzes publicly
-> available FDA data (510(k) summaries, classification databases, MAUDE reports,
-> and other records published by the U.S. Food and Drug Administration).
-
-> **Do not use this tool with private, confidential, or IP-protected documents.**
-> All text you provide — including device descriptions, intended use statements,
-> and file contents — is processed by Claude (Anthropic's LLM). Depending on
-> your Anthropic account settings, this content may be used for model training.
-> Even when training is disabled, there is no independent means to verify that
-> data is excluded. Do not submit trade secrets, proprietary designs, or
-> confidential regulatory strategies.
-
-> **LLM accuracy is not guaranteed.** Large language models make mistakes.
-> Device number extraction, predicate identification, section classification,
-> and all other outputs may contain errors, omissions, or hallucinations.
-> **Always independently verify** every device number, predicate relationship,
-> regulatory citation, and testing recommendation before relying on it.
-> Inaccuracy is inherent to this technology — treat all output as a starting
-> point for human review, not a finished product.
-
-> **This is not legal or regulatory advice.** Consult qualified regulatory
-> affairs professionals and legal counsel before making submission decisions.
-> The developers and Anthropic accept no liability for regulatory outcomes
-> based on this tool's output.
-
-## Autonomous mode
-
-The plugin can run fully headless with zero user prompts — ideal for co-work sessions and automated workflows:
+Install using the same commands above, then run autonomous workflows with:
 
 ```
 /fda:pipeline OVE --project my-device --full-auto \
@@ -94,44 +46,182 @@ The plugin can run fully headless with zero user prompts — ideal for co-work s
   --intended-use "For fusion of the cervical spine"
 ```
 
-Key autonomy flags:
-- `--full-auto` — Deterministic decisions based on score thresholds (never prompts)
-- `--infer` — Auto-detect product code from project data
-- `--headless` — Non-interactive mode for Python scripts
+### Verify It Works
 
-## Quick start
+Type `/fda:status` — you should see a summary of available FDA data files, script availability, and record counts.
+
+---
+
+## Quick Start
 
 ```
-/fda:status                          # See what data is available
-/fda:validate K241335                # Look up a device
-/fda:research QAS                    # Full research for a product code
-/fda:pipeline OVE --project demo     # Run full pipeline for a product code
-/fda:ask "What class is a cervical fusion cage?"  # Regulatory Q&A
+/fda:status                              # Check what data is available
+/fda:validate K241335                    # Look up any device number
+/fda:research QAS                        # Full submission research for a product code
+/fda:ask "What class is a cervical fusion cage?"   # Regulatory Q&A
+/fda:pipeline OVE --project demo         # Run the full pipeline end-to-end
 ```
 
-## openFDA API
+---
 
-The plugin works offline using FDA flat files, but connects to all 7 openFDA Device API endpoints when available — giving you real-time access to clearances, classifications, adverse events, recalls, and more.
+## Commands
 
-Set up an API key for higher rate limits (optional):
+### Getting Started
+
+| Command | What it does |
+|---------|-------------|
+| `/fda:status` | Shows what FDA data you have downloaded, how fresh it is, and what's available |
+| `/fda:configure` | Sets up API keys, data directories, and your preferences |
+| `/fda:ask` | Answers regulatory questions in plain language — classification, pathways, testing |
+| `/fda:validate` | Checks any device number (K, P, DEN, N) against FDA databases |
+
+### Research & Intelligence
+
+| Command | What it does |
+|---------|-------------|
+| `/fda:research` | Comprehensive submission research — predicates, testing landscape, competitive analysis |
+| `/fda:pathway` | Recommends the best regulatory pathway (Traditional/Special/Abbreviated 510(k), De Novo, PMA) |
+| `/fda:literature` | Searches PubMed and the web for clinical evidence, then identifies gaps vs. guidance |
+| `/fda:lineage` | Traces predicate citation chains across generations and flags recalled ancestors |
+| `/fda:safety` | Pulls adverse events (MAUDE) and recall history for any product code or device |
+
+### Data Extraction
+
+| Command | What it does |
+|---------|-------------|
+| `/fda:extract` | Downloads 510(k) PDFs and extracts predicate relationships from them |
+| `/fda:analyze` | Runs statistics and finds patterns across your extraction results |
+| `/fda:summarize` | Compares sections (testing, IFU, device description) across multiple devices |
+| `/fda:monitor` | Watches FDA databases for new clearances, recalls, and MAUDE events |
+
+### Review & Planning
+
+| Command | What it does |
+|---------|-------------|
+| `/fda:review` | Scores and triages extracted predicates — accept, reject, or flag each one |
+| `/fda:guidance` | Finds relevant FDA guidance documents and maps them to testing requirements |
+| `/fda:test-plan` | Generates a risk-based testing plan with gap analysis |
+| `/fda:presub` | Creates a Pre-Submission meeting package (cover letter, topics, questions) |
+
+### Document Generation
+
+| Command | What it does |
+|---------|-------------|
+| `/fda:submission-outline` | Builds a full 510(k) submission outline with section checklists and gap analysis |
+| `/fda:compare-se` | Generates substantial equivalence comparison tables, auto-populated from FDA data |
+| `/fda:draft` | Writes regulatory prose for submission sections with citations |
+| `/fda:pccp` | Creates a Predetermined Change Control Plan for AI/ML or iterative devices |
+
+### Assembly & Validation
+
+| Command | What it does |
+|---------|-------------|
+| `/fda:assemble` | Assembles an eSTAR-structured submission package from your project data |
+| `/fda:traceability` | Generates a requirements traceability matrix (guidance → risks → tests → evidence) |
+| `/fda:consistency` | Validates that device descriptions, intended use, and predicates match across all files |
+| `/fda:portfolio` | Cross-project dashboard — shared predicates, common guidance, submission timelines |
+
+### Full Pipeline
+
+| Command | What it does |
+|---------|-------------|
+| `/fda:pipeline` | Runs all stages autonomously: extract → review → safety → guidance → presub → outline → SE |
+
+---
+
+## Autonomous Mode
+
+The plugin can run fully unattended — no prompts, no manual steps. This is ideal for Co-work sessions, batch processing, or overnight runs.
+
+| Flag | What it does |
+|------|-------------|
+| `--full-auto` | Makes all decisions automatically using score thresholds (never prompts) |
+| `--infer` | Auto-detects your product code from project data |
+| `--headless` | Non-interactive mode for use inside Python scripts |
+
+**Example — fully autonomous pipeline:**
+
+```
+/fda:pipeline OVE --project my-device --full-auto \
+  --device-description "Cervical interbody fusion cage" \
+  --intended-use "For fusion of the cervical spine"
+```
+
+---
+
+## openFDA Integration
+
+The plugin connects to all 7 openFDA Device API endpoints for real-time access to clearances, classifications, adverse events, recalls, registrations, UDI data, and COVID-related authorizations.
+
+It also works offline using cached FDA flat files — no internet required for basic lookups.
+
+**Optional:** Set up a free API key for higher rate limits:
+
 ```
 /fda:configure --setup-key
 ```
 
-## Data pipeline
+---
+
+## Data Pipeline
 
 The plugin bundles two Python scripts for batch processing:
 
-1. **BatchFetch** — Filter the FDA catalog and download 510(k) PDFs
-2. **Predicate Extractor** — Extract device numbers from PDFs with OCR error correction
+1. **BatchFetch** — Filters the FDA catalog by product code, date range, or company, then downloads 510(k) summary PDFs
+2. **Predicate Extractor** — Extracts device numbers from downloaded PDFs with OCR error correction and FDA database validation
 
 Run `/fda:extract` to use either or both stages.
 
+---
+
 ## Requirements
 
-- Claude Code 1.0.33+
+- Claude Code 1.0.33 or later
 - Python 3.x (for extraction scripts)
 - `pip install requests tqdm PyMuPDF pdfplumber` (for PDF processing)
+
+---
+
+## Updating
+
+To update to the latest version:
+
+```
+/plugin update fda-predicate-assistant
+```
+
+---
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Commands don't appear after install | Start a new session — plugins load at startup |
+| `/plugin install` fails | Check your internet connection; verify the marketplace is registered with `/plugin list` |
+| Python errors during extraction | Run `pip install requests tqdm PyMuPDF pdfplumber` |
+| "Rate limited" from openFDA | Set up a free API key: `/fda:configure --setup-key` |
+| Plugin seems outdated | Run `/plugin update fda-predicate-assistant` |
+
+---
+
+<details>
+<summary><strong>Important Notices</strong></summary>
+
+**Research purposes only.** This tool analyzes publicly available FDA data (510(k) summaries, classification databases, MAUDE reports, and other records published by the U.S. Food and Drug Administration).
+
+**Do not use with confidential documents.** All text you provide — including device descriptions, intended use statements, and file contents — is processed by Claude (Anthropic's LLM). Depending on your Anthropic account settings, this content may be used for model training. Even when training is disabled, there is no independent means to verify that data is excluded. Do not submit trade secrets, proprietary designs, or confidential regulatory strategies.
+
+**LLM accuracy is not guaranteed.** Large language models make mistakes. Device number extraction, predicate identification, section classification, and all other outputs may contain errors, omissions, or hallucinations. Always independently verify every device number, predicate relationship, regulatory citation, and testing recommendation before relying on it.
+
+**Not legal or regulatory advice.** Consult qualified regulatory affairs professionals and legal counsel before making submission decisions. The developers and Anthropic accept no liability for regulatory outcomes based on this tool's output.
+
+</details>
+
+---
+
+## Changelog
+
+See [releases](https://github.com/andrewlasiter/fda-predicate-assistant-plugin/releases) for version history.
 
 ## License
 
