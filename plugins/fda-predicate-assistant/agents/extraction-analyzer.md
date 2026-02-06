@@ -77,7 +77,7 @@ Structure your report as:
   FDA Extraction Analysis Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v4.1.1
+  Generated: {date} | v4.6.0
 
 EXECUTIVE SUMMARY
 ────────────────────────────────────────
@@ -122,6 +122,43 @@ RECOMMENDATIONS
   This report is AI-generated from public FDA data.
   Verify independently. Not regulatory advice.
 ────────────────────────────────────────
+```
+
+### Step 7: Auto-Triage via Review (Phase 3)
+
+If review.json exists or `--full-auto` is active, perform automatic predicate triage:
+
+1. Load extraction results from output.csv
+2. For each candidate predicate:
+   - Score using the confidence scoring algorithm (see `references/confidence-scoring.md`)
+   - Auto-accept predicates scoring 80+ (Strong)
+   - Auto-reject predicates scoring below 20 (Weak)
+   - Flag predicates 20-79 for manual review
+3. Write triage results to `review_auto.json`
+4. Report triage summary with accepted/rejected/flagged counts
+
+### Step 8: Guidance Lookup for Accepted Predicates (Phase 4)
+
+For accepted predicates' product codes, perform guidance lookup:
+
+1. Identify unique product codes from accepted predicates
+2. For each product code, query openFDA classification for:
+   - Regulation number
+   - Special controls
+   - Review panel
+3. Search for applicable guidance documents (same approach as `/fda:guidance`)
+4. Cross-reference guidance requirements against predicate testing precedent
+5. Report gaps where guidance requires testing not demonstrated by predicates
+
+```
+GUIDANCE GAP ANALYSIS
+────────────────────────────────────────
+
+  | Requirement | Guidance Source | Predicate Precedent | Gap? |
+  |-------------|----------------|---------------------|------|
+  | Biocompat   | ISO 10993-1    | K192345: Yes        | No   |
+  | EMC         | IEC 60601-1-2  | K192345: No data    | Yes  |
+  | Sterility   | ISO 11135      | K192345: Yes        | No   |
 ```
 
 ## Regulatory Context

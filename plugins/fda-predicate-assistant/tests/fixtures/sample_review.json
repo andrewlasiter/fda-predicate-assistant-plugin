@@ -1,0 +1,46 @@
+{
+  "project": "test_project",
+  "product_code": "OVE",
+  "created_at": "2025-01-15T10:30:00Z",
+  "predicates": {
+    "K192345": {
+      "device_name": "SpineTech Fusion Device",
+      "applicant": "SpineTech Corporation",
+      "decision_date": "2020-03-15",
+      "product_code": "OVE",
+      "decision": "accepted",
+      "confidence_score": 92,
+      "rationale": "Same intended use, same materials, recent clearance",
+      "risk_flags": [],
+      "source": "extraction"
+    },
+    "K181234": {
+      "device_name": "OrthoFuse System",
+      "applicant": "OrthoFuse Inc.",
+      "decision_date": "2019-11-22",
+      "product_code": "OVE",
+      "decision": "accepted",
+      "confidence_score": 85,
+      "rationale": "Same intended use, similar design, complementary size range",
+      "risk_flags": [],
+      "source": "extraction"
+    },
+    "K170987": {
+      "device_name": "BoneGraft Plus",
+      "applicant": "BoneGraft Medical LLC",
+      "decision_date": "2018-06-30",
+      "product_code": "OVE",
+      "decision": "rejected",
+      "confidence_score": 45,
+      "rationale": "Different intended use (bone graft vs fusion device)",
+      "risk_flags": ["different_intended_use"],
+      "source": "extraction"
+    }
+  },
+  "summary": {
+    "total_evaluated": 3,
+    "accepted": 2,
+    "rejected": 1,
+    "average_score": 74
+  }
+}

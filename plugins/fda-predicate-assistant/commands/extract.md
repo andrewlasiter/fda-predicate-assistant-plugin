@@ -258,7 +258,7 @@ Once either stage completes, present results using the standard FDA Professional
   FDA BatchFetch Summary
   {product_code} — Stage 1 Complete
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Project: {name} | v4.1.1
+  Generated: {date} | Project: {name} | v4.6.0
 
 RESULTS
 ────────────────────────────────────────
@@ -296,7 +296,7 @@ NEXT STEPS
   FDA Predicate Extraction Summary
   {product_code} — Stage 2 Complete
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Project: {name} | v4.1.1
+  Generated: {date} | Project: {name} | v4.6.0
 
 RESULTS
 ────────────────────────────────────────

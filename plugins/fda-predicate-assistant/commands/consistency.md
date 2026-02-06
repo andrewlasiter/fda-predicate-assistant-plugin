@@ -173,6 +173,25 @@ No `[INSERT: ...]` placeholders should remain in final documents.
 **WARN**: `[TODO:` items remain (expected for company-specific data).
 **FAIL**: `[INSERT:` placeholders found — these were supposed to be resolved.
 
+### Check 9: Cross-Section Draft Consistency (HIGH)
+When multiple draft_*.md files exist, validate consistency across sections:
+
+**IFU alignment**: The indications for use text in draft_labeling.md must match draft_510k-summary.md and draft_se-discussion.md.
+**K-number references**: All draft files that mention predicate K-numbers must reference the same set of accepted predicates.
+**Standard citations**: Standards referenced in draft_sterilization.md, draft_biocompatibility.md, draft_emc-electrical.md must appear in test_plan.md.
+**Device description**: Core device description in draft_device-description.md must be semantically consistent with the description in draft_510k-summary.md and draft_cover-letter.md.
+
+**PASS**: All cross-section references are consistent.
+**WARN**: Minor wording differences in device description across sections.
+**FAIL**: IFU text differs between labeling and 510k-summary sections.
+
+### Check 10: eSTAR Import Data Alignment (MEDIUM)
+If import_data.json exists, check that project files align with imported eSTAR data:
+
+**PASS**: Product code, predicates, and IFU match import_data.json.
+**WARN**: Project data has been modified since import (expected if user updated).
+**FAIL**: Product code in import_data.json differs from project data with no documented change.
+
 ## Step 4: Generate Report
 
 Present the report using the standard FDA Professional CLI format (see `references/output-formatting.md`):
@@ -181,7 +200,7 @@ Present the report using the standard FDA Professional CLI format (see `referenc
   FDA Consistency Validation Report
   Project: {project_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Files: {count} | v4.1.1
+  Generated: {date} | Files: {count} | v4.6.0
 
 RESULTS SUMMARY
 ────────────────────────────────────────

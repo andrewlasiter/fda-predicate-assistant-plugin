@@ -63,6 +63,7 @@ files_to_check = {
     "output.csv": "Extraction results",
     "output_reviewed.csv": "Reviewed extraction",
     "review.json": "Predicate review data",
+    "import_data.json": "eSTAR import data",
     "presub_plan.md": "Pre-Submission plan",
     "submission_outline.md": "Submission outline",
     "se_comparison.md": "SE comparison table",
@@ -127,6 +128,17 @@ For each eSTAR section, check if project data can populate it:
 | Performance | 15_performance_testing | test_plan.md | Partial |
 | Clinical | 16_clinical | review.json (lit review) | If available |
 | Other | 17_other | Remaining documents | As available |
+
+### Import Data Pre-Population
+
+If `import_data.json` exists (from `/fda:import`), use it as a **primary data source** for pre-populating sections:
+- **Section 01 (Cover Letter)**: Pre-fill applicant name, address, contact info from `import_data.applicant`
+- **Section 02 (Cover Sheet)**: Pre-fill product code, regulation, device class from `import_data.classification`
+- **Section 06 (Device Description)**: Use `import_data.sections.device_description_text` if available
+- **Section 07 (SE Comparison)**: Use imported predicate list and comparison narrative
+- **Section 09 (Labeling)**: Use `import_data.sections.ifu_text` or `import_data.indications_for_use`
+
+`import_data.json` takes **lower priority** than project-specific files (`se_comparison.md`, `draft_*.md`) when both exist.
 
 For each section:
 1. Create a `README.md` in the section folder describing what's needed
@@ -223,7 +235,7 @@ have AI-generated content that has not yet been verified.
   FDA eSTAR Assembly Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Project: {name} | v4.1.1
+  Generated: {date} | Project: {name} | v4.6.0
 
 ASSEMBLY SUMMARY
 ────────────────────────────────────────

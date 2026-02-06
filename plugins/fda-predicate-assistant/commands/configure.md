@@ -169,7 +169,7 @@ endpoints = [
 print("  FDA API Connectivity Test")
 print("  openFDA Device Endpoints")
 print("━" * 56)
-print(f"  Generated: {__import__('datetime').date.today()} | v4.1.1")
+print(f"  Generated: {__import__('datetime').date.today()} | v4.6.0")
 print()
 print("API CONFIGURATION")
 print("─" * 40)
@@ -483,6 +483,80 @@ PYEOF
 ```
 
 Report the migration results and note that the original `pdf_data.json` is preserved as a backup.
+
+### Cache Statistics
+
+If `$ARGUMENTS` is `--cache-stats`, show API cache statistics:
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_api_client.py" --stats
+```
+
+Also report on other cached data:
+
+```bash
+python3 << 'PYEOF'
+import os, json
+
+cache_dir = os.path.expanduser('~/fda-510k-data/api_cache')
+projects_dir = os.path.expanduser('~/fda-510k-data/projects')
+
+# API cache
+api_files = 0
+api_size = 0
+if os.path.isdir(cache_dir):
+    for f in os.listdir(cache_dir):
+        if f.endswith('.json'):
+            api_files += 1
+            api_size += os.path.getsize(os.path.join(cache_dir, f))
+
+# PDF text cache
+pdf_cache_size = 0
+pdf_cache_file = os.path.expanduser('~/fda-510k-data/extraction/pdf_data.json')
+if os.path.exists(pdf_cache_file):
+    pdf_cache_size = os.path.getsize(pdf_cache_file)
+
+# Guidance cache (per-project)
+guidance_count = 0
+if os.path.isdir(projects_dir):
+    for proj in os.listdir(projects_dir):
+        gc = os.path.join(projects_dir, proj, 'guidance_cache')
+        if os.path.isdir(gc):
+            guidance_count += len(os.listdir(gc))
+
+print(f"API_CACHE:{api_files} files|{api_size / 1024:.1f} KB")
+print(f"PDF_CACHE:{'exists' if pdf_cache_size else 'none'}|{pdf_cache_size / (1024*1024):.1f} MB")
+print(f"GUIDANCE_CACHE:{guidance_count} files")
+PYEOF
+```
+
+Present using the standard CLI format:
+
+```
+CACHE STATISTICS
+────────────────────────────────────────
+
+  | Cache Type    | Files | Size     | TTL      |
+  |---------------|-------|----------|----------|
+  | API responses | {N}   | {size}   | 7 days   |
+  | PDF text      | {N}   | {size}   | No expiry|
+  | Guidance      | {N}   | {size}   | No expiry|
+```
+
+### Clear Cache
+
+If `$ARGUMENTS` starts with `--clear-cache`, parse the cache type:
+
+- `--clear-cache api` — Clear API response cache only
+- `--clear-cache pdf` — Clear PDF text extraction cache (pdf_data.json)
+- `--clear-cache guidance` — Clear guidance document cache
+- `--clear-cache all` — Clear all cached data
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_api_client.py" --clear
+```
+
+Confirm with the user before clearing non-API caches (PDF and guidance caches are expensive to regenerate).
 
 ## Creating Default Settings
 

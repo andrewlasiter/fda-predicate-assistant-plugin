@@ -1,0 +1,68 @@
+510(k) SUMMARY
+
+This is a sample 510(k) Summary text extracted from a public FDA document for testing purposes.
+
+SUBMITTER INFORMATION
+Applicant: ACME Medical Devices, Inc.
+Address: 123 Medical Drive, Suite 100, San Jose, CA 95134
+Contact: Jane Smith, VP of Regulatory Affairs
+Phone: (408) 555-0100
+Date: January 15, 2025
+
+DEVICE INFORMATION
+Trade Name: AcmeFix Spinal Fusion System
+Common Name: Intervertebral Body Fusion Device
+Classification: Product Code OVE
+Regulation Number: 21 CFR 888.3080
+Device Class: II
+
+PREDICATE DEVICES
+The subject device is substantially equivalent to the following predicate devices:
+1. K192345 - SpineTech Fusion Device (SpineTech Corporation, cleared 03/15/2020)
+2. K181234 - OrthoFuse System (OrthoFuse Inc., cleared 11/22/2019)
+
+Additional reference devices cited in this submission:
+- K170987 - BoneGraft Plus (BoneGraft Medical LLC, cleared 06/30/2018)
+- P190001 - CardioValve Replacement System (not a predicate - cited for comparison only)
+
+INDICATIONS FOR USE
+The AcmeFix Spinal Fusion System is intended for use in skeletally mature patients for intervertebral body fusion of the lumbar spine (L2-S1) in conjunction with supplemental fixation. The device is intended to be used with autogenous bone graft.
+
+DEVICE DESCRIPTION
+The AcmeFix Spinal Fusion System is an intervertebral body fusion device made of PEEK (polyetheretherketone) with titanium alloy (Ti-6Al-4V) endplates. The device is available in multiple sizes to accommodate varying disc heights and footprints.
+
+The device operates on the principle of providing structural support and maintaining disc height while facilitating bony fusion across the treated vertebral segment.
+
+SUBSTANTIAL EQUIVALENCE COMPARISON
+The subject device has the same intended use as the predicate devices K192345 and K181234. Both are indicated for intervertebral body fusion of the lumbar spine.
+
+Technological characteristics comparison:
+- Material: Same (PEEK body with titanium endplates) as K192345
+- Geometry: Similar lordotic angle range (0-12 degrees)
+- Sizes: Comparable size range to both predicates
+- Sterilization: Gamma radiation, same as predicates
+- Shelf Life: 5 years, consistent with K192345
+
+The differences between the subject device and predicates (slightly wider footprint range) do not raise new questions of safety or effectiveness.
+
+PERFORMANCE TESTING
+Testing performed includes:
+1. Static compression testing per ASTM F2077
+2. Static torsion testing per ASTM F2077
+3. Subsidence testing per ASTM F2267
+4. Fatigue testing per ASTM F2077
+5. Biocompatibility testing per ISO 10993-1:2018 (cytotoxicity, sensitization, irritation)
+6. Sterilization validation per ISO 11137
+7. Shelf life testing per ASTM F1980 (accelerated aging)
+
+All test results met acceptance criteria.
+
+OTHER DEVICES MENTIONED
+The submission also references DEN200045 (De Novo classification for a related interbody device), N0012 (a pre-amendments device), and notes that K241335 was recently cleared in the same product code.
+
+SUPPLEMENT DEVICES
+K192345/S001 was a supplement to the primary predicate adding a new size option.
+K181234/S002 added a lordotic angle variant.
+
+Note: Device K1O2345 appears to be a misprint of K102345 based on OCR analysis.
+Device KI92345 appears to be a misprint of K192345.

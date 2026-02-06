@@ -1,5 +1,72 @@
 # Changelog
 
+## [4.6.0] - 2026-02-06
+
+### Added — Documentation & Polish
+- `docs/WORKFLOWS.md` — 3 golden-path workflows: Full 510(k) from scratch (10 steps), Import & modify existing eSTAR (7 steps), Pre-Sub preparation (6 steps)
+- `docs/EXAMPLES.md` — Per-device-type command examples for CGM (MDS), wound dressing (KGN), orthopedic implant (OVE), cardiovascular (DQY), SaMD (QAS)
+- README.md updated with troubleshooting table, badges (29 commands, 3 agents, 139+ tests), and links to docs/
+
+## [4.5.1] - 2026-02-06
+
+### Added — Error Handling & Caching
+- `scripts/fda_api_client.py` — Centralized API client with LRU caching (7-day TTL), exponential backoff retry (3 attempts), rate limit handling (HTTP 429), and degraded mode responses
+- `references/error-handling-patterns.md` — 6 standardized error categories, degraded mode specification, standard error footer format
+- `/fda:configure --cache-stats` — Show API cache hit/miss/size statistics
+- `/fda:configure --clear-cache [api|pdf|guidance|all]` — Clear cached data by category
+
+## [4.5.0] - 2026-02-06
+
+### Added — Agents & Autonomous Workflows
+- `submission-writer` agent — Autonomous 510(k) drafting: data inventory → sequential 16-section drafting → consistency validation → eSTAR assembly → readiness scoring
+- `presub-planner` agent — Autonomous Pre-Sub preparation: research → guidance → safety → literature → Pre-Sub generation → quality check
+- `extraction-analyzer` enhanced with Step 7 (auto-triage via confidence scoring) and Step 8 (guidance lookup for accepted predicates with gap analysis)
+
+## [4.4.0] - 2026-02-06
+
+### Added — Testing & CI
+- `tests/test_knumber_extraction.py` — 15+ tests for K/P/DEN/N number regex, OCR error detection, sample text extraction
+- `tests/test_regex_patterns.py` — 80+ parametrized tests for all 11 section detection patterns
+- `tests/test_estar_parser.py` — 20+ tests for XML escaping, field mapping, K-number pattern, section detection (skipped if pikepdf/lxml not installed)
+- `tests/test_api_contracts.py` — 10+ tests for openFDA API response shapes (marked `@pytest.mark.api`, run only on push)
+- `.github/workflows/test.yml` — GitHub Actions CI: Python 3.9-3.11 matrix, offline tests on PR, API tests on push
+- `pytest.ini` — Test configuration with custom `api` marker
+
+### Fixed
+- Clinical section regex `studies?` → `stud(?:y|ies)` to match singular "Clinical Study"
+
+## [4.3.1] - 2026-02-06
+
+### Changed — Enhanced Pre-Sub Pipeline
+- `/fda:presub` expanded from 7 to 11 sections:
+  - Section 7: Regulatory Background (clearance history, clinical need, guidance landscape)
+  - Section 8: Preliminary Data Summary (completed tests, literature, prior submissions)
+  - Section 9: Safety Intelligence (MAUDE events, recall history, severity distribution)
+  - Section 10: Supporting Data (renumbered from Section 7)
+  - Section 11: Meeting Logistics (timeline, format, agenda, attendee list, 75-day deadline calculation)
+- New flags: `--include-literature`, `--include-safety`, `--no-literature`, `--no-safety`
+- Auto-integration of safety, literature, and guidance data when available in project directory
+
+## [4.3.0] - 2026-02-06
+
+### Added — Complete 510(k) Writing Pipeline
+- `/fda:draft` expanded from 6 to 16 sections: added `labeling`, `sterilization`, `shelf-life`, `biocompatibility`, `software`, `emc-electrical`, `clinical`, `cover-letter`, `truthful-accuracy`, `financial-certification`
+- `/fda:export` — Assemble eSTAR package with completeness validation, XML generation, ZIP packaging, and readiness report
+- `references/draft-templates.md` — Prose templates for all 16 eSTAR sections with `[TODO:]` placeholders for company-specific data
+- `/fda:consistency` enhanced with Check 9 (cross-section draft consistency) and Check 10 (eSTAR import data alignment)
+
+## [4.2.0] - 2026-02-06
+
+### Added — eSTAR Import & Export via XML
+- `/fda:import` — Import eSTAR PDF or XML data into project structure (XFA extraction, openFDA validation, structured output)
+- `scripts/estar_xml.py` — XFA XML extraction from eSTAR PDFs, XML parsing into project data, XML generation for re-import (~600 lines)
+- `references/estar-structure.md` — XFA field mapping (30+ field paths), eSTAR section structure, section-to-draft mapping
+- `references/section-patterns.md` — K/P/DEN/N number regex, 11 section heading detection patterns, eSTAR section-to-XML element mapping
+- `scripts/templates/README.md` — Placeholder for bundled eSTAR template PDFs (nIVD v6, IVD v6, PreSTAR v2)
+- New dependencies: `pikepdf>=8.0.0`, `beautifulsoup4>=4.12.0`, `lxml>=4.9.0`
+- `/fda:assemble` updated to pre-populate from `import_data.json` when available
+- SKILL.md updated with 29 commands, 26 references, and eSTAR import/export workflow
+
 ## [4.1.1] - 2026-02-06
 
 ### Fixed

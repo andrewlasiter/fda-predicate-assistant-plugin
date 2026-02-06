@@ -218,6 +218,14 @@ The full 510(k) submission preparation workflow:
 7. /fda:compare-se --predicates ...   — Build SE comparison table for submission
 ```
 
+**Alternative start — import existing eSTAR:**
+```
+1. /fda:import estar.pdf --project NAME  — Import existing eSTAR data
+2. /fda:review --project NAME            — Score imported predicates
+3. /fda:draft --project NAME             — Draft remaining sections
+4. /fda:export --project NAME            — Export as eSTAR XML
+```
+
 Each step builds on previous data but degrades gracefully if run independently.
 
 **Supporting commands** (use anytime):
@@ -228,7 +236,7 @@ Each step builds on previous data but degrades gracefully if run independently.
 - `/fda:status` — Check pipeline data, file freshness, API connectivity
 - `/fda:configure` — View/modify settings, manage exclusion list
 
-## Available Commands (26)
+## Available Commands (29)
 
 ### Core Pipeline
 | Command | Purpose |
@@ -262,9 +270,11 @@ Each step builds on previous data but degrades gracefully if run independently.
 | `/fda:monitor` | Watch FDA databases for new clearances, recalls, events |
 | `/fda:draft` | Generate regulatory prose for submission sections |
 
-### Assembly, Validation, and Management
+### Import, Export, and Assembly
 | Command | Purpose |
 |---------|---------|
+| `/fda:import` | Import eSTAR data from PDF or XML into project data |
+| `/fda:export` | Export project data as eSTAR XML or zip package |
 | `/fda:assemble` | Assemble eSTAR-structured submission package from project data |
 | `/fda:traceability` | Requirements Traceability Matrix (guidance → risks → tests → evidence) |
 | `/fda:consistency` | Cross-document consistency validation across project files |
@@ -272,7 +282,7 @@ Each step builds on previous data but degrades gracefully if run independently.
 | `/fda:configure` | Set up API keys, data paths, and preferences |
 | `/fda:status` | Check what data you have and what's available |
 
-## Resources (23 references)
+## Resources (26 references)
 
 For detailed reference information, see:
 - `references/output-formatting.md` - FDA Professional CLI output formatting guide (rules R1-R12)
@@ -298,6 +308,9 @@ For detailed reference information, see:
 - `references/special-controls.md` - Class II special controls identification and conformance
 - `references/clinical-data-framework.md` - Clinical data decision tree and evidence types
 - `references/post-market-requirements.md` - Post-market obligations (MDR, recalls, registration, surveillance)
+- `references/estar-structure.md` - eSTAR section structure, XFA field mapping, and XML schema documentation
+- `references/section-patterns.md` - PDF section detection regexes and eSTAR XML element mapping
+- `references/draft-templates.md` - Prose templates for all 16 eSTAR sections with `[TODO:]` placeholders
 
 ## Disclaimers (always include when providing regulatory guidance)
 

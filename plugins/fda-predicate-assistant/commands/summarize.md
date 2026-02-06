@@ -239,7 +239,7 @@ Present the summary using the standard FDA Professional CLI format (see `referen
   FDA Section Comparison Report
   {product_code} — {section_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Documents: {N} matched | v4.1.1
+  Generated: {date} | Documents: {N} matched | v4.6.0
 
 FILTER SUMMARY
 ────────────────────────────────────────

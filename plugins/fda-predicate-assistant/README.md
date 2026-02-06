@@ -1,6 +1,8 @@
-![Version](https://img.shields.io/badge/version-4.1.1-blue)
+![Version](https://img.shields.io/badge/version-4.6.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Commands](https://img.shields.io/badge/commands-26-orange)
+![Commands](https://img.shields.io/badge/commands-29-orange)
+![Agents](https://img.shields.io/badge/agents-3-purple)
+![Tests](https://img.shields.io/badge/tests-139+-brightgreen)
 ![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-blueviolet)
 ![FDA 510(k)](https://img.shields.io/badge/FDA-510(k)-red)
 
@@ -8,7 +10,7 @@
 
 **Your AI-powered regulatory assistant for FDA 510(k) submissions.**
 
-From predicate research to eSTAR assembly — 26 commands that handle the data work so you can focus on the science and strategy. Search FDA databases, identify predicates, analyze safety histories, generate substantial equivalence comparisons, and assemble submission-ready documents, all from within Claude.
+From predicate research to eSTAR assembly — 29 commands, 3 autonomous agents, and full eSTAR import/export that handle the data work so you can focus on the science and strategy. Search FDA databases, identify predicates, analyze safety histories, generate substantial equivalence comparisons, draft all 16 eSTAR sections, and assemble submission-ready packages, all from within Claude.
 
 ---
 

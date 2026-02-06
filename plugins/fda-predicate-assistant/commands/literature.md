@@ -295,7 +295,7 @@ This is a document-format command (writes to file). Use markdown headings per R1
 ```markdown
 # Literature Review: {Product Code} — {Device Name}
 
-**Generated:** {date} | **Depth:** {quick|standard|deep} | **v4.1.1**
+**Generated:** {date} | **Depth:** {quick|standard|deep} | **v4.6.0**
 
 ---
 

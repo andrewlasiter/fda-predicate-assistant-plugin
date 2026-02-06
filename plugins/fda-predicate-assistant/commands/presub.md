@@ -46,6 +46,10 @@ From `$ARGUMENTS`, extract:
 - `--meeting-type written|teleconference|in-person` — Preferred meeting type (default: teleconference)
 - `--output FILE` — Write Pre-Sub plan to file (default: presub_plan.md in project folder)
 - `--infer` — Auto-detect product code from project data instead of requiring explicit input
+- `--include-literature` — Include literature summary from literature.md (default: on if data available)
+- `--include-safety` — Include MAUDE/recall safety intelligence (default: on if data available)
+- `--no-literature` — Explicitly exclude literature section even if data available
+- `--no-safety` — Explicitly exclude safety section even if data available
 
 If no product code provided:
 - If `--infer` AND `--project NAME` specified:
@@ -368,7 +372,206 @@ Our proposed indications for use include {extended claims}. The predicate's IFU 
 
 ---
 
-## 7. Supporting Data
+## 7. Regulatory Background
+
+### 7.1 Regulatory History of Device Type
+{Auto-generated from openFDA data:}
+Product code {CODE} ({device_name}) has been regulated under 21 CFR {regulation} since {earliest clearance year from openFDA}.
+
+**Clearance Statistics (from openFDA 510k API):**
+- Total 510(k) clearances for this product code: {total count}
+- Recent clearances (last 5 years): {count}
+- Predominant submission type: {Traditional/Special/Abbreviated}
+- Common predicate devices: {top 3 most-cited predicates with counts}
+
+{If De Novo history exists:}
+The product code was established via De Novo classification: {DEN number, date}.
+
+### 7.2 Clinical Need
+[TODO: Company-specific — Describe the unmet clinical need addressed by the device:
+- Patient population
+- Current standard of care
+- Limitations of existing devices
+- How the subject device addresses the need]
+
+### 7.3 Applicable Guidance Documents
+{If guidance_cache available from /fda:guidance:}
+
+| # | Guidance Document | Year | Relevance |
+|---|-------------------|------|-----------|
+{For each guidance in cache:}
+| {n} | {title} | {year} | {summary of key requirements} |
+
+[Source: guidance_cache]
+
+{If no guidance cache:}
+[TODO: Run `/fda:guidance {CODE}` to identify applicable guidance documents]
+
+---
+
+## 8. Preliminary Data Summary
+
+### 8.1 Testing Completed
+{If test_plan.md exists from /fda:test-plan:}
+
+| Test Category | Standard | Status | Summary |
+|---------------|----------|--------|---------|
+{For each test in test_plan.md:}
+| {category} | {standard} | {Planned/In Progress/Complete} | {brief summary} |
+
+[Source: test_plan.md]
+
+{If no test plan:}
+[TODO: Company-specific — Summarize any preliminary testing:
+- Bench testing results
+- Biocompatibility testing
+- Software verification
+- Electrical safety testing
+- Sterilization validation]
+
+### 8.2 Literature Evidence
+{If literature.md exists from /fda:literature AND --include-literature (or default on):}
+
+A literature review was conducted to support the clinical evidence strategy.
+
+**Search Summary:**
+- Databases searched: {databases from literature.md}
+- Key search terms: {terms}
+- Articles identified: {count}
+- Articles included: {count}
+
+**Key Findings:**
+{Top 3-5 findings from literature.md relevant to device safety and effectiveness}
+
+[Source: literature.md]
+
+{If --no-literature or no data:}
+[TODO: Run `/fda:literature {CODE}` for literature review, or provide preliminary literature references]
+
+### 8.3 Prior Submissions
+[TODO: Company-specific — List any prior FDA interactions:
+- Previous Pre-Sub meetings (Q-Sub numbers)
+- Previous 510(k) submissions for related devices
+- Previous FDA correspondence]
+
+---
+
+## 9. Safety Intelligence
+
+{If safety data available from /fda:safety AND --include-safety (or default on):}
+
+### 9.1 MAUDE Adverse Event Analysis
+{Auto-query openFDA MAUDE events for product code:}
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re
+
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = os.environ.get('OPENFDA_API_KEY')
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    if not api_key:
+        m = re.search(r'openfda_api_key:\s*(\S+)', content)
+        if m and m.group(1) != 'null':
+            api_key = m.group(1)
+
+product_code = "PRODUCTCODE"  # Replace
+params = {"search": f'device.device_report_product_code:"{product_code}"', "count": "event_type.exact"}
+if api_key:
+    params["api_key"] = api_key
+url = f"https://api.fda.gov/device/event.json?{urllib.parse.urlencode(params)}"
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+try:
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        data = json.loads(resp.read())
+        total = sum(r.get('count', 0) for r in data.get('results', []))
+        print(f"MAUDE_TOTAL:{total}")
+        for r in data.get('results', []):
+            print(f"EVENT_TYPE:{r['term']}|{r['count']}")
+except Exception as e:
+    print(f"MAUDE_ERROR:{e}")
+PYEOF
+```
+
+**MAUDE Event Summary for {product_code}:**
+
+| Event Type   | Count | % of Total |
+|-------------|-------|------------|
+| Malfunction | {count} | {pct}%  |
+| Injury      | {count} | {pct}%  |
+| Death       | {count} | {pct}%  |
+
+**Total events:** {total}
+**Assessment:** {Low/Moderate/High concern based on event rates vs clearance volume}
+[Source: openFDA MAUDE API]
+
+### 9.2 Recall History
+{Auto-query openFDA recalls for product code:}
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re
+
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = os.environ.get('OPENFDA_API_KEY')
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    if not api_key:
+        m = re.search(r'openfda_api_key:\s*(\S+)', content)
+        if m and m.group(1) != 'null':
+            api_key = m.group(1)
+
+product_code = "PRODUCTCODE"  # Replace
+params = {"search": f'product_code:"{product_code}"', "limit": "5", "sort": "event_date_terminated:desc"}
+if api_key:
+    params["api_key"] = api_key
+url = f"https://api.fda.gov/device/recall.json?{urllib.parse.urlencode(params)}"
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+try:
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        data = json.loads(resp.read())
+        total = data.get('meta', {}).get('results', {}).get('total', 0)
+        print(f"RECALL_TOTAL:{total}")
+        for r in data.get('results', [])[:5]:
+            print(f"RECALL:{r.get('res_event_number', 'N/A')}|{r.get('event_type', 'N/A')}|{r.get('product_description', 'N/A')[:80]}")
+except Exception as e:
+    print(f"RECALL_ERROR:{e}")
+PYEOF
+```
+
+**Recall History for {product_code}:**
+- Total recalls: {count}
+- Class I (most serious): {count}
+- Class II: {count}
+- Class III: {count}
+
+{If recalls exist:}
+**Recent Recalls:**
+
+| # | Event | Class | Description |
+|---|-------|-------|-------------|
+{Top 3 recalls:}
+| 1 | {event_number} | {class} | {description} |
+
+**Pre-Sub Relevance:** {How safety data should inform FDA questions — e.g., "Recall history suggests FDA may focus on {failure mode}. Consider addressing in Question {N}."}
+
+[Source: openFDA Recall API]
+
+### 9.3 Safety Summary for FDA Discussion
+Based on the MAUDE and recall analysis:
+- **Primary safety concern:** {identified from event/recall patterns or "No dominant safety signal identified"}
+- **Recommended FDA question:** Consider asking FDA about specific testing to address {concern} (see Question {N})
+- **Predicate safety comparison:** {If predicate recall/MAUDE data available, compare rates}
+
+{If --no-safety or API unavailable:}
+[TODO: Run `/fda:safety --product-code {CODE}` for MAUDE + recall analysis, or provide your own safety data summary]
+
+---
+
+## 10. Supporting Data
 
 {If any data available from project:}
 - Preliminary extraction analysis: {count} devices analyzed, {count} predicates identified
@@ -377,6 +580,49 @@ Our proposed indications for use include {extended claims}. The predicate's IFU 
 
 {If no data:}
 [TODO: Company-specific — Any preliminary data, literature references, or prior testing results]
+
+---
+
+## 11. Meeting Logistics
+
+### 11.1 Submission Timeline
+{Auto-calculate based on today's date:}
+- **Pre-Sub preparation target:** {today + 2 weeks}
+- **Pre-Sub submission to FDA:** {today + 4 weeks}
+- **FDA 75-day meeting deadline:** {submission date + 75 calendar days}
+- **Expected FDA feedback by:** {submission date + 75 days}
+- **510(k) submission target:** {feedback date + time for incorporation}
+
+**Note:** FDA aims to hold Pre-Sub meetings within 75 calendar days of receipt (per MDUFA performance goals). Written-only responses are typically faster.
+
+### 11.2 Preferred Meeting Format
+**Requested format:** {meeting_type}
+
+{If teleconference:}
+Teleconference preferred. FDA typically schedules 60-minute Pre-Sub meetings.
+
+{If written:}
+Written feedback only (Q-Sub). This is the fastest option — FDA provides written responses without a meeting.
+
+{If in-person:}
+In-person meeting at FDA White Oak campus. Note: In-person meetings may have longer scheduling timelines.
+
+### 11.3 Proposed Agenda
+1. **Introductions** (5 min)
+2. **Device overview and intended use** (10 min)
+3. **Predicate selection and regulatory strategy** (15 min)
+4. **Testing strategy discussion** (15 min)
+5. **FDA questions and feedback** (15 min)
+
+### 11.4 Proposed Attendees
+**From {applicant_name}:**
+- [TODO: Company-specific — Regulatory Affairs lead]
+- [TODO: Company-specific — Engineering/R&D lead]
+- [TODO: Company-specific — Quality/clinical lead (if applicable)]
+
+**From FDA:**
+- Lead reviewer (assigned after submission)
+- Team lead (CDRH division based on review panel)
 
 ---
 

@@ -129,7 +129,7 @@ Identify standards referenced across multiple projects.
   FDA Device Portfolio Dashboard
   All Projects Summary
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Projects: {N} total | v4.1.1
+  Generated: {date} | Projects: {N} total | v4.6.0
 
 PROJECT SUMMARY
 ────────────────────────────────────────
