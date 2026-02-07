@@ -1168,19 +1168,26 @@ if os.path.exists(settings_path):
 # Replace with actual top predicate K-numbers
 top_predicates = ["K241335", "K234567", "K345678"]
 
-for knumber in top_predicates:
-    if api_enabled:
-        params = {"search": f'k_number:"{knumber}"', "limit": "1"}
-        if api_key:
-            params["api_key"] = api_key
-        url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
-        try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                data = json.loads(resp.read())
-                if data.get("results"):
-                    r = data["results"][0]
-                    print(f"=== {knumber} ===")
+if api_enabled and top_predicates:
+    # Batch lookup: single OR query for all predicates (1 call instead of 3-5)
+    batch_search = "+OR+".join(f'k_number:"{k}"' for k in top_predicates)
+    params = {"search": batch_search, "limit": str(len(top_predicates))}
+    if api_key:
+        params["api_key"] = api_key
+    url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read())
+            # Index results by k_number for ordered output
+            results_by_k = {}
+            for r in data.get("results", []):
+                results_by_k[r.get("k_number", "")] = r
+
+            for knumber in top_predicates:
+                print(f"=== {knumber} ===")
+                r = results_by_k.get(knumber)
+                if r:
                     print(f"APPLICANT:{r.get('applicant', 'N/A')}")
                     print(f"DEVICE_NAME:{r.get('device_name', 'N/A')}")
                     print(f"DECISION:{r.get('decision_code', 'N/A')} on {r.get('decision_date', 'N/A')}")
@@ -1201,13 +1208,13 @@ for knumber in top_predicates:
                             pass
                     print(f"SOURCE:openFDA API")
                 else:
-                    print(f"=== {knumber} ===")
                     print(f"API_FOUND:false")
-        except Exception as e:
+    except Exception as e:
+        for knumber in top_predicates:
             print(f"=== {knumber} ===")
             print(f"API_ERROR:{e}")
-        time.sleep(0.5)
-    else:
+else:
+    for knumber in top_predicates:
         print(f"=== {knumber} ===")
         print("API_SKIP:disabled")
 PYEOF

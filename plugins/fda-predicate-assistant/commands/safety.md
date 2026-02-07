@@ -186,13 +186,22 @@ subj_result = fda_query("event", f'device.device_report_product_code:"{product_c
 subject_events = subj_result.get("meta", {}).get("results", {}).get("total", 0)
 print(f"SUBJECT:{product_code}|{subject_events}")
 
-# Get peer event counts (top 5 peers)
-for pc in peer_codes[:5]:
-    time.sleep(0.3)
-    pr = fda_query("event", f'device.device_report_product_code:"{pc}"', limit=1)
-    count = pr.get("meta", {}).get("results", {}).get("total", 0)
-    peer_events[pc] = count
-    print(f"PEER_EVENTS:{pc}|{count}")
+# Get peer event counts — single OR batch query (1 call instead of 5)
+top_peers = peer_codes[:5]
+if top_peers:
+    peer_search = "+OR+".join(f'device.device_report_product_code:"{pc}"' for pc in top_peers)
+    pr = fda_query("event", peer_search, count_field="device.device_report_product_code.exact")
+    if "results" in pr:
+        for r in pr["results"]:
+            pc_term = r.get("term", "")
+            if pc_term in top_peers:
+                peer_events[pc_term] = r["count"]
+                print(f"PEER_EVENTS:{pc_term}|{r['count']}")
+    # Fill in zeros for any codes not returned
+    for pc in top_peers:
+        if pc not in peer_events:
+            peer_events[pc] = 0
+            print(f"PEER_EVENTS:{pc}|0")
 
 # Calculate percentile ranking
 if peer_events:
@@ -255,18 +264,24 @@ if "results" in result:
 else:
     print(f"ERROR:{result.get('error', 'Unknown')}")
 
-# Event count by year (last 5 years)
+# Event count by year — single count query with date_received (1 call instead of 7)
 import time
 time.sleep(0.5)
 print("\n=== EVENTS BY YEAR ===")
-for year in range(2020, 2027):
-    yr_result = fda_query("event",
-        f'device.device_report_product_code:"{product_code}"+AND+date_received:[{year}0101+TO+{year}1231]',
-        limit=1)
-    total = yr_result.get("meta", {}).get("results", {}).get("total", 0)
-    if total > 0:
-        print(f"YEAR:{year}:{total}")
-    time.sleep(0.3)
+yr_result = fda_query("event",
+    f'device.device_report_product_code:"{product_code}"',
+    count_field="date_received")
+if "results" in yr_result:
+    # count_field="date_received" returns daily buckets — aggregate by year
+    year_totals = {}
+    for bucket in yr_result["results"]:
+        date_str = str(bucket.get("time", ""))[:4]  # YYYY from YYYYMMDD
+        if date_str.isdigit():
+            yr = int(date_str)
+            if 2020 <= yr <= 2026:
+                year_totals[yr] = year_totals.get(yr, 0) + bucket["count"]
+    for year in sorted(year_totals):
+        print(f"YEAR:{year}:{year_totals[year]}")
 
 # Top device names reporting events
 time.sleep(0.5)
@@ -310,7 +325,8 @@ product_code = "PRODUCTCODE"  # Replace
 
 params = {
     "search": f'device.device_report_product_code:"{product_code}"+AND+date_received:[20230101+TO+20261231]',
-    "limit": "25"  # Default sample size; use --sample-size flag to override (max 100)
+    "limit": "25",  # Default sample size; use --sample-size flag to override (max 100)
+    "sort": "date_received:desc"  # Most recent events first
 }
 if api_key:
     params["api_key"] = api_key
@@ -371,10 +387,12 @@ if os.path.exists(settings_path):
 
 product_code = "PRODUCTCODE"  # Replace
 
-def fda_query(endpoint, search, limit=10, count_field=None):
+def fda_query(endpoint, search, limit=10, count_field=None, sort=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
+    if sort:
+        params["sort"] = sort
     if api_key:
         params["api_key"] = api_key
     url = f"https://api.fda.gov/device/{endpoint}.json?{urllib.parse.urlencode(params)}"
@@ -408,10 +426,10 @@ if "results" in status_result:
     for r in status_result["results"]:
         print(f"RECALL_STATUS:{r['term']}:{r['count']}")
 
-# Recent recalls with details
+# Recent recalls with details — sorted by most recent termination date
 time.sleep(0.5)
 print("\n=== RECENT RECALLS ===")
-recent = fda_query("recall", f'product_code:"{product_code}"', limit=20)
+recent = fda_query("recall", f'product_code:"{product_code}"', limit=20, sort="event_date_terminated:desc")
 if recent.get("results"):
     for r in recent["results"]:
         event_num = r.get("res_event_number", "N/A")

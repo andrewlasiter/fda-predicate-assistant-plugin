@@ -409,42 +409,62 @@ NEXT STEPS
 
    print("=== QUICK SAFETY SCAN ===")
    recalled = []
-   for knumber in top_5:
-       # Look up product code first
-       params = {"search": f'k_number:"{knumber}"', "limit": "1"}
-       if api_key:
-           params["api_key"] = api_key
-       url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
-       req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
-       try:
-           with urllib.request.urlopen(req, timeout=15) as resp:
-               data = json.loads(resp.read())
-               if data.get("results"):
-                   r = data["results"][0]
-                   pc = r.get("product_code", "")
-                   applicant = r.get("applicant", "")
-                   # Check recalls for this applicant + product code
-                   time.sleep(0.5)
-                   rparams = {"search": f'product_code:"{pc}"+AND+recalling_firm:"{applicant}"', "limit": "1"}
-                   if api_key:
-                       rparams["api_key"] = api_key
-                   rurl = f"https://api.fda.gov/device/recall.json?{urllib.parse.urlencode(rparams)}"
-                   rreq = urllib.request.Request(rurl, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
-                   try:
-                       with urllib.request.urlopen(rreq, timeout=15) as rresp:
-                           rdata = json.loads(rresp.read())
-                           total = rdata.get("meta", {}).get("results", {}).get("total", 0)
-                           if total > 0:
-                               recall = rdata["results"][0]
-                               recalled.append(f"{knumber}|{applicant}|{recall.get('recall_status', '?')}|{recall.get('reason_for_recall', 'N/A')[:80]}")
-                               print(f"RECALLED:{knumber}|{applicant}|{recall.get('recall_status', '?')}|{recall.get('reason_for_recall', 'N/A')[:80]}")
-                           else:
-                               print(f"CLEAN:{knumber}")
-                   except:
-                       print(f"RECALL_CHECK_FAILED:{knumber}")
-       except:
-           print(f"LOOKUP_FAILED:{knumber}")
+
+   # Batch lookup: single OR query for all top K-numbers (1 call instead of 5)
+   batch_search = "+OR+".join(f'k_number:"{k}"' for k in top_5)
+   params = {"search": batch_search, "limit": str(len(top_5))}
+   if api_key:
+       params["api_key"] = api_key
+   url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
+   req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+
+   k_to_info = {}
+   product_codes = set()
+   try:
+       with urllib.request.urlopen(req, timeout=15) as resp:
+           data = json.loads(resp.read())
+           for r in data.get("results", []):
+               kn = r.get("k_number", "")
+               pc = r.get("product_code", "")
+               applicant = r.get("applicant", "")
+               k_to_info[kn] = {"product_code": pc, "applicant": applicant}
+               if pc:
+                   product_codes.add(pc)
+   except:
+       print("BATCH_LOOKUP_FAILED")
+
+   # Batch recall check: single OR query for all unique product codes (1 call instead of 5)
+   if product_codes:
        time.sleep(0.5)
+       recall_search = "+OR+".join(f'product_code:"{pc}"' for pc in product_codes)
+       rparams = {"search": recall_search, "limit": "25"}
+       if api_key:
+           rparams["api_key"] = api_key
+       rurl = f"https://api.fda.gov/device/recall.json?{urllib.parse.urlencode(rparams)}"
+       rreq = urllib.request.Request(rurl, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+       recall_firms = {}
+       try:
+           with urllib.request.urlopen(rreq, timeout=15) as rresp:
+               rdata = json.loads(rresp.read())
+               for recall in rdata.get("results", []):
+                   firm = recall.get("recalling_firm", "").upper()
+                   recall_firms[firm] = recall
+       except:
+           print("BATCH_RECALL_CHECK_FAILED")
+
+       # Match recalls to predicates
+       for knumber in top_5:
+           info = k_to_info.get(knumber, {})
+           applicant = info.get("applicant", "")
+           if applicant.upper() in recall_firms:
+               recall = recall_firms[applicant.upper()]
+               recalled.append(f"{knumber}|{applicant}|{recall.get('recall_status', '?')}|{recall.get('reason_for_recall', 'N/A')[:80]}")
+               print(f"RECALLED:{knumber}|{applicant}|{recall.get('recall_status', '?')}|{recall.get('reason_for_recall', 'N/A')[:80]}")
+           else:
+               print(f"CLEAN:{knumber}")
+   else:
+       for knumber in top_5:
+           print(f"LOOKUP_FAILED:{knumber}")
 
    if recalled:
        print(f"\nWARNING:Found {len(recalled)} predicate(s) with recall history")

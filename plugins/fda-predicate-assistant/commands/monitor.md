@@ -207,23 +207,31 @@ if last_checked:
 else:
     since_date = (datetime.utcnow() - timedelta(days=30)).strftime("%Y%m%d")
 
-for pc in monitors["watches"]["product_codes"]:
-    search = f'product_code:"{pc}"+AND+decision_date:[{since_date}+TO+29991231]'
-    params = {"search": search, "limit": "10", "sort": "decision_date:desc"}
+watched_codes = monitors["watches"]["product_codes"]
+if watched_codes:
+    # Batch OR query for all watched product codes (1 call instead of N)
+    batch_search = "(" + "+OR+".join(f'product_code:"{pc}"' for pc in watched_codes) + f')+AND+decision_date:[{since_date}+TO+29991231]'
+    params = {"search": batch_search, "limit": str(min(len(watched_codes) * 10, 100)), "sort": "decision_date:desc"}
     if api_key:
         params["api_key"] = api_key
     url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.4.0)"})
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read())
-            total = data.get("meta", {}).get("results", {}).get("total", 0)
-            print(f"NEW_CLEARANCES:{pc}:{total}")
-            for r in data.get("results", [])[:5]:
-                print(f"CLEARANCE:{pc}|{r.get('k_number','')}|{r.get('applicant','')}|{r.get('device_name','')}|{r.get('decision_date','')}")
+            # Group results by product code
+            by_pc = {pc: [] for pc in watched_codes}
+            for r in data.get("results", []):
+                rpc = r.get("product_code", "")
+                if rpc in by_pc:
+                    by_pc[rpc].append(r)
+            for pc in watched_codes:
+                results = by_pc.get(pc, [])
+                print(f"NEW_CLEARANCES:{pc}:{len(results)}")
+                for r in results[:5]:
+                    print(f"CLEARANCE:{pc}|{r.get('k_number','')}|{r.get('applicant','')}|{r.get('device_name','')}|{r.get('decision_date','')}")
     except Exception as e:
-        print(f"ERROR:{pc}:{e}")
-    time.sleep(0.5)
+        print(f"ERROR:batch:{e}")
 PYEOF
 ```
 

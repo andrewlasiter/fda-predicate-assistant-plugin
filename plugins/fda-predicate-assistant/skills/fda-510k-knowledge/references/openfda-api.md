@@ -47,7 +47,7 @@ All commands should use this pattern — stdlib only, no external dependencies:
 ```python
 import urllib.request, urllib.parse, json, os, re
 
-def fda_api(endpoint, search, limit=10, count_field=None):
+def fda_api(endpoint, search, limit=10, count_field=None, sort=None, skip=0):
     """Query an openFDA Device API endpoint.
 
     Args:
@@ -55,6 +55,8 @@ def fda_api(endpoint, search, limit=10, count_field=None):
         search: Search query string (e.g., 'k_number:"K241335"')
         limit: Max results (1-1000, default 10)
         count_field: If set, return counts grouped by this field instead of results
+        sort: Sort field and direction (e.g., 'decision_date:desc')
+        skip: Number of results to skip for pagination (max 25000)
 
     Returns:
         dict with 'results' list or 'error' string
@@ -81,9 +83,15 @@ def fda_api(endpoint, search, limit=10, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
+    if sort:
+        params["sort"] = sort    # e.g., "decision_date:desc"
+    if skip > 0:
+        params["skip"] = str(skip)
     if api_key:
         params["api_key"] = api_key
 
+    # openFDA expects + as URL-encoded spaces; replace literal + before urlencode
+    params["search"] = params["search"].replace("+", " ")
     url = f"https://api.fda.gov/device/{endpoint}.json?{urllib.parse.urlencode(params)}"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
 
@@ -767,7 +775,11 @@ def check_api_available():
 - **AND**: `field1:"val1"+AND+field2:"val2"`
 - **OR**: `field1:"val1"+OR+field2:"val2"`
 - **Date range**: `date_field:[YYYYMMDD+TO+YYYYMMDD]`
-- **Wildcard**: Not supported in search; use broader queries and filter client-side
+- **Wildcard**: Supported — `field:prefix*`, `field.exact:"*partial*"`, `field:*` (match any)
+- **Parenthetical grouping**: `field:("value1"+"value2")` — matches any of the values
+- **OR batch query**: `field:"val1"+OR+field:"val2"` — multiple values in one request
+- **Missing/Exists**: `_missing_:field` (field absent) or `_exists_:field` (field present)
+- **Sort**: `sort=field:asc` or `sort=field:desc` — order results by any field
 - **Spaces in values**: Use `+` instead of spaces: `device_name:"wound+dressing"`
 - **Count endpoint**: Add `count=field.exact` to get aggregated counts instead of results
 - **Limit**: Max 1000 per request; use `skip` parameter for pagination (max skip: 25000)
@@ -825,6 +837,10 @@ fda_api("510k", 'product_code:"OVE"', limit=25)
 params = {"search": 'product_code:"OVE"', "limit": "25", "skip": "25"}
 
 # Maximum skip is 25000
+
+# Deep paging (beyond 26,000 results) — use search_after from Link header
+# First request returns Link header with search_after cursor
+# Subsequent requests: params["search_after"] = cursor_from_link_header
 ```
 
 ### PMA Supplement Search

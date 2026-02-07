@@ -39,7 +39,7 @@ BASE_BACKOFF = 1.0
 BASE_URL = "https://api.fda.gov/device"
 
 # User agent
-USER_AGENT = "Mozilla/5.0 (FDA-Plugin/5.3.0)"
+USER_AGENT = "Mozilla/5.0 (FDA-Plugin/5.4.0)"
 
 
 class FDAClient:
@@ -141,6 +141,11 @@ class FDAClient:
         if self.api_key:
             params["api_key"] = self.api_key
 
+        # openFDA expects + as URL-encoded spaces in search queries;
+        # urlencode converts spaces to + but literal + to %2B (which breaks AND/OR).
+        # Fix: replace + with space in search before encoding.
+        if "search" in params:
+            params["search"] = params["search"].replace("+", " ")
         url = f"{BASE_URL}/{endpoint}.json?{urllib.parse.urlencode(params)}"
         req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
 
@@ -195,11 +200,22 @@ class FDAClient:
             "classification", {"search": f'product_code:"{product_code}"', "limit": "1"}
         )
 
-    def get_clearances(self, product_code, limit=100):
+    def get_clearances(self, product_code, limit=100, sort="decision_date:desc"):
         """Get all 510(k) clearances for a product code."""
-        return self._request(
-            "510k", {"search": f'product_code:"{product_code}"', "limit": str(limit)}
-        )
+        params = {"search": f'product_code:"{product_code}"', "limit": str(limit)}
+        if sort:
+            params["sort"] = sort
+        return self._request("510k", params)
+
+    def batch_510k(self, k_numbers, limit=None):
+        """Look up multiple K-numbers in a single API call using OR query."""
+        if not k_numbers:
+            return {"results": [], "meta": {"results": {"total": 0}}}
+        search = "+OR+".join(f'k_number:"{k}"' for k in k_numbers)
+        return self._request("510k", {
+            "search": search,
+            "limit": str(limit or len(k_numbers))
+        })
 
     def get_events(self, product_code, count=None, limit=100):
         """Get MAUDE adverse events for a product code."""
@@ -259,7 +275,7 @@ class FDAClient:
             year_start: Start year (YYYY) for decision_date range
             year_end: End year (YYYY) for decision_date range
             limit: Max results (default 25)
-            sort: Sort field (not directly supported by openFDA, applied client-side)
+            sort: Sort field and direction (e.g., 'decision_date:desc')
         """
         parts = []
         if query:
@@ -275,7 +291,10 @@ class FDAClient:
         if not parts:
             return {"error": "Provide at least one search filter", "degraded": True}
         search = "+AND+".join(parts)
-        return self._request("510k", {"search": search, "limit": str(limit)})
+        params = {"search": search, "limit": str(limit)}
+        if sort:
+            params["sort"] = sort
+        return self._request("510k", params)
 
     def validate_device(self, device_number):
         """Validate a device number (K, P, DEN, or N-number) against FDA data."""
