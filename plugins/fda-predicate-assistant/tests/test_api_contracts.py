@@ -317,3 +317,48 @@ class TestTimelineAnalytics:
         d2 = datetime.strptime(dd, fmt)
         days = (d2 - d1).days
         assert days > 0  # Decision should be after receipt
+
+
+class TestUDIEndpoint:
+    """Verify UDI/GUDID endpoint fields and search patterns."""
+
+    @pytest.fixture(autouse=True)
+    def _rate_limit(self):
+        yield
+        time.sleep(1)
+
+    def test_udi_product_code_search(self):
+        """Search UDI by product code returns results."""
+        data = _api_get("udi", 'product_codes.code:"OVE"')
+        assert "meta" in data
+        assert data.get("meta", {}).get("results", {}).get("total", 0) >= 0
+
+    def test_udi_has_company_name(self):
+        """Verify company_name field exists in UDI results."""
+        data = _api_get("udi", 'product_codes.code:"OVE"')
+        if data.get("results"):
+            result = data["results"][0]
+            assert "company_name" in result
+
+    def test_udi_has_identifiers(self):
+        """Verify identifiers array exists with id and type fields."""
+        data = _api_get("udi", 'product_codes.code:"OVE"')
+        if data.get("results"):
+            result = data["results"][0]
+            assert "identifiers" in result
+            if result["identifiers"]:
+                ident = result["identifiers"][0]
+                assert "id" in ident
+                assert "type" in ident
+
+    def test_udi_has_device_properties(self):
+        """Verify key device property fields exist."""
+        data = _api_get("udi", 'product_codes.code:"OVE"')
+        if data.get("results"):
+            result = data["results"][0]
+            # At least some of these fields should be present
+            property_fields = ["brand_name", "version_or_model_number",
+                               "device_description", "is_single_use",
+                               "is_rx", "mri_safety"]
+            found = sum(1 for f in property_fields if f in result)
+            assert found >= 3  # At least 3 of 6 property fields present

@@ -106,7 +106,7 @@ Generate the PCCP document (see `references/output-formatting.md` for formatting
 ## {Device Description} — Product Code {CODE}
 
 **Date:** {today}
-**Generated:** {today} | v4.6.0
+**Generated:** {today} | v4.9.0
 **Device Class:** {class}
 **Marketing Authorization:** {K-number or pending}
 **PCCP Version:** 1.0
@@ -225,6 +225,84 @@ Changes OUTSIDE this PCCP scope (require new submission):
 ## Step 4: Write Output
 
 Default path: `$PROJECTS_DIR/$PROJECT_NAME/pccp_plan.md`
+
+## Step 5: AI/ML Landscape Context
+
+When generating a PCCP, query the AI/ML device landscape to provide context:
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re, time
+
+# Load API key
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = os.environ.get('OPENFDA_API_KEY')
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    if not api_key:
+        m = re.search(r'openfda_api_key:\s*(\S+)', content)
+        if m and m.group(1) != 'null':
+            api_key = m.group(1)
+
+# AI/ML-associated product codes
+AIML_CODES = ["QAS", "QIH", "QMT", "QJU", "QKQ", "QPN", "QRZ", "DXL", "DPS", "MYN", "OTB"]
+
+product_code = "PRODUCT_CODE"  # Replace with actual
+
+# Check if this product code is AI/ML-associated
+is_aiml = product_code in AIML_CODES
+
+# Search for PCCPs in the same product code (look for "predetermined change" in device names)
+base = "https://api.fda.gov/device"
+params = {"search": f'product_code:"{product_code}"', "limit": "100"}
+if api_key:
+    params["api_key"] = api_key
+url = f"{base}/510k.json?{urllib.parse.urlencode(params)}"
+headers = {"User-Agent": "Mozilla/5.0 (FDA-Plugin/4.9.0)"}
+
+total_clearances = 0
+recent_clearances = 0
+try:
+    req = urllib.request.Request(url, headers=headers)
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        data = json.loads(resp.read())
+        total_clearances = data.get("meta", {}).get("results", {}).get("total", 0)
+        results = data.get("results", [])
+        for r in results:
+            dd = r.get("decision_date", "")
+            if dd and dd[:4] >= "2023":
+                recent_clearances += 1
+except Exception:
+    pass
+
+print(f"AIML_ASSOCIATED:{is_aiml}")
+print(f"TOTAL_CLEARANCES:{total_clearances}")
+print(f"RECENT_CLEARANCES:{recent_clearances}")
+print(f"AIML_CODES:{','.join(AIML_CODES)}")
+PYEOF
+```
+
+Include in the PCCP output:
+
+```markdown
+## AI/ML Device Landscape Context
+
+- **Product code AI/ML association:** {Yes/No — based on known AI/ML product codes}
+- **Total 510(k) clearances for {CODE}:** {total}
+- **Recent clearances (2023+):** {count}
+- **AI/ML-associated product codes:** QAS, QIH, QMT, QJU, QKQ, QPN, QRZ, DXL, DPS, MYN, OTB
+
+{If AI/ML-associated:}
+> This product code is commonly associated with AI/ML-enabled devices. PCCP is particularly
+> relevant for algorithm updates, retraining cycles, and performance threshold adjustments.
+> See `references/aiml-device-intelligence.md` for SaMD classification and PCCP eligibility criteria.
+
+{If not AI/ML-associated:}
+> PCCPs can apply to any iteratively modified device, not only AI/ML devices. For this product
+> code, consider whether anticipated modifications to software, materials, or manufacturing
+> processes would benefit from a PCCP framework.
+```
 
 ## Error Handling
 

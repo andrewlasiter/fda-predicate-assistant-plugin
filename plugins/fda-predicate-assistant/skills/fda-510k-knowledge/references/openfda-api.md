@@ -571,7 +571,33 @@ fda_api("udi", 'premarket_submissions.submission_number:"K241335"', limit=10)
 
 # Single-use wound dressings
 fda_api("udi", 'product_codes.code:"KGN"+AND+is_single_use:true', limit=20)
+
+# By device identifier (DI)
+fda_api("udi", 'identifiers.id:"00888104123456"')
+
+# By company name
+fda_api("udi", 'company_name:"MEDTRONIC"', limit=10)
+
+# By brand name
+fda_api("udi", 'brand_name:"PRESTIGE"', limit=10)
+
+# Combined: product code + company
+fda_api("udi", 'product_codes.code:"OVE"+AND+company_name:"MEDTRONIC"', limit=10)
+
+# MRI-conditional devices in a product code
+fda_api("udi", 'product_codes.code:"OVE"+AND+mri_safety:"MR+Conditional"', limit=20)
+
+# Sterile devices by product code
+fda_api("udi", 'product_codes.code:"OVE"+AND+is_single_use:true+AND+sterilization.is_sterile:true', limit=20)
 ```
+
+**UDI for Labeling (Section 9) integration**: Use UDI data to auto-populate labeling drafts:
+- `is_rx` / `is_otc` → Rx/OTC symbol on label
+- `is_sterile` → Sterility marking
+- `mri_safety` → MRI safety label
+- `is_labeled_as_nrl` → Latex statement
+- `is_single_use` → Single-use symbol
+- `identifiers[].id` (type="Primary") → UDI barcode placeholder
 
 ## Field Mapping: openFDA Names to Human Labels
 

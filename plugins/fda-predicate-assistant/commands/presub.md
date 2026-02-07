@@ -689,9 +689,156 @@ Next steps:
   4. Submit to FDA via the Pre-Submission program
 ```
 
+## Subcommand: --track (FDA Correspondence Tracking)
+
+When `--track` is specified, log a new FDA correspondence entry instead of generating a Pre-Sub package.
+
+### Parse --track Arguments
+
+- `--track` — Enter correspondence logging mode
+- `--project NAME` (required with --track) — Project to associate correspondence
+- `--type presub_response|rta_deficiency|fda_question|commitment` — Entry type (default: presub_response)
+- `--date YYYY-MM-DD` — Date of correspondence (default: today)
+- `--summary TEXT` — Brief summary of the correspondence
+- `--action-items "item1;item2;item3"` — Semicolon-separated action items
+- `--deadline YYYY-MM-DD` — Deadline for action items (optional)
+- `--status open|resolved|overdue` — Entry status (default: open)
+
+### Correspondence Storage
+
+Store correspondence in `$PROJECTS_DIR/$PROJECT_NAME/fda_correspondence.json`:
+
+```json
+{
+  "entries": [
+    {
+      "id": 1,
+      "type": "presub_response",
+      "date": "2026-02-07",
+      "summary": "FDA recommended additional biocompatibility testing per ISO 10993-1:2025",
+      "action_items": ["Update biocompatibility test plan", "Add cytotoxicity testing"],
+      "deadline": "2026-04-15",
+      "status": "open",
+      "resolution": null,
+      "created_at": "2026-02-07T12:00:00Z"
+    }
+  ]
+}
+```
+
+### --track Implementation
+
+```bash
+python3 << 'PYEOF'
+import json, os
+from datetime import datetime, timezone
+
+project_dir = os.path.expanduser("~/fda-510k-data/projects/PROJECT_NAME")
+corr_path = os.path.join(project_dir, "fda_correspondence.json")
+
+# Load existing or create new
+if os.path.exists(corr_path):
+    with open(corr_path) as f:
+        data = json.load(f)
+else:
+    data = {"entries": []}
+
+# Determine next ID
+next_id = max([e.get("id", 0) for e in data["entries"]], default=0) + 1
+
+# Create new entry (replace placeholders)
+entry = {
+    "id": next_id,
+    "type": "ENTRY_TYPE",        # Replace with actual
+    "date": "ENTRY_DATE",         # Replace with actual
+    "summary": "ENTRY_SUMMARY",   # Replace with actual
+    "action_items": [],            # Replace with actual parsed list
+    "deadline": None,              # Replace with actual or None
+    "status": "open",
+    "resolution": None,
+    "created_at": datetime.now(timezone.utc).isoformat()
+}
+
+data["entries"].append(entry)
+
+os.makedirs(project_dir, exist_ok=True)
+with open(corr_path, "w") as f:
+    json.dump(data, f, indent=2)
+
+print(f"ENTRY_ID:{next_id}")
+print(f"ENTRIES_TOTAL:{len(data['entries'])}")
+PYEOF
+```
+
+Report:
+```
+Correspondence entry logged:
+  ID:      {id}
+  Type:    {type}
+  Date:    {date}
+  Summary: {summary}
+  Actions: {count} items
+  Deadline: {deadline or "None"}
+  Status:  open
+
+Total entries in project: {total}
+
+Next steps:
+  • View correspondence: /fda:presub --correspondence --project {name}
+  • Update status: /fda:presub --track --project {name} --resolve {id}
+  • View project status: /fda:status --project {name}
+```
+
+## Subcommand: --correspondence (View History)
+
+When `--correspondence` is specified, display the correspondence history for a project.
+
+### --correspondence Implementation
+
+Read `$PROJECTS_DIR/$PROJECT_NAME/fda_correspondence.json` and display:
+
+```
+  FDA Correspondence History
+  Project: {project_name}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Generated: {date} | Source: Project Data | v4.9.0
+
+SUMMARY
+────────────────────────────────────────
+  Total entries:  {count}
+  Open:           {open_count}
+  Overdue:        {overdue_count}
+  Resolved:       {resolved_count}
+
+ENTRIES
+────────────────────────────────────────
+
+  #{id} [{status}] {type}
+  Date:     {date}
+  Summary:  {summary}
+  Actions:  {action_items}
+  Deadline: {deadline} ({days_remaining} days remaining)
+  ---
+
+OVERDUE ITEMS
+────────────────────────────────────────
+  ⚠ #{id}: {summary} — deadline was {deadline} ({days_overdue} days ago)
+
+────────────────────────────────────────
+  This report is AI-generated from project data.
+  Verify independently. Not regulatory advice.
+────────────────────────────────────────
+```
+
+Check for overdue items: any entry with `status: "open"` and `deadline` before today's date. Flag these with severity:
+- Past deadline by >30 days: critical
+- Past deadline by 1-30 days: warning
+
 ## Error Handling
 
 - **No product code**: Ask the user for it
 - **API unavailable**: Use flat files for classification. Generate template with less auto-populated data.
 - **No project data**: Generate a clean template. Note which sections would benefit from running `/fda:research`, `/fda:review`, or `/fda:guidance` first.
 - **No predicates identified**: Include a section about predicate selection and suggest running `/fda:research` to identify candidates. Consider whether De Novo pathway applies.
+- **--track without --project**: "Correspondence tracking requires a project. Use `--project NAME` to specify one."
+- **--correspondence with no entries**: "No correspondence entries found. Use `/fda:presub --track --project NAME` to log FDA interactions."

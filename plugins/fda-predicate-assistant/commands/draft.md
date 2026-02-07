@@ -142,13 +142,81 @@ Generates the full 510(k) Summary (per 21 CFR 807.92) — combines device descri
 Generates Section 9 of the eSTAR: Labeling (package label, IFU, patient labeling).
 
 **Required data**: indications_for_use from import_data.json or `--intended-use`
-**Enriched by**: openFDA classification, guidance_cache, predicate IFU
+**Enriched by**: openFDA classification, guidance_cache, predicate IFU, **UDI/GUDID data**
 
 **Output structure**: See `references/draft-templates.md` Section 09. Includes:
 - 9.1 Package Label template with UDI, Rx symbol, storage conditions
 - 9.2 Instructions for Use with IFU text, contraindications, warnings, precautions, directions
 - 9.3 Patient Labeling (if applicable)
 - 9.4 Promotional Materials (if applicable)
+
+**UDI Integration**: When drafting the labeling section, auto-query the openFDA UDI endpoint to populate device properties:
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re
+
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = os.environ.get('OPENFDA_API_KEY')
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    if not api_key:
+        m = re.search(r'openfda_api_key:\s*(\S+)', content)
+        if m and m.group(1) != 'null':
+            api_key = m.group(1)
+
+product_code = "PRODUCT_CODE"  # Replace with actual
+company = "COMPANY_NAME"       # Replace with actual or None
+
+search_parts = []
+if product_code and product_code != "None":
+    search_parts.append(f'product_codes.code:"{product_code}"')
+if company and company != "None":
+    search_parts.append(f'company_name:"{company}"')
+
+if not search_parts:
+    print("UDI_SKIP:no_search_criteria")
+    exit(0)
+
+search = "+AND+".join(search_parts)
+params = {"search": search, "limit": "3"}
+if api_key:
+    params["api_key"] = api_key
+
+url = f"https://api.fda.gov/device/udi.json?{urllib.parse.urlencode(params)}"
+headers = {"User-Agent": "Mozilla/5.0 (FDA-Plugin/4.9.0)"}
+
+try:
+    req = urllib.request.Request(url, headers=headers)
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        data = json.loads(resp.read())
+        for r in data.get("results", []):
+            print(f"UDI_BRAND:{r.get('brand_name', 'N/A')}")
+            print(f"UDI_RX:{r.get('is_rx', 'N/A')}")
+            print(f"UDI_OTC:{r.get('is_otc', 'N/A')}")
+            print(f"UDI_STERILE:{r.get('is_sterile', 'N/A')}")
+            print(f"UDI_SINGLE_USE:{r.get('is_single_use', 'N/A')}")
+            print(f"UDI_MRI:{r.get('mri_safety', 'N/A')}")
+            print(f"UDI_LATEX:{r.get('is_labeled_as_nrl', 'N/A')}")
+            for ident in r.get("identifiers", []):
+                if ident.get("type") == "Primary":
+                    print(f"UDI_PRIMARY_DI:{ident.get('id', 'N/A')}|{ident.get('issuing_agency', 'N/A')}")
+            break  # Use first matching record
+except Exception as e:
+    print(f"UDI_SKIP:{e}")
+PYEOF
+```
+
+Use UDI data to auto-populate in the labeling draft:
+- **UDI placeholder**: Include the primary DI format and issuing agency
+- **Rx/OTC symbol**: Based on `is_rx` / `is_otc` flags
+- **Sterility marking**: Based on `is_sterile` flag
+- **MRI safety marking**: Based on `mri_safety` field
+- **Latex statement**: Based on `is_labeled_as_nrl` field
+- **Single-use symbol**: Based on `is_single_use` flag
+
+If UDI data is unavailable, include `[TODO: Verify UDI requirements — run /fda:udi --product-code CODE]` placeholders.
 
 ### 8. sterilization
 
@@ -269,7 +337,7 @@ Generates Section 5 of the eSTAR: Financial Certification/Disclosure.
 3. **DRAFT disclaimer**: Every generated section starts with:
    ```
    ⚠ DRAFT — AI-generated regulatory prose. Review with regulatory affairs team before submission.
-   Generated: {date} | Project: {name} | Plugin: fda-predicate-assistant v4.6.0
+   Generated: {date} | Project: {name} | Plugin: fda-predicate-assistant v4.9.0
    ```
 4. **Unverified claims**: Anything that cannot be substantiated from project data gets `[CITATION NEEDED]` or `[TODO: Company-specific — verify]`.
 5. **No fabrication**: Never invent test results, clinical data, or device specifications. If data isn't available, say so.

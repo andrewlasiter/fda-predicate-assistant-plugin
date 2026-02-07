@@ -1594,6 +1594,128 @@ CLEARANCE TIMELINE ANALYTICS
   - Top competitor: {company} ({count} clearances, {pct}% share)
 ```
 
+## AI/ML Device Trend Analytics (--aiml)
+
+When `--aiml` flag is set, filter analysis to AI/ML-associated product codes and provide SaMD classification insights.
+
+### AI/ML Data Collection
+
+```bash
+python3 << 'PYEOF'
+import urllib.request, urllib.parse, json, os, re, time
+
+# Standard API setup
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+api_key = os.environ.get('OPENFDA_API_KEY')
+api_enabled = True
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    if not api_key:
+        m = re.search(r'openfda_api_key:\s*(\S+)', content)
+        if m and m.group(1) != 'null':
+            api_key = m.group(1)
+    m = re.search(r'openfda_enabled:\s*(\S+)', content)
+    if m and m.group(1).lower() == 'false':
+        api_enabled = False
+
+if not api_enabled:
+    print("AIML_SKIP:api_disabled")
+    exit(0)
+
+product_code = "PRODUCTCODE"  # Replace
+
+# AI/ML-associated product codes for cross-referencing
+AIML_CODES = ["QAS", "QIH", "QMT", "QJU", "QKQ", "QPN", "QRZ", "DXL", "DPS", "MYN", "OTB"]
+
+def fda_query(endpoint, search, limit=10, count_field=None):
+    params = {"search": search, "limit": str(limit)}
+    if count_field:
+        params["count"] = count_field
+    if api_key:
+        params["api_key"] = api_key
+    url = f"https://api.fda.gov/device/{endpoint}.json?{urllib.parse.urlencode(params)}"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/4.9.0)"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return {"results": []}
+        return {"error": f"HTTP {e.code}"}
+    except Exception as e:
+        return {"error": str(e)}
+
+# Check if this product code is AI/ML-associated
+is_aiml = product_code in AIML_CODES
+print(f"IS_AIML_CODE:{is_aiml}")
+
+# Search for AI/ML keywords in device names for this product code
+print("=== AI/ML DEVICE SEARCH ===")
+ai_keywords = ["artificial intelligence", "machine learning", "algorithm", "deep learning", "neural network", "computer aided", "computer assisted", "CAD", "automated detection"]
+for kw in ai_keywords[:3]:  # Limit API calls
+    result = fda_query("510k", f'product_code:"{product_code}"+AND+device_name:"{kw}"', limit=5)
+    total = result.get("meta", {}).get("results", {}).get("total", 0)
+    if total > 0:
+        print(f"AI_KEYWORD:{kw}:{total}")
+        for r in result.get("results", [])[:3]:
+            print(f"AI_DEVICE:{r.get('k_number','')}|{r.get('device_name','')}|{r.get('decision_date','')}")
+    time.sleep(0.5)
+
+# AI/ML clearance trend across all AI/ML codes
+if is_aiml:
+    print("\n=== AI/ML LANDSCAPE ===")
+    for code in AIML_CODES[:5]:
+        result = fda_query("510k", f'product_code:"{code}"', limit=1)
+        total = result.get("meta", {}).get("results", {}).get("total", 0)
+        if total > 0:
+            print(f"AIML_CODE:{code}:{total}")
+        time.sleep(0.3)
+
+# PCCP-authorized devices in this product code
+print("\n=== PCCP CHECK ===")
+pccp_result = fda_query("510k", f'product_code:"{product_code}"+AND+device_name:"predetermined change"', limit=5)
+pccp_total = pccp_result.get("meta", {}).get("results", {}).get("total", 0)
+print(f"PCCP_DEVICES:{pccp_total}")
+PYEOF
+```
+
+### AI/ML Output Format
+
+```
+AI/ML DEVICE INTELLIGENCE
+────────────────────────────────────────
+
+  Product Code: {CODE} — {device_name}
+  AI/ML Association: {Yes — known AI/ML code | Possible — AI keywords found | No direct association}
+
+  AI/ML Devices in This Product Code:
+  | K-number | Device Name | Decision Date |
+  |----------|-------------|---------------|
+  | {K#}     | {name}      | {date}        |
+
+  {If is_aiml_code:}
+  AI/ML Landscape (Related Product Codes):
+  | Code | Description | Total Clearances |
+  |------|------------|-----------------|
+  | QAS  | CADe/CADx  | {count}          |
+  | QIH  | AI Triage  | {count}          |
+  ...
+
+  SaMD Classification Guidance:
+  Based on the device characteristics, this device would likely be classified as:
+  - IMDRF Category: {II/III/IV}
+  - Equivalent FDA Class: {I/II/III}
+
+  PCCP-Authorized Devices: {count} in this product code
+  {If count > 0: List them}
+
+  Recommendations:
+  - {If AI/ML}: Consider a PCCP for algorithm updates — /fda:pccp {CODE}
+  - {If AI/ML}: Review FDA AI/ML action plan requirements
+  - See references/aiml-device-intelligence.md for full AI/ML guidance list
+```
+
 ### Browse Output Format
 
 ```

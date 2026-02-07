@@ -294,6 +294,80 @@ NEXT STEPS
 
 Use ✓ for present, ✗ for missing, ○ for pending/disabled, and ⚠ for degraded. Adapt sections to what actually exists — don't show sections where nothing is found.
 
+### 7. FDA Correspondence Tracking
+
+For each project, check for `fda_correspondence.json`:
+
+```bash
+python3 << 'PYEOF'
+import json, os, glob
+from datetime import date, datetime
+
+projects_dir = os.path.expanduser("~/fda-510k-data/projects")
+if not os.path.isdir(projects_dir):
+    print("CORR:NO_PROJECTS")
+    exit(0)
+
+for proj_dir in sorted(glob.glob(os.path.join(projects_dir, "*"))):
+    if not os.path.isdir(proj_dir):
+        continue
+    corr_path = os.path.join(proj_dir, "fda_correspondence.json")
+    if not os.path.exists(corr_path):
+        continue
+    proj_name = os.path.basename(proj_dir)
+    with open(corr_path) as f:
+        data = json.load(f)
+    entries = data.get("entries", [])
+    if not entries:
+        continue
+
+    today = date.today()
+    total = len(entries)
+    open_count = sum(1 for e in entries if e.get("status") == "open")
+    overdue = []
+    for e in entries:
+        if e.get("status") == "open" and e.get("deadline"):
+            try:
+                dl = datetime.strptime(e["deadline"], "%Y-%m-%d").date()
+                if dl < today:
+                    overdue.append({"id": e.get("id"), "summary": e.get("summary", ""), "days": (today - dl).days})
+            except ValueError:
+                pass
+    resolved = sum(1 for e in entries if e.get("status") == "resolved")
+    next_deadline = None
+    for e in entries:
+        if e.get("status") == "open" and e.get("deadline"):
+            try:
+                dl = datetime.strptime(e["deadline"], "%Y-%m-%d").date()
+                if dl >= today and (next_deadline is None or dl < next_deadline):
+                    next_deadline = dl
+            except ValueError:
+                pass
+    print(f"CORR_PROJECT:{proj_name}")
+    print(f"CORR_TOTAL:{total}")
+    print(f"CORR_OPEN:{open_count}")
+    print(f"CORR_OVERDUE:{len(overdue)}")
+    print(f"CORR_RESOLVED:{resolved}")
+    print(f"CORR_NEXT_DEADLINE:{next_deadline or 'None'}")
+    for o in overdue:
+        print(f"CORR_OVERDUE_ITEM:#{o['id']}|{o['summary'][:60]}|{o['days']} days")
+PYEOF
+```
+
+Display in the status report:
+
+```
+FDA CORRESPONDENCE
+────────────────────────────────────────
+
+  | Project | Open | Overdue | Resolved | Next Deadline |
+  |---------|------|---------|----------|---------------|
+  | {name}  | {n}  | {n}     | {n}      | {date}        |
+
+  ⚠ Overdue items:
+    #{id}: {summary} — {days} days past deadline
+```
+
 ## Recommendations
 
 After the status report, suggest logical next steps:
@@ -303,3 +377,4 @@ After the status report, suggest logical next steps:
 - If PDFs exist but no output.csv: "Run `/fda:extract stage2` to extract predicates"
 - If output.csv exists: "Run `/fda:analyze` for insights"
 - If database files are old: "Database files are X days old, consider refreshing"
+- If overdue correspondence: "Run `/fda:presub --correspondence --project NAME` to review overdue FDA commitments"
