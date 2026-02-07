@@ -1,8 +1,8 @@
-![Version](https://img.shields.io/badge/version-4.6.0-blue)
+![Version](https://img.shields.io/badge/version-5.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Commands](https://img.shields.io/badge/commands-29-orange)
-![Agents](https://img.shields.io/badge/agents-3-purple)
-![Tests](https://img.shields.io/badge/tests-139+-brightgreen)
+![Commands](https://img.shields.io/badge/commands-33-orange)
+![Agents](https://img.shields.io/badge/agents-4-purple)
+![Tests](https://img.shields.io/badge/tests-499-brightgreen)
 ![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-blueviolet)
 ![FDA 510(k)](https://img.shields.io/badge/FDA-510(k)-red)
 
@@ -10,7 +10,7 @@
 
 **Your AI-powered regulatory assistant for FDA 510(k) submissions.**
 
-From predicate research to eSTAR assembly — 29 commands, 3 autonomous agents, and full eSTAR import/export that handle the data work so you can focus on the science and strategy. Search FDA databases, identify predicates, analyze safety histories, generate substantial equivalence comparisons, draft all 16 eSTAR sections, and assemble submission-ready packages, all from within Claude.
+From predicate research to FDA review simulation — 33 commands, 4 autonomous agents, and 499 tests that handle the data work so you can focus on the science and strategy. Search FDA databases, identify predicates, analyze safety histories, look up standards, generate substantial equivalence comparisons, draft all 18 eSTAR sections, simulate FDA review, and assemble submission-ready packages, all from within Claude.
 
 ---
 
@@ -78,6 +78,8 @@ You should see a summary of available FDA data files, script availability, and r
 | `/fda:literature` | Searches PubMed and the web for clinical evidence, then identifies gaps vs. guidance |
 | `/fda:lineage` | Traces predicate citation chains across generations and flags recalled ancestors |
 | `/fda:safety` | Pulls adverse events (MAUDE) and recall history for any product code or device |
+| `/fda:standards` | Looks up FDA Recognized Consensus Standards by product code, standard number, or keyword |
+| `/fda:udi` | Looks up UDI/GUDID records from openFDA — search by device identifier, product code, company, or brand |
 
 ### Data Extraction
 
@@ -93,6 +95,7 @@ You should see a summary of available FDA data files, script availability, and r
 | Command | What it does |
 |---------|-------------|
 | `/fda:review` | Scores and triages extracted predicates — accept, reject, or flag each one |
+| `/fda:propose` | Manually propose predicate and reference devices — validates against openFDA, scores confidence, compares IFU |
 | `/fda:guidance` | Finds relevant FDA guidance documents and maps them to testing requirements |
 | `/fda:test-plan` | Generates a risk-based testing plan with gap analysis |
 | `/fda:presub` | Creates a Pre-Submission meeting package (cover letter, topics, questions) |
@@ -103,23 +106,40 @@ You should see a summary of available FDA data files, script availability, and r
 |---------|-------------|
 | `/fda:submission-outline` | Builds a full 510(k) submission outline with section checklists and gap analysis |
 | `/fda:compare-se` | Generates substantial equivalence comparison tables, auto-populated from FDA data |
-| `/fda:draft` | Writes regulatory prose for submission sections with citations |
+| `/fda:draft` | Writes regulatory prose for 18 submission sections with citations |
 | `/fda:pccp` | Creates a Predetermined Change Control Plan for AI/ML or iterative devices |
+| `/fda:calc` | Regulatory calculators — shelf life (ASTM F1980), sample size, sterilization dose |
 
 ### Assembly & Validation
 
 | Command | What it does |
 |---------|-------------|
+| `/fda:import` | Imports eSTAR data from PDF or XML into project data |
+| `/fda:export` | Exports project data as eSTAR-compatible XML or zip package |
 | `/fda:assemble` | Assembles an eSTAR-structured submission package from your project data |
 | `/fda:traceability` | Generates a requirements traceability matrix (guidance → risks → tests → evidence) |
 | `/fda:consistency` | Validates that device descriptions, intended use, and predicates match across all files |
 | `/fda:portfolio` | Cross-project dashboard — shared predicates, common guidance, submission timelines |
 
-### Full Pipeline
+### Quality & Pre-Filing
 
 | Command | What it does |
 |---------|-------------|
+| `/fda:pre-check` | Simulates an FDA review team's evaluation — RTA screening, deficiency identification, readiness score |
 | `/fda:pipeline` | Runs all stages autonomously: extract → review → safety → guidance → presub → outline → SE |
+
+---
+
+## Agents
+
+The plugin includes 4 autonomous agents that can run multi-step workflows without manual intervention. Agents are invoked automatically by Claude when relevant, or can be triggered via the Task tool.
+
+| Agent | What it does |
+|-------|-------------|
+| `extraction-analyzer` | Analyzes predicate extraction results — identifies patterns, reviews quality, auto-triages by confidence |
+| `submission-writer` | Drafts all 18 eSTAR sections sequentially, runs consistency checks, assembles the package, and reports a readiness score |
+| `presub-planner` | Researches the regulatory landscape, analyzes guidance, gathers safety intelligence, reviews literature, and generates a complete Pre-Sub package |
+| `review-simulator` | Simulates a multi-perspective FDA review — each reviewer evaluates independently, findings are cross-referenced, and a detailed readiness assessment is generated |
 
 ---
 
@@ -215,7 +235,7 @@ To update to the latest version:
 
 ## Changelog
 
-See [releases](https://github.com/andrewlasiter/fda-predicate-assistant-plugin/releases) for version history.
+See [CHANGELOG.md](./CHANGELOG.md) for version history.
 
 ## License
 

@@ -1,5 +1,59 @@
 # Changelog
 
+## [5.3.0] - 2026-02-07
+
+### Added — Tranche 7: FDA Review Simulation
+- `/fda:pre-check` — Simulates an FDA review team's evaluation of a 510(k) submission: RTA checklist screening, deficiency identification across all review disciplines, and submission readiness score
+- `review-simulator` agent — Autonomous multi-perspective FDA review simulation: reads all project files, downloads missing predicate data, simulates each reviewer's evaluation independently, cross-references findings, and generates a detailed readiness assessment
+- `references/cdrh-review-structure.md` — CDRH review structure reference, OHT mapping, deficiency templates
+- 499 offline tests (up from 363), 38 API tests
+
+## [5.2.0] - 2026-02-07
+
+### Added — Tranche 6: Manual Predicate Proposal & Deep Analysis
+- `/fda:propose` — Manually propose predicate and reference devices for a 510(k) submission: validates against openFDA, scores confidence, compares IFU, writes review.json
+- `/fda:presub` Section 4.2 expanded to 7 subsections for deep predicate analysis: selection rationale, comparison methodology, key similarities, key differences, technological evolution, clinical equivalence, literature support
+- Reference devices tracked in review.json alongside predicates
+
+## [5.1.0] - 2026-02-07
+
+### Added — Tranche 5: Competitive Parity
+- BOM/materials tracking in `/fda:compare-se` with biocompatibility difference flagging
+- eCTD reference note in `/fda:export` (clarifies eSTAR is required for 510(k), not eCTD)
+- Artwork management in `/fda:assemble` with file format manifest and Section 09 labeling integration
+- `/fda:draft human-factors` — Human factors section (IEC 62366-1) with use environment, user profiles, critical tasks, and summative testing table
+- Complaint handling template in `/fda:safety` with MDR reportability assessment and complaint categories
+
+## [5.0.0] - 2026-02-07
+
+### Added — Tranche 4: Templates & Calculators
+- `/fda:calc` — Regulatory calculators: shelf life (ASTM F1980 accelerated aging), sample size (statistical), and sterilization dose
+- `/fda:draft doc` — Declaration of Conformity template generation
+- `/fda:draft` risk management section — ISO 14971 risk management framework with hazard analysis templates
+- DHF checklist in `/fda:assemble` — Design History File completeness verification
+- Clinical study guidance in `/fda:presub` — clinical data requirements and study design recommendations
+
+## [4.9.0] - 2026-02-07
+
+### Added — Tranche 3: Extended Capabilities
+- `/fda:udi` — UDI/GUDID lookup from openFDA: search by device identifier, product code, company, or brand name
+- AI/ML trends analysis in `/fda:research` — tracks AI/ML-enabled device clearances and technology evolution
+- FDA correspondence tracking in `/fda:presub` — references and integrates prior FDA interactions
+
+## [4.8.0] - 2026-02-07
+
+### Added — Tranche 2: Monitoring & Analytics
+- Automated alerts in `/fda:monitor` — configurable notifications for new clearances, recalls, and MAUDE events matching watched product codes
+- Standards supersession checking in `/fda:standards` — flags outdated standards and identifies current replacements
+- Clearance timeline analytics in `/fda:research` — historical clearance trends, review time analysis, seasonal patterns
+
+## [4.7.0] - 2026-02-06
+
+### Added — Tranche 1: Intelligence Expansion
+- `/fda:standards` — Look up FDA Recognized Consensus Standards by product code, standard number, or keyword with currency checking
+- PMA/De Novo search in `/fda:validate` and `/fda:research` — expanded beyond 510(k) to include PMA approvals and De Novo classifications
+- Interactive 510(k) search mode in `/fda:validate` — search by applicant, device name, or product code with results filtering
+
 ## [4.6.0] - 2026-02-06
 
 ### Added — Documentation & Polish
