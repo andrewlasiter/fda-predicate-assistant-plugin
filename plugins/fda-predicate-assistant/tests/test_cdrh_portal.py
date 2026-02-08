@@ -199,9 +199,9 @@ class TestSKILLMDUpdates:
 
 
 class TestVersionBump:
-    """Test plugin version is 5.5.0."""
+    """Test plugin version is 5.7.0."""
 
     def test_plugin_json_version(self):
         with open(PLUGIN_JSON) as f:
             data = json.load(f)
-        assert data["version"] == "5.5.0"
+        assert data["version"] == "5.7.0"
