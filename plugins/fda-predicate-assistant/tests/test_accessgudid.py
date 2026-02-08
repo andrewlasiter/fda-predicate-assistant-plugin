@@ -157,9 +157,11 @@ class TestPluginVersionAndCounts59:
     def test_version_is_5_9_0(self):
         with open(PLUGIN_JSON) as f:
             data = json.load(f)
-        assert data["version"] == "5.13.0"
+        assert data["version"] == "5.14.0"
 
-    def test_description_mentions_accessgudid(self):
-        with open(PLUGIN_JSON) as f:
-            data = json.load(f)
-        assert "AccessGUDID" in data["description"]
+    def test_skill_md_mentions_accessgudid(self):
+        """AccessGUDID is documented in SKILL.md resources, not plugin.json description."""
+        skill_md = os.path.join(BASE_DIR, "skills", "fda-510k-knowledge", "SKILL.md")
+        with open(skill_md) as f:
+            content = f.read()
+        assert "accessgudid-api.md" in content

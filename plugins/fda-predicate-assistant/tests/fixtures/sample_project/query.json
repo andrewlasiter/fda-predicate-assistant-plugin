@@ -1,0 +1,10 @@
+{
+  "project": "sample_project",
+  "product_code": "QAS",
+  "device_name": "Picture Archiving and Communications System",
+  "created_at": "2025-06-15T10:00:00Z",
+  "filters": {
+    "years": "2019-2024",
+    "product_codes": ["QAS"]
+  }
+}

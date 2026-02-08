@@ -197,7 +197,7 @@ class TestPluginVersionAndCounts58:
     def test_version_is_5_8_0(self):
         with open(PLUGIN_JSON) as f:
             data = json.load(f)
-        assert data["version"] == "5.13.0"
+        assert data["version"] == "5.14.0"
 
     def test_command_count_is_37(self):
         """Verify 37 .md files in commands directory."""
@@ -209,7 +209,6 @@ class TestPluginVersionAndCounts58:
             data = json.load(f)
         assert "38 commands" in data["description"]
 
-    def test_description_mentions_inspections(self):
-        with open(PLUGIN_JSON) as f:
-            data = json.load(f)
-        assert "inspection" in data["description"].lower() or "enforcement" in data["description"].lower()
+    def test_inspections_command_exists(self):
+        """Inspections feature is verified by command file existence."""
+        assert os.path.exists(os.path.join(CMDS_DIR, "inspections.md"))

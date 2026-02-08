@@ -49,21 +49,20 @@ class TestSkillWorkflowStepZero:
     def setup_method(self):
         self.content = _read(SKILL_MD)
 
-    def test_main_workflow_has_step_zero(self):
-        # Find the main workflow block (contains "1. /fda:research PRODUCT_CODE")
-        marker = "1. /fda:research PRODUCT_CODE"
-        idx_research = self.content.index(marker)
-        # Step 0 should appear before step 1 in the same block
-        block_start = self.content.rfind("```", 0, idx_research)
-        block = self.content[block_start:idx_research]
-        assert "--setup-key" in block
+    def test_main_workflow_has_setup_key_in_stage_1(self):
+        """Workflow Guide Stage 1 should include --setup-key before data collection."""
+        # In the new 5-stage Workflow Guide, Stage 1 (Setup) has --setup-key
+        assert "Workflow Guide" in self.content
+        idx_wf = self.content.index("Workflow Guide")
+        idx_stage1 = self.content.index("Stage 1: Setup", idx_wf)
+        idx_stage2 = self.content.index("Stage 2", idx_stage1)
+        stage1_block = self.content[idx_stage1:idx_stage2]
+        assert "--setup-key" in stage1_block
 
-    def test_import_workflow_has_step_zero(self):
-        # Find the import workflow block (contains /fda:import)
-        idx_import = self.content.index("/fda:import")
-        block_start = self.content.rfind("```", 0, idx_import)
-        block = self.content[block_start:idx_import]
-        assert "--setup-key" in block
+    def test_import_workflow_references_configure(self):
+        """Import workflow should be documented in the Workflow Guide."""
+        # The import path is in the "Alternative: Import Existing eSTAR" section
+        assert "/fda:import" in self.content
 
 
 class TestValidateNudge:

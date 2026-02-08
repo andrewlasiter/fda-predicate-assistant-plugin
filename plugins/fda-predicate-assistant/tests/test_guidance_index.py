@@ -302,8 +302,8 @@ class TestSKILLMDGuidanceIndex:
     def test_lists_guidance_index_reference(self):
         assert "fda-guidance-index.md" in self.content
 
-    def test_resource_count_26(self):
-        assert "27 references" in self.content
+    def test_resource_count_40(self):
+        assert "40 references" in self.content
 
 
 # -- Plugin Metadata -------------------------------------------------
@@ -315,12 +315,13 @@ class TestPluginVersionAndCounts511:
     def test_version_is_5_11_0(self):
         with open(PLUGIN_JSON) as f:
             data = json.load(f)
-        assert data["version"] == "5.13.0"
+        assert data["version"] == "5.14.0"
 
-    def test_description_mentions_guidance_index(self):
-        with open(PLUGIN_JSON) as f:
-            data = json.load(f)
-        assert "guidance index" in data["description"].lower()
+    def test_skill_md_mentions_guidance_index(self):
+        """Guidance index is documented in SKILL.md resources, not plugin.json description."""
+        with open(SKILL_MD) as f:
+            content = f.read()
+        assert "fda-guidance-index.md" in content
 
     def test_command_count_is_38(self):
         """Verify 38 .md files in commands directory."""

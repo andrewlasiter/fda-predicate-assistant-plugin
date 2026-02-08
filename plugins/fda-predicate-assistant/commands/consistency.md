@@ -1,6 +1,6 @@
 ---
 description: Cross-validate all project files for internal consistency — device description, intended use, predicate list, product code alignment across all submission components
-allowed-tools: Bash, Read, Glob, Grep
+allowed-tools: Bash, Read, Glob, Grep, Write
 argument-hint: "--project NAME [--fix] [--output FILE]"
 ---
 

@@ -1,6 +1,6 @@
 ---
 description: Interactive review of extracted predicates — reclassify, score confidence, flag risks, accept or reject each predicate with tracked rationale
-allowed-tools: Bash, Read, Glob, Grep, Write
+allowed-tools: Bash, Read, Glob, Grep, Write, AskUserQuestion
 argument-hint: "[--project NAME] [--knumber K123456] [--auto] [--full-auto] [--auto-threshold N]"
 ---
 

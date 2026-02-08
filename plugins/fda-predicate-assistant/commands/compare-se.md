@@ -1,6 +1,6 @@
 ---
 description: Generate FDA Substantial Equivalence comparison tables for 510(k) submissions — device-type specific rows, multi-predicate support, auto-populated from FDA data
-allowed-tools: Read, Glob, Grep, Bash, Write, WebFetch, WebSearch
+allowed-tools: Read, Glob, Grep, Bash, Write, WebFetch, WebSearch, AskUserQuestion
 argument-hint: "--predicates K241335[,K234567] [--references K345678] [--product-code CODE] [--infer]"
 ---
 

@@ -1,0 +1,57 @@
+{
+  "project": "sample_project",
+  "product_code": "QAS",
+  "device_name": "Picture Archiving and Communications System",
+  "intended_use": "The device is intended for the display, storage, and retrieval of digital medical images for review by trained medical professionals.",
+  "created_at": "2025-06-15T10:30:00Z",
+  "reviewed_at": "2025-06-16T14:00:00Z",
+  "predicates": {
+    "K213456": {
+      "device_name": "PACS Workstation 3000",
+      "applicant": "ImageTech Inc.",
+      "decision_date": "2022-03-15",
+      "product_code": "QAS",
+      "decision": "accepted",
+      "confidence_score": 92,
+      "rationale": "Same intended use, same product code, recent clearance, same technology",
+      "risk_flags": [],
+      "source": "extraction"
+    },
+    "K201234": {
+      "device_name": "DicomView Enterprise",
+      "applicant": "DicomView LLC",
+      "decision_date": "2021-07-22",
+      "product_code": "QAS",
+      "decision": "accepted",
+      "confidence_score": 85,
+      "rationale": "Same intended use, complementary display technology",
+      "risk_flags": [],
+      "source": "extraction"
+    },
+    "K190987": {
+      "device_name": "RadNet AI Triage",
+      "applicant": "RadNet Medical",
+      "decision_date": "2020-06-30",
+      "product_code": "QAS",
+      "decision": "rejected",
+      "confidence_score": 38,
+      "rationale": "Different intended use (AI-assisted triage vs general PACS viewing)",
+      "risk_flags": ["different_intended_use", "ai_ml_component"],
+      "source": "extraction"
+    }
+  },
+  "reference_devices": {
+    "K180555": {
+      "device_name": "Legacy PACS System",
+      "product_code": "QAS",
+      "role": "reference",
+      "note": "Referenced for display resolution comparison only"
+    }
+  },
+  "summary": {
+    "total_evaluated": 3,
+    "accepted": 2,
+    "rejected": 1,
+    "average_score": 72
+  }
+}

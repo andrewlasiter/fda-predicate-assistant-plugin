@@ -204,32 +204,14 @@ The plugin integrates with all 7 openFDA Device API endpoints for real-time data
 ### Reference
 See `references/openfda-api.md` for the full API reference with query templates, field mappings, and error handling patterns.
 
-## Recommended Workflow
+## Quick-Start Workflow
 
-The full 510(k) submission preparation workflow:
+See the **Workflow Guide** section above for the full 5-stage workflow. Here's the minimal path:
 
 ```
-0. /fda:configure --setup-key            — Get a free openFDA API key (optional, 120K/day vs 1K)
-1. /fda:research PRODUCT_CODE        — Research the landscape (clearances, predicates, guidance, safety)
-2. /fda:extract both                  — Download PDFs + extract predicates
-3. /fda:review --project NAME         — Score, flag, accept/reject predicates
-4. /fda:guidance PRODUCT_CODE --save  — Find guidance + extract requirements
-5. /fda:presub PRODUCT_CODE           — Plan Pre-Submission meeting with FDA
-6. /fda:submission-outline CODE       — Generate submission outline + gap analysis
-7. /fda:compare-se --predicates ...   — Build SE comparison table for submission
+/fda:configure --setup-key    → /fda:extract both → /fda:review --project NAME
+→ /fda:draft --project NAME   → /fda:assemble --project NAME → /fda:pre-check --project NAME
 ```
-
-**Alternative start — import existing eSTAR:**
-```
-0. /fda:configure --setup-key            — Get a free openFDA API key (optional, 120K/day vs 1K)
-1. /fda:import estar.pdf --project NAME  — Import existing eSTAR data
-2. /fda:review --project NAME            — Score imported predicates
-3. /fda:draft --project NAME             — Draft remaining sections
-4. /fda:export --project NAME            — Export as eSTAR XML
-5. Submit via CDRH Portal                — https://ccp.fda.gov/prweb/PRAuth/app/default/extsso
-```
-
-Each step builds on previous data but degrades gracefully if run independently.
 
 **Supporting commands** (use anytime):
 - `/fda:validate K123456` — Validate a device number against FDA databases
@@ -238,8 +220,13 @@ Each step builds on previous data but degrades gracefully if run independently.
 - `/fda:summarize --knumbers K123456` — Summarize 510(k) PDF sections
 - `/fda:status` — Check pipeline data, file freshness, API connectivity
 - `/fda:configure` — View/modify settings, manage exclusion list
+- `/fda:standards --product-code CODE` — FDA recognized consensus standards
+- `/fda:udi --product-code CODE` — UDI/GUDID device lookup
+- `/fda:inspections --firm NAME` — FDA facility inspections and citations
+- `/fda:trials --device TERM` — ClinicalTrials.gov device study search
+- `/fda:warnings --query TERM` — FDA warning letters and enforcement
 
-## Available Commands (33)
+## Available Commands (38)
 
 ### Core Pipeline
 | Command | Purpose |
@@ -263,6 +250,10 @@ Each step builds on previous data but degrades gracefully if run independently.
 | `/fda:ask` | Natural language Q&A about FDA regulatory topics |
 | `/fda:literature` | PubMed/WebSearch literature review with gap analysis |
 | `/fda:lineage` | Predicate citation chain tracer across generations |
+| `/fda:standards` | FDA Recognized Consensus Standards lookup by product code, number, or keyword |
+| `/fda:inspections` | FDA Data Dashboard API — inspections, citations, compliance actions, import refusals |
+| `/fda:trials` | ClinicalTrials.gov device study search via AREA syntax |
+| `/fda:warnings` | FDA warning letters and enforcement intelligence with risk scoring |
 
 ### Planning and Decision Support
 | Command | Purpose |
@@ -272,6 +263,16 @@ Each step builds on previous data but degrades gracefully if run independently.
 | `/fda:pccp` | Predetermined Change Control Plan for AI/ML devices |
 | `/fda:monitor` | Watch FDA databases for new clearances, recalls, events |
 | `/fda:draft` | Generate regulatory prose for submission sections |
+| `/fda:calc` | Regulatory calculators — shelf life (ASTM F1980), sample size, sterilization dose |
+| `/fda:propose` | Manually propose predicate and reference devices with validation and confidence scoring |
+| `/fda:pre-check` | FDA review simulation — RTA screening, deficiency prediction, readiness score |
+
+### Data Maintenance
+| Command | Purpose |
+|---------|---------|
+| `/fda:gap-analysis` | 3-way PMN/CSV/PDF cross-reference to find missing data |
+| `/fda:data-pipeline` | Data maintenance pipeline — analyze, download, extract, merge |
+| `/fda:udi` | UDI/GUDID device lookup via openFDA + AccessGUDID v3 |
 
 ### Import, Export, and Assembly
 | Command | Purpose |
@@ -285,36 +286,111 @@ Each step builds on previous data but degrades gracefully if run independently.
 | `/fda:configure` | Set up API keys, data paths, and preferences |
 | `/fda:status` | Check what data you have and what's available |
 
-## Resources (27 references)
+## Agents (7)
+
+Autonomous agents handle complex multi-step workflows. Launch them with the Task tool specifying `subagent_type: "fda-predicate-assistant:<agent-name>"`.
+
+| Agent | Purpose | When to Use |
+|-------|---------|-------------|
+| `extraction-analyzer` | Analyze extraction results quality — patterns, confidence distribution, gap identification | After running `/fda:extract` to assess extraction quality |
+| `submission-writer` | Draft regulatory prose for all applicable submission sections | After review is complete; writes section drafts using `/fda:draft` |
+| `submission-assembler` | Package existing drafts into eSTAR directory structure with consistency checks | After all sections are drafted; creates the final submission package |
+| `presub-planner` | Research regulatory landscape and generate a complete Pre-Submission package | When starting Pre-Sub preparation for a new device |
+| `review-simulator` | Simulate FDA review team evaluation with RTA screening and deficiency prediction | When submission is nearly complete; identifies likely FDA questions |
+| `research-intelligence` | Deep regulatory intelligence gathering — competitive landscape, safety signals, guidance analysis | At project start for comprehensive landscape assessment |
+| `data-pipeline-manager` | Orchestrate data maintenance — gap analysis, downloads, extraction, merging | For bulk data operations across multiple product codes or years |
+
+**Recommended agent sequence:** `research-intelligence` → `extraction-analyzer` → `submission-writer` → `submission-assembler` → `review-simulator`
+
+## Workflow Guide
+
+### Stage 1: Setup
+```
+/fda:configure --setup-key         — Get a free openFDA API key (120K/day vs 1K)
+/fda:status                         — Check pipeline data and API connectivity
+```
+
+### Stage 2: Data Collection
+```
+/fda:extract both                   — Download PDFs + extract predicates
+/fda:gap-analysis --project NAME    — Find missing K-numbers, PDFs, and extractions
+/fda:data-pipeline run              — Download missing data and re-extract
+```
+
+### Stage 3: Analysis & Review
+```
+/fda:review --project NAME          — Score, flag, accept/reject predicates
+/fda:research PRODUCT_CODE          — Competitive landscape, predicate profiles
+/fda:safety --product-code CODE     — MAUDE + recall analysis
+/fda:guidance PRODUCT_CODE --save   — Find guidance + extract requirements
+/fda:standards --product-code CODE  — Applicable consensus standards
+```
+
+### Stage 4: Drafting
+```
+/fda:draft --project NAME           — Generate regulatory prose for all sections
+/fda:compare-se --predicates ...    — Build SE comparison table
+/fda:traceability --project NAME    — Requirements → risks → tests → evidence
+/fda:consistency --project NAME     — Cross-document consistency check
+```
+
+### Stage 5: Assembly & Submission
+```
+/fda:assemble --project NAME        — Create eSTAR directory + index
+/fda:export --project NAME          — Export as eSTAR XML or zip
+/fda:pre-check --project NAME       — Simulate FDA review + RTA screening
+```
+
+### Alternative: Import Existing eSTAR
+```
+/fda:import estar.pdf --project NAME → /fda:review → /fda:draft → /fda:export
+```
+
+Each step builds on previous data but degrades gracefully if run independently.
+
+## Resources (40 references)
 
 For detailed reference information, see:
-- `references/output-formatting.md` - FDA Professional CLI output formatting guide (rules R1-R12)
-- `references/openfda-api.md` - openFDA Device API reference (all 7 endpoints)
-- `references/device-classes.md` - Device classification details
-- `references/predicate-types.md` - Predicate selection and defensibility guidance
-- `references/common-issues.md` - Troubleshooting extraction problems
-- `references/section-patterns.md` - PDF section detection patterns, regexes, and eSTAR XML element mapping
-- `references/confidence-scoring.md` - Predicate confidence scoring algorithm (with DEN handling)
-- `references/guidance-lookup.md` - FDA guidance document lookup reference
-- `references/submission-structure.md` - 510(k) submission structure and Pre-Sub format
-- `references/path-resolution.md` - Plugin root resolution patterns
-- `references/estar-structure.md` - eSTAR section structure, XFA field mapping, XML schema, and applicability matrix
-- `references/pathway-decision-tree.md` - Regulatory pathway decision flow, scoring, exemptions, and breakthrough designation
-- `references/test-plan-framework.md` - ISO 14971 risk categories and device-type test lists (10+ device types)
-- `references/pccp-guidance.md` - FDA PCCP guidance, regulatory citations, and real-world examples
+- `references/accessgudid-api.md` - AccessGUDID v3 API reference for UDI/device history lookups
+- `references/aiml-device-intelligence.md` - AI/ML device trends, SaMD classification, and PCCP patterns
 - `references/audit-logging.md` - JSONL audit log schema and pipeline consolidated log
-- `references/predicate-lineage.md` - Chain Health Scoring and lineage patterns
-- `references/standards-tracking.md` - FDA recognized consensus standards tracking (with version numbers)
-- `references/cybersecurity-framework.md` - Cybersecurity documentation framework, Section 524B, and templates
-- `references/rta-checklist.md` - Refuse to Accept (RTA) checklist and prevention guide
-- `references/pubmed-api.md` - NCBI E-utilities API reference for structured PubMed searches
-- `references/special-controls.md` - Class II special controls identification and conformance
-- `references/clinical-data-framework.md` - Clinical data decision tree and evidence types
-- `references/post-market-requirements.md` - Post-market obligations (MDR, recalls, registration, surveillance)
-- `references/draft-templates.md` - Prose templates for all 16 eSTAR sections with `[TODO:]` placeholders
 - `references/cdrh-portal.md` - CDRH Portal submission guide, file size limits, CDRH vs CBER routing
-- `references/fda-guidance-index.md` - Curated CDRH guidance documents index with regulation-to-guidance mapping
+- `references/cdrh-review-structure.md` - CDRH review team structure, OHT mapping, and deficiency templates
+- `references/clinical-data-framework.md` - Clinical data decision tree and evidence types
+- `references/clinical-study-framework.md` - Clinical study guidance, IDE requirements, and study design
+- `references/clinicaltrials-api.md` - ClinicalTrials.gov API v2 reference with AREA syntax
+- `references/common-issues.md` - Troubleshooting extraction problems
+- `references/complaint-handling-framework.md` - 21 CFR 820.198 complaint handling procedures
+- `references/confidence-scoring.md` - Predicate confidence scoring algorithm (with DEN handling)
+- `references/cybersecurity-framework.md` - Cybersecurity documentation framework, Section 524B, and templates
+- `references/device-classes.md` - Device classification details
+- `references/dhf-checklist.md` - Design History File (DHF) checklist per 21 CFR 820
+- `references/ectd-overview.md` - eCTD (electronic Common Technical Document) structure reference
+- `references/estar-structure.md` - eSTAR section structure, XFA field mapping, XML schema, and applicability matrix
+- `references/fda-dashboard-api.md` - FDA Data Dashboard API (inspections, citations, compliance actions)
 - `references/fda-enforcement-intelligence.md` - Enforcement data sources, GMP violation patterns, risk scoring
+- `references/fda-guidance-index.md` - Curated CDRH guidance documents index with regulation-to-guidance mapping
+- `references/guidance-lookup.md` - FDA guidance document lookup reference
+- `references/human-factors-framework.md` - IEC 62366-1 human factors engineering and usability testing
+- `references/openfda-api.md` - openFDA Device API reference (all 7 endpoints)
+- `references/openfda-data-dictionary.md` - openFDA field dictionary with sort/skip/count/OR-batch/wildcard support
+- `references/path-resolution.md` - Plugin root resolution patterns
+- `references/pathway-decision-tree.md` - Regulatory pathway decision flow, scoring, exemptions, and breakthrough designation
+- `references/pccp-guidance.md` - FDA PCCP guidance, regulatory citations, and real-world examples
+- `references/post-market-requirements.md` - Post-market obligations (MDR, recalls, registration, surveillance)
+- `references/predicate-analysis-framework.md` - Deep predicate analysis with 7-subsection methodology
+- `references/predicate-lineage.md` - Chain Health Scoring and lineage patterns
+- `references/predicate-types.md` - Predicate selection and defensibility guidance
+- `references/pubmed-api.md` - NCBI E-utilities API reference for structured PubMed searches
+- `references/risk-management-framework.md` - ISO 14971 risk management process and templates
+- `references/rta-checklist.md` - Refuse to Accept (RTA) checklist and prevention guide
+- `references/section-patterns.md` - PDF section detection patterns, regexes, and eSTAR XML element mapping
+- `references/special-controls.md` - Class II special controls identification and conformance
+- `references/standards-database.md` - FDA recognized consensus standards database with supersession tracking
+- `references/standards-tracking.md` - FDA recognized consensus standards tracking (with version numbers)
+- `references/submission-structure.md` - 510(k) submission structure and Pre-Sub format
+- `references/test-plan-framework.md` - ISO 14971 risk categories and device-type test lists (10+ device types)
+- `references/udi-requirements.md` - UDI labeling requirements and compliance reference
 
 ## Disclaimers (always include when providing regulatory guidance)
 

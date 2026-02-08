@@ -166,7 +166,7 @@ product_code = "CODE"  # From project
 
 cyber_trigger = any(kw in desc for kw in [
     "software", "firmware", "wireless", "bluetooth", "wifi", "connected",
-    "app", "samd", "algorithm", "cloud", "network", "usb", "rf",
+    "app", "samd", "algorithm", "cloud", "network", "usb data", "usb communication", "rf",
     "iot", "telemetry", "digital"
 ])
 ```

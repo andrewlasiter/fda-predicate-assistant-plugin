@@ -303,7 +303,7 @@ Generates Section 13 of the eSTAR: Software/Cybersecurity.
 - 13.3 Software testing
 - 13.4 Cybersecurity documentation (if Section 524B applies)
 
-Auto-detect if cybersecurity applies from keywords: "wireless", "bluetooth", "wifi", "connected", "cloud", "network", "usb".
+Auto-detect if cybersecurity applies from keywords: "wireless", "bluetooth", "wifi", "connected", "cloud", "network", "usb data", "usb communication".
 
 ### 12. emc-electrical
 

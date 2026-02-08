@@ -1,6 +1,6 @@
 ---
 description: Analyze adverse events (MAUDE) and recall history for a product code or device — safety intelligence for pre-submission preparation
-allowed-tools: Bash, Read, Grep, Glob
+allowed-tools: Bash, Read, Grep, Glob, Write
 argument-hint: "--product-code CODE [--years RANGE] [--device-name TEXT] [--knumber K123456]"
 ---
 

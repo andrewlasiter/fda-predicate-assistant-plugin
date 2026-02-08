@@ -309,8 +309,15 @@ class TestPluginVersion:
     def test_version_is_current(self):
         assert self.plugin["version"] >= "5.1.0"
 
-    def test_description_mentions_new_features(self):
-        desc = self.plugin["description"]
-        assert "BOM" in desc or "materials" in desc
-        assert "human factors" in desc
-        assert "complaint" in desc
+    def test_tranche5_features_exist_in_commands(self):
+        """Tranche 5 features verified via command files and references, not plugin.json description."""
+        # BOM/materials in draft command
+        with open(os.path.join(CMDS_DIR, "draft.md")) as f:
+            draft = f.read()
+        assert "Bill of Materials" in draft
+        # Human factors in draft command
+        assert "human-factors" in draft
+        # Complaint handling in safety command
+        with open(os.path.join(CMDS_DIR, "safety.md")) as f:
+            safety = f.read()
+        assert "complaint" in safety.lower()

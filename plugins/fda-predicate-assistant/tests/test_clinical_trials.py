@@ -179,7 +179,7 @@ class TestPluginVersionAndCounts510:
     def test_version_is_5_10_0(self):
         with open(PLUGIN_JSON) as f:
             data = json.load(f)
-        assert data["version"] == "5.13.0"
+        assert data["version"] == "5.14.0"
 
     def test_command_count_is_37(self):
         """Verify 37 .md files in commands directory."""
@@ -191,7 +191,9 @@ class TestPluginVersionAndCounts510:
             data = json.load(f)
         assert "38 commands" in data["description"]
 
-    def test_description_mentions_clinical_trials(self):
-        with open(PLUGIN_JSON) as f:
-            data = json.load(f)
-        assert "ClinicalTrials" in data["description"] or "clinical trial" in data["description"].lower()
+    def test_skill_md_mentions_clinical_trials(self):
+        """ClinicalTrials is documented in SKILL.md resources, not plugin.json description."""
+        skill_md = os.path.join(BASE_DIR, "skills", "fda-510k-knowledge", "SKILL.md")
+        with open(skill_md) as f:
+            content = f.read()
+        assert "clinicaltrials-api.md" in content

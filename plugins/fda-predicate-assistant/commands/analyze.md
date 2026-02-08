@@ -1,6 +1,6 @@
 ---
 description: Analyze FDA data from any pipeline stage — extraction results, download metadata, predicate relationships, or device lookups
-allowed-tools: Read, Glob, Grep, Bash
+allowed-tools: Read, Glob, Grep, Bash, Write
 argument-hint: "[--project NAME | file-path | product-code | K-number]"
 ---
 

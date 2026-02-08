@@ -1,6 +1,6 @@
 ---
 description: Summarize sections from 510(k) summary PDFs — compare indications, testing, device descriptions, or any section across filtered documents
-allowed-tools: Read, Glob, Grep, Bash
+allowed-tools: Read, Glob, Grep, Bash, Write
 argument-hint: "[--project NAME] [--product-codes CODE] [--years RANGE] [--sections NAMES] [--output FILE]"
 ---
 

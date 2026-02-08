@@ -1,6 +1,6 @@
 ---
 description: Validate FDA device numbers against official databases and all available pipeline data — supports K/P/DEN/N-numbers and interactive search mode
-allowed-tools: Bash, Read, Grep, Glob
+allowed-tools: Bash, Read, Grep, Glob, Write
 argument-hint: "<number> [number2] [--project NAME] [--offline] [--search QUERY --product-code CODE --year RANGE --applicant NAME --limit N --sort FIELD]"
 ---
 

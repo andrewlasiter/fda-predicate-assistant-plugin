@@ -191,11 +191,11 @@ class TestSKILLMDUpdates:
     def test_lists_cdrh_portal_reference(self):
         assert "cdrh-portal.md" in self.content
 
-    def test_resource_count_26(self):
-        assert "27 references" in self.content
+    def test_resource_count_40(self):
+        assert "40 references" in self.content
 
-    def test_command_count_33(self):
-        assert "33)" in self.content or "33 commands" in self.content
+    def test_command_count_38(self):
+        assert "Commands (38)" in self.content or "38 commands" in self.content
 
 
 class TestVersionBump:
@@ -204,4 +204,4 @@ class TestVersionBump:
     def test_plugin_json_version(self):
         with open(PLUGIN_JSON) as f:
             data = json.load(f)
-        assert data["version"] == "5.13.0"
+        assert data["version"] == "5.14.0"
