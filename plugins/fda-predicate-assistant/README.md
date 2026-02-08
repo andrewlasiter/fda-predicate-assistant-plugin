@@ -1,8 +1,8 @@
-![Version](https://img.shields.io/badge/version-5.4.0-blue)
+![Version](https://img.shields.io/badge/version-5.5.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Commands](https://img.shields.io/badge/commands-33-orange)
 ![Agents](https://img.shields.io/badge/agents-4-purple)
-![Tests](https://img.shields.io/badge/tests-533-brightgreen)
+![Tests](https://img.shields.io/badge/tests-679-brightgreen)
 ![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-blueviolet)
 ![FDA 510(k)](https://img.shields.io/badge/FDA-510(k)-red)
 
@@ -14,7 +14,7 @@
 
 **Your AI-powered regulatory assistant for FDA 510(k) submissions.**
 
-From predicate research to CDRH Portal submission — 33 commands, 4 autonomous agents, and 533 tests that handle the data work so you can focus on the science and strategy. Search FDA databases, identify predicates, analyze safety histories, look up standards, generate substantial equivalence comparisons, draft all 18 eSTAR sections, simulate FDA review, assemble submission-ready packages, and get step-by-step submission guidance, all from within Claude.
+From predicate research to CDRH Portal submission — 33 commands, 4 autonomous agents, and 679 tests that handle the data work so you can focus on the science and strategy. Search FDA databases, identify predicates, analyze safety histories, look up standards, generate substantial equivalence comparisons, draft all 18 eSTAR sections, simulate FDA review, assemble submission-ready packages, and get step-by-step submission guidance, all from within Claude.
 
 ---
 
@@ -171,9 +171,11 @@ The plugin can run fully unattended — no prompts, no manual steps. This is ide
 
 The plugin connects to all 7 openFDA Device API endpoints for real-time access to clearances, classifications, adverse events, recalls, registrations, UDI data, and COVID-related authorizations.
 
+**API features used:** `sort`, `skip` (pagination), `_count` (aggregations), OR-batched multi-value queries, wildcard search, field-specific queries. Responses are cached with 7-day TTL and exponential backoff retry.
+
 It also works offline using cached FDA flat files — no internet required for basic lookups.
 
-**Optional:** Set up a free API key for higher rate limits:
+**First run:** The plugin detects when no API key is configured and offers guided setup:
 
 ```
 /fda:configure --setup-key
@@ -189,6 +191,18 @@ The plugin bundles two Python scripts for batch processing:
 2. **Predicate Extractor** — Extracts device numbers from downloaded PDFs with OCR error correction and FDA database validation
 
 Run `/fda:extract` to use either or both stages.
+
+---
+
+## Section Detection
+
+510(k) PDFs vary widely in formatting — different section headings, OCR artifacts from scanned documents, EU-style terminology. The plugin uses a **3-tier section detection system** to handle this:
+
+1. **Tier 1: Regex** — Fast deterministic matching against 13 universal and 5 device-type-specific heading patterns
+2. **Tier 2: OCR-Tolerant** — Applies an OCR substitution table (e.g., `1→I`, `0→O`, `5→S`) and retries Tier 1, allowing up to 2 character corrections per heading
+3. **Tier 3: LLM Semantic** — Classifies sections by content signals (2+ keyword matches in a 200-word window) and maps non-standard headings (34 EU/novel terms) to canonical FDA section names
+
+All commands that read PDF sections (`/fda:summarize`, `/fda:research`, `/fda:review`, `/fda:compare-se`, `/fda:lineage`, `/fda:presub`, `/fda:propose`) use this system. The patterns are maintained in a single canonical file (`references/section-patterns.md`) to prevent drift.
 
 ---
 

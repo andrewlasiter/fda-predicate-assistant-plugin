@@ -1,5 +1,33 @@
 # Changelog
 
+## [5.5.0] - 2026-02-08
+
+### Added — 3-Tier Section Detection System
+- `references/section-patterns.md` rewritten as canonical 3-tier system (413 lines):
+  - **Tier 1: Regex** — 13 universal + 5 device-type-specific deterministic patterns
+  - **Tier 2: OCR-Tolerant** — Substitution table (11 mappings: `1→I/l`, `0→O`, `5→S`, `$→S`, `7→T`, `3→E`, `8→B`, `|→I/l`, `rn→m`, spurious spaces), 12 calibration examples, max 2 corrections per heading
+  - **Tier 3: LLM Semantic** — Classification signal table (12 sections, 2+ signals in 200-word window), non-standard heading map (34 EU/novel terms → canonical sections)
+- Consolidated two divergent copies of section-patterns.md into one canonical source; skill copy replaced with redirect
+- All 7 consuming commands updated to reference 3-tier system: summarize, research, review, compare-se, lineage, presub, propose
+- Inline pattern copies removed from summarize.md (10 patterns) and research.md (7-entry Python dict)
+- Sync comments + Tier 2/3 fallback notes added to review.md and research.md SE header regexes
+- Context-specific notes: OCR for older PDFs (lineage, compare-se), EU terminology (presub)
+
+### Added — openFDA Feature Expansion
+- Full openFDA API feature utilization: `sort`, `skip` (pagination), `_count` (aggregation buckets), OR-batched multi-value queries, wildcard search, field-specific queries
+- First-run API key onboarding: detects missing key and offers guided setup via `/fda:configure --setup-key`
+- `references/openfda-data-dictionary.md` — Field reference for all 7 Device API endpoints (115+ fields)
+- Enhanced `fda_api_client.py` with `sort` and `skip` parameters, `count_field()` method for aggregations, `batch_or_query()` for multi-value searches
+
+### Added — Testing
+- 30 new tests in `test_regex_patterns.py`: Tier 2 OCR correction (12 parametrized), Tier 3 heading map (14), Tier 3 content signals (3), helper functions (`apply_ocr_corrections`, `count_section_signals`)
+- `test_openfda_features.py` — 59 new tests for sort/skip/count/OR-batch/wildcard/enforcement features
+- `test_api_onboarding.py` — 19 new tests for first-run detection, key validation, settings persistence
+- 679 total tests (633 offline + 46 API), up from 533
+
+### Fixed
+- URL encoding bug in API contract tests: `+AND+`/`+OR+` operators were double-encoded by `urllib.parse.quote`
+
 ## [5.4.0] - 2026-02-07
 
 ### Added — CDRH Portal & eSTAR Template Selection

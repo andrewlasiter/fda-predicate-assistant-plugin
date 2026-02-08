@@ -147,7 +147,7 @@ if api_key:
 # Fix URL encoding: replace + with space before urlencode
 params["search"] = params["search"].replace("+", " ")
 url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
-req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.4.0)"})
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.5.0)"})
 try:
     with urllib.request.urlopen(req, timeout=15) as resp:
         data = json.loads(resp.read())
@@ -213,7 +213,7 @@ if api_key:
 # Fix URL encoding: replace + with space before urlencode
 params["search"] = params["search"].replace("+", " ")
 url = f"https://api.fda.gov/device/recall.json?{urllib.parse.urlencode(params)}"
-req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.4.0)"})
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.5.0)"})
 try:
     with urllib.request.urlopen(req, timeout=15) as resp:
         data = json.loads(resp.read())
@@ -262,7 +262,7 @@ if product_codes_to_check:
     # Fix URL encoding: replace + with space before urlencode
     params["search"] = params["search"].replace("+", " ")
     url = f"https://api.fda.gov/device/event.json?{urllib.parse.urlencode(params)}"
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.4.0)"})
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.5.0)"})
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read())

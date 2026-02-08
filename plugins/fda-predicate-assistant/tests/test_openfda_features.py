@@ -397,7 +397,7 @@ class TestFDAClientFeatures:
 
     def test_user_agent_version(self):
         from fda_api_client import USER_AGENT
-        assert "5.4.0" in USER_AGENT, f"USER_AGENT should be 5.4.0, got: {USER_AGENT}"
+        assert "5.5.0" in USER_AGENT, f"USER_AGENT should be 5.5.0, got: {USER_AGENT}"
 
 
 # ──────────────────────────────────────────────
