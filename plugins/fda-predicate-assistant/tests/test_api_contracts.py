@@ -25,6 +25,8 @@ TIMEOUT = 15
 def _api_get(endpoint, search, limit=1):
     """Make an openFDA API request and return parsed JSON."""
     params = {"search": search, "limit": str(limit)}
+    # openFDA expects + as URL-encoded spaces; replace literal + before urlencode
+    params["search"] = params["search"].replace("+", " ")
     url = f"{BASE_URL}/{endpoint}.json?{urllib.parse.urlencode(params)}"
     req = urllib.request.Request(url, headers=HEADERS)
     with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
