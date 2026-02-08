@@ -1,8 +1,8 @@
 """Tests for the alert sender module.
 
-Validates email formatting, webhook payload structure, stdout JSON format,
+Validates webhook payload structure, stdout JSON format,
 config parsing, and severity filtering.
-All tests are offline — no SMTP/HTTP connections made.
+All tests are offline — no HTTP connections made.
 """
 
 import json
@@ -198,26 +198,19 @@ class TestSettingsLoading:
     def test_load_defaults_when_no_file(self, monkeypatch):
         monkeypatch.setattr("alert_sender.SETTINGS_PATH", "/nonexistent/path")
         settings = load_settings()
-        assert settings["smtp_host"] is None
-        assert settings["smtp_port"] == 587
+        assert settings["webhook_url"] is None
         assert settings["alert_severity_threshold"] == "info"
 
     def test_load_from_settings_file(self, tmp_path, monkeypatch):
         settings_file = tmp_path / "settings.md"
         settings_file.write_text(
             "---\n"
-            "smtp_host: smtp.example.com\n"
-            "smtp_port: 465\n"
-            "email_to: test@example.com\n"
             "webhook_url: https://hooks.example.com/fda\n"
             "alert_severity_threshold: warning\n"
             "---\n"
         )
         monkeypatch.setattr("alert_sender.SETTINGS_PATH", str(settings_file))
         settings = load_settings()
-        assert settings["smtp_host"] == "smtp.example.com"
-        assert settings["smtp_port"] == 465
-        assert settings["email_to"] == "test@example.com"
         assert settings["webhook_url"] == "https://hooks.example.com/fda"
         assert settings["alert_severity_threshold"] == "warning"
 
@@ -242,23 +235,3 @@ class TestWebhookPayload:
         assert result["success"] is False
 
 
-class TestEmailFormatting:
-    """Test email formatting without sending."""
-
-    def test_email_requires_smtp_host(self):
-        from alert_sender import send_email
-        result = send_email([], {})
-        assert result["success"] is False
-        assert "smtp_host" in result["error"]
-
-    def test_email_requires_smtp_user(self):
-        from alert_sender import send_email
-        result = send_email([], {"smtp_host": "smtp.test.com"})
-        assert result["success"] is False
-        assert "smtp_user" in result["error"]
-
-    def test_email_requires_email_to(self):
-        from alert_sender import send_email
-        result = send_email([], {"smtp_host": "smtp.test.com", "smtp_user": "user"})
-        assert result["success"] is False
-        assert "email_to" in result["error"]

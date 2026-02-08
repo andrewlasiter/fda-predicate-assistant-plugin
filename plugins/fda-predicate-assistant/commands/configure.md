@@ -55,12 +55,6 @@ Settings are stored in: `~/.claude/fda-predicate-assistant.local.md`
 | `openfda_enabled` | `true` | Enable/disable openFDA API calls (set false for offline-only mode) |
 | `exclusion_list` | `~/fda-510k-data/exclusion_list.json` | Path to device exclusion list JSON file (used by `/fda:review`) |
 | `auto_review` | `false` | If true, `/fda:review` auto-accepts predicates scoring 80+ and auto-rejects below 20 |
-| `smtp_host` | `null` | SMTP server hostname for email alerts (e.g., smtp.example.com) |
-| `smtp_port` | `587` | SMTP server port (587 for TLS, 465 for SSL) |
-| `smtp_user` | `null` | SMTP authentication username |
-| `smtp_password` | `null` | SMTP authentication password. **Set via settings file directly — do not paste in chat.** |
-| `email_to` | `null` | Default email recipient for monitor alerts |
-| `email_from` | `null` | Email sender address (defaults to smtp_user if not set) |
 | `webhook_url` | `null` | Default webhook URL for monitor alert POST delivery |
 | `alert_severity_threshold` | `info` | Minimum severity for alert delivery: info, warning, critical |
 | `alert_frequency` | `immediate` | Alert delivery timing: immediate (every check), daily (max 1/day), weekly |
@@ -261,12 +255,6 @@ openfda_api_key: null
 openfda_enabled: true
 exclusion_list: ~/fda-510k-data/exclusion_list.json
 auto_review: false
-smtp_host: null
-smtp_port: 587
-smtp_user: null
-smtp_password: null
-email_to: null
-email_from: null
 webhook_url: null
 alert_severity_threshold: info
 alert_frequency: immediate
@@ -313,12 +301,6 @@ This file stores your preferences for the FDA 510(k) pipeline.
 
 ## Alert Configuration (for /fda:monitor --notify)
 
-- **smtp_host**: SMTP server hostname (e.g., smtp.example.com)
-- **smtp_port**: SMTP port (587 for STARTTLS, 465 for implicit TLS)
-- **smtp_user**: SMTP login username (usually your email address)
-- **smtp_password**: SMTP login password. **Edit this file directly — do not paste in chat.** Use an app-specific password if required by your mail provider.
-- **email_to**: Default recipient for monitor alert emails
-- **email_from**: Sender address (defaults to smtp_user if not set)
 - **webhook_url**: Default webhook URL for POST delivery (webhook services or custom endpoints)
 - **alert_severity_threshold**: Minimum severity to deliver: info (all), warning, critical
 - **alert_frequency**: Delivery timing: immediate, daily, weekly

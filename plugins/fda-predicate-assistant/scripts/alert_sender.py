@@ -2,7 +2,7 @@
 """
 Alert delivery module for FDA Monitor.
 
-Supports email (SMTP), webhook (POST), and stdout (JSON) delivery.
+Supports webhook (POST) and stdout (JSON) delivery.
 Reads alert JSON from ~/fda-510k-data/monitor_alerts/.
 Config from ~/.claude/fda-predicate-assistant.local.md.
 """
@@ -10,12 +10,9 @@ Config from ~/.claude/fda-predicate-assistant.local.md.
 import json
 import os
 import re
-import smtplib
 import sys
 import urllib.request
 from datetime import datetime, date, timezone
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from pathlib import Path
 
 
@@ -26,12 +23,6 @@ SETTINGS_PATH = os.path.expanduser("~/.claude/fda-predicate-assistant.local.md")
 def load_settings():
     """Load alert configuration from settings file."""
     settings = {
-        "smtp_host": None,
-        "smtp_port": 587,
-        "smtp_user": None,
-        "smtp_password": None,
-        "email_to": None,
-        "email_from": None,
         "webhook_url": None,
         "alert_severity_threshold": "info",
         "alert_frequency": "immediate",
@@ -44,13 +35,7 @@ def load_settings():
             if m:
                 val = m.group(1).strip()
                 if val != "null":
-                    if key == "smtp_port":
-                        try:
-                            settings[key] = int(val)
-                        except ValueError:
-                            pass
-                    else:
-                        settings[key] = val
+                    settings[key] = val
     return settings
 
 
@@ -146,69 +131,6 @@ def format_alert_json(alerts):
     return json.dumps(output, indent=2)
 
 
-def send_email(alerts, settings, subject=None):
-    """Send alerts via SMTP email.
-
-    Args:
-        alerts: List of alert dicts.
-        settings: Config dict with smtp_host, smtp_port, etc.
-        subject: Email subject line override.
-
-    Returns:
-        dict with success status and message.
-    """
-    required = ["smtp_host", "smtp_user", "email_to"]
-    missing = [k for k in required if not settings.get(k)]
-    if missing:
-        return {"success": False, "error": f"Missing email settings: {', '.join(missing)}"}
-
-    if not subject:
-        critical = sum(1 for a in alerts if a.get("severity") == "critical")
-        warning = sum(1 for a in alerts if a.get("severity") == "warning")
-        subject = f"FDA Monitor: {len(alerts)} alert(s)"
-        if critical:
-            subject += f" ({critical} CRITICAL)"
-        elif warning:
-            subject += f" ({warning} warning)"
-
-    body_lines = [
-        "FDA Database Monitor Alert Report",
-        f"Generated: {datetime.now(timezone.utc).isoformat()}",
-        f"Total alerts: {len(alerts)}",
-        "",
-        "=" * 50,
-        "",
-    ]
-    for alert in alerts:
-        body_lines.append(format_alert_text(alert))
-        body_lines.append("")
-
-    body_lines.extend([
-        "=" * 50,
-        "This report is AI-generated from public FDA data.",
-        "Verify independently. Not regulatory advice.",
-    ])
-
-    msg = MIMEMultipart()
-    msg["From"] = settings.get("email_from", settings["smtp_user"])
-    msg["To"] = settings["email_to"]
-    msg["Subject"] = subject
-    msg.attach(MIMEText("\n".join(body_lines), "plain"))
-
-    try:
-        server = smtplib.SMTP(settings["smtp_host"], settings.get("smtp_port", 587))
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
-        if settings.get("smtp_password"):
-            server.login(settings["smtp_user"], settings["smtp_password"])
-        server.sendmail(msg["From"], [settings["email_to"]], msg.as_string())
-        server.quit()
-        return {"success": True, "message": f"Email sent to {settings['email_to']}"}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-
 def send_webhook(alerts, settings, webhook_url=None):
     """Send alerts via webhook POST.
 
@@ -275,7 +197,7 @@ def deliver_alerts(alerts, method="stdout", settings=None, **kwargs):
 
     Args:
         alerts: List of alert dicts.
-        method: One of 'email', 'webhook', 'stdout'.
+        method: One of 'webhook', 'stdout'.
         settings: Config dict (loaded from file if None).
         **kwargs: Additional args passed to the delivery function.
 
@@ -294,9 +216,7 @@ def deliver_alerts(alerts, method="stdout", settings=None, **kwargs):
     if not filtered:
         return {"success": True, "message": f"No alerts above {threshold} threshold"}
 
-    if method == "email":
-        return send_email(filtered, settings, **kwargs)
-    elif method == "webhook":
+    if method == "webhook":
         return send_webhook(filtered, settings, **kwargs)
     elif method == "stdout":
         return send_stdout(filtered, **kwargs)
@@ -309,20 +229,16 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="FDA Monitor Alert Sender")
-    parser.add_argument("--method", choices=["email", "webhook", "stdout"],
+    parser.add_argument("--method", choices=["webhook", "stdout"],
                         default="stdout", help="Delivery method")
     parser.add_argument("--alert-dir", help="Alert directory path")
     parser.add_argument("--since", help="Only send alerts since date (YYYY-MM-DD)")
     parser.add_argument("--cron", action="store_true", help="Machine-readable JSON output")
     parser.add_argument("--webhook-url", help="Override webhook URL")
-    parser.add_argument("--email-to", help="Override email recipient")
     parser.add_argument("--test", action="store_true", help="Send a test alert")
     args = parser.parse_args()
 
     settings = load_settings()
-
-    if args.email_to:
-        settings["email_to"] = args.email_to
 
     if args.test:
         test_alerts = [{

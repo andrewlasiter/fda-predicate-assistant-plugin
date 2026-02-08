@@ -1,7 +1,7 @@
 ---
 description: Monitor FDA databases for new clearances, recalls, MAUDE events, and guidance updates for watched product codes
 allowed-tools: Bash, Read, Write, Glob, Grep, WebSearch
-argument-hint: "--check | --add-watch CODE | --remove-watch CODE | --status | --alerts | --watch-standards [--standards-report] [--notify email|webhook|stdout] [--cron] [--webhook-url URL] [--email-to ADDR] [--product-codes CODE] [--watch-companies NAME] [--project NAME]"
+argument-hint: "--check | --add-watch CODE | --remove-watch CODE | --status | --alerts | --watch-standards [--standards-report] [--notify webhook|stdout] [--cron] [--webhook-url URL] [--product-codes CODE] [--watch-companies NAME] [--project NAME]"
 ---
 
 # FDA Real-Time Database Monitor
@@ -46,10 +46,9 @@ From `$ARGUMENTS`, extract the subcommand:
 - `--watch-companies NAME[;NAME2]` — Companies to monitor
 - `--project NAME` — Associate alerts with a project
 - `--since YYYY-MM-DD` — Only show alerts since this date
-- `--notify email|webhook|stdout` — Send alerts via email, webhook POST, or stdout JSON after --check
+- `--notify webhook|stdout` — Send alerts via webhook POST or stdout JSON after --check
 - `--cron` — Machine-readable JSON output suitable for cron scheduling
 - `--webhook-url URL` — Override webhook URL for this check
-- `--email-to ADDRESS` — Override email recipient for this check
 - `--standards-report` — Generate full standards currency report (use with --watch-standards)
 
 ## State Management
@@ -304,46 +303,28 @@ After `--check` completes and alerts are generated, deliver them via the specifi
 ### Usage Examples
 
 ```bash
-# Email alerts after check
-/fda:monitor --check --product-code OVE --notify email
-
 # Webhook POST
 /fda:monitor --check --notify webhook --webhook-url https://your-webhook-endpoint.example.com/notify
 
 # Machine-readable JSON for cron
 /fda:monitor --check --notify stdout --cron
 
-# Cron setup (check every hour, email alerts):
-# */60 * * * * claude -p "Run /fda:monitor --check --notify email"
+# Cron setup (check every hour, stdout JSON):
+# */60 * * * * claude -p "Run /fda:monitor --check --notify stdout --cron"
 ```
 
 ### Delivery via alert_sender.py
 
 ```bash
 python3 "$FDA_PLUGIN_ROOT/scripts/alert_sender.py" \
-  --method {email|webhook|stdout} \
+  --method {webhook|stdout} \
   --alert-dir ~/fda-510k-data/monitor_alerts \
   --since {last_check_date} \
   {--cron if --cron flag set} \
-  {--webhook-url URL if provided} \
-  {--email-to ADDRESS if provided}
+  {--webhook-url URL if provided}
 ```
 
 If `--cron` is set, always use `--method stdout --cron` regardless of `--notify` value. This outputs machine-readable JSON suitable for piping to downstream tools.
-
-### Email Configuration
-
-Email requires SMTP settings in `~/.claude/fda-predicate-assistant.local.md`:
-```yaml
-smtp_host: smtp.example.com
-smtp_port: 587
-smtp_user: alerts@example.com
-smtp_password: your-app-password
-email_to: recipient@example.com
-email_from: fda-monitor@example.com
-```
-
-Set via `/fda:configure --set smtp_host smtp.example.com` etc.
 
 ### Webhook Payload Format
 
