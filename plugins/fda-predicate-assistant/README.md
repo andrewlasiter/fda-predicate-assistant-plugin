@@ -1,8 +1,8 @@
-![Version](https://img.shields.io/badge/version-5.5.0-blue)
+![Version](https://img.shields.io/badge/version-5.7.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Commands](https://img.shields.io/badge/commands-33-orange)
+![Commands](https://img.shields.io/badge/commands-35-orange)
 ![Agents](https://img.shields.io/badge/agents-4-purple)
-![Tests](https://img.shields.io/badge/tests-679-brightgreen)
+![Tests](https://img.shields.io/badge/tests-712-brightgreen)
 ![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-blueviolet)
 ![FDA 510(k)](https://img.shields.io/badge/FDA-510(k)-red)
 
@@ -14,7 +14,7 @@
 
 **Your AI-powered regulatory assistant for FDA 510(k) submissions.**
 
-From predicate research to CDRH Portal submission — 33 commands, 4 autonomous agents, and 679 tests that handle the data work so you can focus on the science and strategy. Search FDA databases, identify predicates, analyze safety histories, look up standards, generate substantial equivalence comparisons, draft all 18 eSTAR sections, simulate FDA review, assemble submission-ready packages, and get step-by-step submission guidance, all from within Claude.
+From predicate research to CDRH Portal submission — 35 commands, 4 autonomous agents, and 712 tests that handle the data work so you can focus on the science and strategy. Search FDA databases, identify predicates, analyze safety histories, look up standards, generate substantial equivalence comparisons, draft all 18 eSTAR sections, simulate FDA review, maintain your extraction corpus, assemble submission-ready packages, and get step-by-step submission guidance, all from within Claude.
 
 ---
 
@@ -23,14 +23,14 @@ From predicate research to CDRH Portal submission — 33 commands, 4 autonomous 
 ### From your terminal
 
 ```bash
-claude plugin marketplace add andrewlasiter/fda-predicate-assistant-plugin
+claude plugin marketplace add andrewlasiter/fda-predicate-assistant
 claude plugin install fda-predicate-assistant@fda-tools
 ```
 
 ### From inside a Claude Code or Claude Desktop session
 
 ```
-/plugin marketplace add andrewlasiter/fda-predicate-assistant-plugin
+/plugin marketplace add andrewlasiter/fda-predicate-assistant
 /plugin install fda-predicate-assistant@fda-tools
 ```
 
@@ -85,7 +85,7 @@ You should see a summary of available FDA data files, script availability, and r
 | `/fda:standards` | Looks up FDA Recognized Consensus Standards by product code, standard number, or keyword |
 | `/fda:udi` | Looks up UDI/GUDID records from openFDA — search by device identifier, product code, company, or brand |
 
-### Data Extraction
+### Data Extraction & Maintenance
 
 | Command | What it does |
 |---------|-------------|
@@ -93,6 +93,8 @@ You should see a summary of available FDA data files, script availability, and r
 | `/fda:analyze` | Runs statistics and finds patterns across your extraction results |
 | `/fda:summarize` | Compares sections (testing, IFU, device description) across multiple devices |
 | `/fda:monitor` | Watches FDA databases for new clearances, recalls, and MAUDE events |
+| `/fda:gap-analysis` | Cross-references FDA PMN database vs. your data to find missing K-numbers, PDFs, and extractions |
+| `/fda:data-pipeline` | 4-step data maintenance pipeline — gap analysis, download missing PDFs, extract predicates, merge results |
 
 ### Review & Planning
 
@@ -185,12 +187,14 @@ It also works offline using cached FDA flat files — no internet required for b
 
 ## Data Pipeline
 
-The plugin bundles two Python scripts for batch processing:
+The plugin bundles Python scripts for batch processing and corpus maintenance:
 
-1. **BatchFetch** — Filters the FDA catalog by product code, date range, or company, then downloads 510(k) summary PDFs
-2. **Predicate Extractor** — Extracts device numbers from downloaded PDFs with OCR error correction and FDA database validation
+1. **Gap Analysis** — Cross-references FDA PMN database, your extraction CSV, and downloaded PDFs to identify what's missing
+2. **BatchFetch** — Filters the FDA catalog by product code, date range, or company, then downloads 510(k) summary PDFs
+3. **Predicate Extractor** — Extracts device numbers from downloaded PDFs with OCR error correction and FDA database validation
+4. **Merge** — Combines per-year extraction CSVs into the master baseline
 
-Run `/fda:extract` to use either or both stages.
+Run `/fda:data-pipeline status` to see the current state, or `/fda:data-pipeline run --years 2025` to execute the full pipeline for a specific year.
 
 ---
 

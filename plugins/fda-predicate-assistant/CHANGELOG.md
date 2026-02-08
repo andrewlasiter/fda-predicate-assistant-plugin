@@ -1,5 +1,34 @@
 # Changelog
 
+## [5.7.0] - 2026-02-08
+
+### Added — Data Maintenance Pipeline
+- `/fda:data-pipeline` — 4-step data maintenance pipeline: gap analysis → download missing PDFs → extract predicates → merge results
+- Wraps `pipeline.py` orchestrator with subcommands: `status`, `analyze`, `download`, `extract`, `merge`, `run`
+- Supports `--years`, `--product-codes`, `--dry-run`, `--incremental`, `--delay`, `--workers` flags
+- Distinguishes from regulatory pipeline (`/fda:pipeline`) — this manages the raw data corpus
+
+### Added — Testing
+- 37 new tests in `test_gap_analysis.py`:
+  - 13 tests for gap-analysis.md command structure
+  - 10 tests for data-pipeline.md command structure
+  - 6 tests for bundled gap_analysis.py script integrity
+  - 4 E2E tests with synthetic PMN data (manifest output, product code filtering, year parsing, prefix derivation)
+  - 4 tests for plugin metadata (version, command count)
+- 712 total tests (670 offline + 42 API), up from 679
+
+### Changed
+- GitHub repository renamed from `fda-predicate-assistant-plugin` to `fda-predicate-assistant`
+- Updated all install instructions, plugin.json repository URL, and marketplace configuration
+
+## [5.6.0] - 2026-02-08
+
+### Added — Gap Analysis
+- `/fda:gap-analysis` — 3-way cross-reference of FDA PMN database, existing extraction CSV, and downloaded PDFs to identify missing K-numbers
+- Bundled `scripts/gap_analysis.py` with full argparse CLI: `--years`, `--prefixes`, `--product-codes`, `--baseline`, `--pdf-dir`, `--output`, `--pmn-files`
+- Year-to-prefix derivation (e.g., 2024 → K24) and year range parsing (e.g., `2020-2023,2025`)
+- Professional CLI output with product code breakdown, PMN database metrics, and next steps
+
 ## [5.5.0] - 2026-02-08
 
 ### Added — 3-Tier Section Detection System

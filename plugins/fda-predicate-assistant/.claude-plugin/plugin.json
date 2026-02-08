@@ -5,7 +5,7 @@
   "author": {
     "name": "PredicateExtraction"
   },
-  "repository": "https://github.com/andrewlasiter/fda-predicate-assistant-plugin",
+  "repository": "https://github.com/andrewlasiter/fda-predicate-assistant",
   "license": "MIT",
   "keywords": ["fda", "510k", "medical-device", "predicate", "regulatory", "extraction"]
 }
