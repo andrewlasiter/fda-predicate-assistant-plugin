@@ -133,36 +133,44 @@ if os.path.exists(settings_path):
     if m and m.group(1).lower() == 'false':
         api_enabled = False
 
-knumber = "KNUMBER"  # Replace per device
+# Batch lookup: single OR query for ALL predicate + reference K-numbers (1 call instead of N)
+all_knumbers = ["K123456", "K234567"]  # Replace with all device numbers
 
 if not api_enabled:
     print("API:disabled")
     exit(0)
 
-# 510(k) lookup
-params = {"search": f'k_number:"{knumber}"', "limit": "1"}
+batch_search = "+OR+".join(f'k_number:"{kn}"' for kn in all_knumbers)
+params = {"search": batch_search, "limit": str(len(all_knumbers))}
 if api_key:
     params["api_key"] = api_key
+# Fix URL encoding: replace + with space before urlencode
+params["search"] = params["search"].replace("+", " ")
 url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
-req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.2.0)"})
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.4.0)"})
 try:
     with urllib.request.urlopen(req, timeout=15) as resp:
         data = json.loads(resp.read())
-        if data.get("results"):
-            r = data["results"][0]
-            print(f"DEVICE_NAME:{r.get('device_name', 'N/A')}")
-            print(f"APPLICANT:{r.get('applicant', 'N/A')}")
-            print(f"PRODUCT_CODE:{r.get('product_code', 'N/A')}")
-            print(f"DECISION_DATE:{r.get('decision_date', 'N/A')}")
-            print(f"DECISION_CODE:{r.get('decision_code', 'N/A')}")
-            print(f"CLEARANCE_TYPE:{r.get('clearance_type', 'N/A')}")
-            print(f"STATEMENT_OR_SUMMARY:{r.get('statement_or_summary', 'N/A')}")
-            print(f"THIRD_PARTY:{r.get('third_party_flag', 'N/A')}")
-            print("SOURCE:api")
-        else:
-            print(f"NOT_FOUND:{knumber}")
+        results_by_k = {r.get("k_number", ""): r for r in data.get("results", [])}
+        for knumber in all_knumbers:
+            print(f"=== {knumber} ===")
+            r = results_by_k.get(knumber)
+            if r:
+                print(f"DEVICE_NAME:{r.get('device_name', 'N/A')}")
+                print(f"APPLICANT:{r.get('applicant', 'N/A')}")
+                print(f"PRODUCT_CODE:{r.get('product_code', 'N/A')}")
+                print(f"DECISION_DATE:{r.get('decision_date', 'N/A')}")
+                print(f"DECISION_CODE:{r.get('decision_code', 'N/A')}")
+                print(f"CLEARANCE_TYPE:{r.get('clearance_type', 'N/A')}")
+                print(f"STATEMENT_OR_SUMMARY:{r.get('statement_or_summary', 'N/A')}")
+                print(f"THIRD_PARTY:{r.get('third_party_flag', 'N/A')}")
+                print("SOURCE:api")
+            else:
+                print(f"NOT_FOUND:{knumber}")
 except Exception as e:
-    print(f"API_ERROR:{e}")
+    for knumber in all_knumbers:
+        print(f"=== {knumber} ===")
+        print(f"API_ERROR:{e}")
 PYEOF
 ```
 
@@ -196,20 +204,31 @@ if os.path.exists(settings_path):
         if m and m.group(1) != 'null':
             api_key = m.group(1)
 
-knumber = "KNUMBER"  # Replace
-params = {"search": f'k_number:"{knumber}"', "limit": "3"}
+# Batch recall check for all proposed devices (1 call instead of N)
+all_knumbers_recall = ["K123456", "K234567"]  # Replace with all device numbers
+batch_recall_search = "+OR+".join(f'k_number:"{kn}"' for kn in all_knumbers_recall)
+params = {"search": batch_recall_search, "limit": "25"}
 if api_key:
     params["api_key"] = api_key
+# Fix URL encoding: replace + with space before urlencode
+params["search"] = params["search"].replace("+", " ")
 url = f"https://api.fda.gov/device/recall.json?{urllib.parse.urlencode(params)}"
-req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.2.0)"})
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.4.0)"})
 try:
     with urllib.request.urlopen(req, timeout=15) as resp:
         data = json.loads(resp.read())
-        total = data.get('meta', {}).get('results', {}).get('total', 0)
-        print(f"RECALL_COUNT:{total}")
-        if total > 0:
-            for r in data.get('results', [])[:3]:
-                print(f"RECALL:{r.get('res_event_number', 'N/A')}|{r.get('event_type', 'N/A')}")
+        # Group recalls by K-number
+        recalls_by_k = {}
+        for r in data.get('results', []):
+            for rk in r.get('k_numbers', []):
+                if rk not in recalls_by_k:
+                    recalls_by_k[rk] = []
+                recalls_by_k[rk].append(r)
+        for kn in all_knumbers_recall:
+            kn_recalls = recalls_by_k.get(kn, [])
+            print(f"RECALL_COUNT:{kn}:{len(kn_recalls)}")
+            for r in kn_recalls[:3]:
+                print(f"RECALL:{kn}|{r.get('res_event_number', 'N/A')}|{r.get('event_type', 'N/A')}")
 except Exception as e:
     print(f"RECALL_ERROR:{e}")
 PYEOF
@@ -233,19 +252,24 @@ if os.path.exists(settings_path):
         if m and m.group(1) != 'null':
             api_key = m.group(1)
 
-knumber = "KNUMBER"  # Replace
-params = {"search": f'device.device_report_product_code:"PRODUCTCODE" AND event_type:"Death"', "limit": "1"}
-if api_key:
-    params["api_key"] = api_key
-url = f"https://api.fda.gov/device/event.json?{urllib.parse.urlencode(params)}"
-req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.2.0)"})
-try:
-    with urllib.request.urlopen(req, timeout=15) as resp:
-        data = json.loads(resp.read())
-        total = data.get('meta', {}).get('results', {}).get('total', 0)
-        print(f"DEATH_EVENTS:{total}")
-except Exception as e:
-    print(f"MAUDE_ERROR:{e}")
+# Batch MAUDE death event check for all unique product codes (1 call instead of N)
+product_codes_to_check = ["PC1", "PC2"]  # Replace with unique product codes from validated devices
+if product_codes_to_check:
+    death_search = "(" + "+OR+".join(f'device.device_report_product_code:"{pc}"' for pc in product_codes_to_check) + ')+AND+event_type:"Death"'
+    params = {"search": death_search, "limit": "1"}
+    if api_key:
+        params["api_key"] = api_key
+    # Fix URL encoding: replace + with space before urlencode
+    params["search"] = params["search"].replace("+", " ")
+    url = f"https://api.fda.gov/device/event.json?{urllib.parse.urlencode(params)}"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.4.0)"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read())
+            total = data.get('meta', {}).get('results', {}).get('total', 0)
+            print(f"DEATH_EVENTS:{total}")
+    except Exception as e:
+        print(f"MAUDE_ERROR:{e}")
 PYEOF
 ```
 

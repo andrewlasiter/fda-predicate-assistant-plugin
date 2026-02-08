@@ -69,21 +69,29 @@ if os.path.exists(settings_path):
             api_key = m.group(1)
 
 predicates = ["K241335"]  # Replace with actual
-for kn in predicates:
-    params = {"search": f'k_number:"{kn}"', "limit": "1"}
-    if api_key:
-        params["api_key"] = api_key
-    url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read())
-            if data.get("results"):
-                r = data["results"][0]
+
+# Batch lookup: single OR query for all starting predicates (1 call instead of N)
+batch_search = "+OR+".join(f'k_number:"{kn}"' for kn in predicates)
+params = {"search": batch_search, "limit": str(len(predicates))}
+if api_key:
+    params["api_key"] = api_key
+# Fix URL encoding: replace + with space before urlencode (openFDA expects + as spaces)
+params["search"] = params["search"].replace("+", " ")
+url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.4.0)"})
+try:
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        data = json.loads(resp.read())
+        results_by_k = {r.get("k_number", ""): r for r in data.get("results", [])}
+        for kn in predicates:
+            r = results_by_k.get(kn)
+            if r:
                 print(f"GEN0:{kn}|{r.get('applicant','?')}|{r.get('device_name','?')}|{r.get('product_code','?')}|{r.get('decision_date','?')}")
-    except Exception as e:
+            else:
+                print(f"ERROR:{kn}:not_found")
+except Exception as e:
+    for kn in predicates:
         print(f"ERROR:{kn}:{e}")
-    time.sleep(0.5)
 PYEOF
 ```
 
@@ -132,26 +140,32 @@ import urllib.request, urllib.parse, json, os, re, time
 
 # ... (standard API setup) ...
 
-# For each device in the chain, check recalls
+# Batch recall check: single OR query for all devices in the chain (1 call instead of N)
 devices_to_check = ["K241335", "K200123", "K180456"]  # Replace
-for kn in devices_to_check:
-    params = {"search": f'k_numbers:"{kn}"', "limit": "1"}
-    if api_key:
-        params["api_key"] = api_key
-    url = f"https://api.fda.gov/device/recall.json?{urllib.parse.urlencode(params)}"
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read())
-            total = data.get("meta", {}).get("results", {}).get("total", 0)
-            if total > 0:
-                r = data["results"][0]
-                print(f"RECALLED:{kn}|{r.get('recall_status','?')}|{r.get('reason_for_recall','?')[:100]}")
-            else:
+batch_search = "+OR+".join(f'k_numbers:"{kn}"' for kn in devices_to_check)
+params = {"search": batch_search, "limit": "50"}
+if api_key:
+    params["api_key"] = api_key
+# Fix URL encoding: replace + with space before urlencode
+params["search"] = params["search"].replace("+", " ")
+url = f"https://api.fda.gov/device/recall.json?{urllib.parse.urlencode(params)}"
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.4.0)"})
+try:
+    with urllib.request.urlopen(req, timeout=15) as resp:
+        data = json.loads(resp.read())
+        # Build map of K-number -> recall info
+        recalled_kns = set()
+        for r in data.get("results", []):
+            for rk in r.get("k_numbers", []):
+                if rk in devices_to_check:
+                    recalled_kns.add(rk)
+                    print(f"RECALLED:{rk}|{r.get('recall_status','?')}|{r.get('reason_for_recall','?')[:100]}")
+        for kn in devices_to_check:
+            if kn not in recalled_kns:
                 print(f"CLEAN:{kn}")
-    except:
+except:
+    for kn in devices_to_check:
         print(f"CHECK_FAILED:{kn}")
-    time.sleep(0.5)
 PYEOF
 ```
 

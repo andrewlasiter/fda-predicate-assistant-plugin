@@ -173,33 +173,45 @@ if os.path.exists(settings_path):
     if m and m.group(1).lower() == 'false':
         api_enabled = False
 
-knumber = "KNUMBER"  # Replace per device
+# Batch lookup: single OR query for ALL predicate and reference K-numbers (1 call instead of N)
+all_knumbers = ["KNUMBER1", "KNUMBER2"]  # Replace with all predicate + reference K-numbers
 
-if api_enabled:
-    params = {"search": f'k_number:"{knumber}"', "limit": "1"}
+if api_enabled and all_knumbers:
+    batch_search = "+OR+".join(f'k_number:"{kn}"' for kn in all_knumbers)
+    params = {"search": batch_search, "limit": str(len(all_knumbers))}
     if api_key:
         params["api_key"] = api_key
+    # Fix URL encoding: replace + with space before urlencode
+    params["search"] = params["search"].replace("+", " ")
     url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.4.0)"})
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read())
-            if data.get("results"):
-                r = data["results"][0]
-                print(f"APPLICANT:{r.get('applicant', 'N/A')}")
-                print(f"DEVICE_NAME:{r.get('device_name', 'N/A')}")
-                print(f"DECISION_DATE:{r.get('decision_date', 'N/A')}")
-                print(f"DECISION_CODE:{r.get('decision_code', 'N/A')}")
-                print(f"PRODUCT_CODE:{r.get('product_code', 'N/A')}")
-                print(f"CLEARANCE_TYPE:{r.get('clearance_type', 'N/A')}")
-                print(f"STATEMENT_OR_SUMMARY:{r.get('statement_or_summary', 'N/A')}")
-                print(f"SOURCE:api")
-            else:
-                print("SOURCE:fallback")
+            results_by_k = {r.get("k_number", ""): r for r in data.get("results", [])}
+            for knumber in all_knumbers:
+                r = results_by_k.get(knumber)
+                if r:
+                    print(f"=== {knumber} ===")
+                    print(f"APPLICANT:{r.get('applicant', 'N/A')}")
+                    print(f"DEVICE_NAME:{r.get('device_name', 'N/A')}")
+                    print(f"DECISION_DATE:{r.get('decision_date', 'N/A')}")
+                    print(f"DECISION_CODE:{r.get('decision_code', 'N/A')}")
+                    print(f"PRODUCT_CODE:{r.get('product_code', 'N/A')}")
+                    print(f"CLEARANCE_TYPE:{r.get('clearance_type', 'N/A')}")
+                    print(f"STATEMENT_OR_SUMMARY:{r.get('statement_or_summary', 'N/A')}")
+                    print(f"SOURCE:api")
+                else:
+                    print(f"=== {knumber} ===")
+                    print("SOURCE:fallback")
     except:
-        print("SOURCE:fallback")
+        for knumber in all_knumbers:
+            print(f"=== {knumber} ===")
+            print("SOURCE:fallback")
 else:
-    print("SOURCE:fallback")
+    for knumber in all_knumbers:
+        print(f"=== {knumber} ===")
+        print("SOURCE:fallback")
 PYEOF
 ```
 

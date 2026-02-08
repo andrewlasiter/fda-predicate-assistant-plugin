@@ -22,6 +22,7 @@ RESEARCH_PATH = os.path.join(PLUGIN_ROOT, "commands", "research.md")
 VALIDATE_PATH = os.path.join(PLUGIN_ROOT, "commands", "validate.md")
 MONITOR_PATH = os.path.join(PLUGIN_ROOT, "commands", "monitor.md")
 CLIENT_PATH = os.path.join(PLUGIN_ROOT, "scripts", "fda_api_client.py")
+COMMANDS_DIR = os.path.join(PLUGIN_ROOT, "commands")
 
 
 def _read(path):
@@ -68,9 +69,8 @@ class TestReferenceTemplate:
 class TestReferenceSearchSyntax:
     """Search syntax section should document OR batch, _missing_/_exists_, grouping, sort."""
 
-    def test_has_missing_exists(self):
+    def test_has_exists_filter(self):
         content = _read(REF_PATH)
-        assert "_missing_" in content
         assert "_exists_" in content
 
     def test_has_parenthetical_grouping(self):
@@ -181,6 +181,177 @@ class TestMonitorBatching:
 
 
 # ──────────────────────────────────────────────
+# Tier 2 command batching tests (newly batched)
+# ──────────────────────────────────────────────
+
+LINEAGE_PATH = os.path.join(COMMANDS_DIR, "lineage.md")
+REVIEW_PATH = os.path.join(COMMANDS_DIR, "review.md")
+COMPARE_SE_PATH = os.path.join(COMMANDS_DIR, "compare-se.md")
+IMPORT_PATH = os.path.join(COMMANDS_DIR, "import.md")
+PROPOSE_PATH = os.path.join(COMMANDS_DIR, "propose.md")
+
+
+class TestLineageBatching:
+    """lineage.md should use batch OR queries."""
+
+    def test_lineage_gen0_batch(self):
+        content = _read(LINEAGE_PATH)
+        assert "batch_search" in content or "+OR+" in content, \
+            "lineage.md Gen 0 should use batch OR query"
+
+    def test_lineage_recall_batch(self):
+        content = _read(LINEAGE_PATH)
+        assert "Batch recall check" in content, \
+            "lineage.md Step 3 should batch recall checks"
+
+
+class TestReviewBatching:
+    """review.md should use batch OR queries."""
+
+    def test_review_product_code_batch(self):
+        content = _read(REVIEW_PATH)
+        assert "Batch lookup" in content or "batch_search" in content, \
+            "review.md Step 3C should batch product code lookups"
+
+    def test_review_safety_batch(self):
+        content = _read(REVIEW_PATH)
+        assert "Batch safety check" in content or "Batch recall check" in content, \
+            "review.md Step 3E should batch safety checks"
+
+    def test_review_fda_query_has_count_field(self):
+        content = _read(REVIEW_PATH)
+        assert "count_field" in content, \
+            "review.md fda_query should support count_field parameter"
+
+
+class TestCompareSEBatching:
+    """compare-se.md should use batch OR query for device lookups."""
+
+    def test_compare_se_batch_lookup(self):
+        content = _read(COMPARE_SE_PATH)
+        assert "Batch lookup" in content or "+OR+" in content, \
+            "compare-se.md should batch all device lookups"
+
+    def test_compare_se_all_knumbers(self):
+        content = _read(COMPARE_SE_PATH)
+        assert "all_knumbers" in content, \
+            "compare-se.md should collect all K-numbers for batch"
+
+
+class TestImportBatching:
+    """import.md should use batch OR query for predicate validation."""
+
+    def test_import_predicate_batch(self):
+        content = _read(IMPORT_PATH)
+        assert "batch" in content.lower() or "+OR+" in content, \
+            "import.md should batch predicate validation"
+
+
+class TestProposeBatching:
+    """propose.md should use batch queries for validation and safety."""
+
+    def test_propose_validation_batch(self):
+        content = _read(PROPOSE_PATH)
+        assert "Batch lookup" in content or "+OR+" in content, \
+            "propose.md should batch device validation"
+
+    def test_propose_recall_batch(self):
+        content = _read(PROPOSE_PATH)
+        assert "Batch recall" in content, \
+            "propose.md should batch recall checks"
+
+    def test_propose_death_batch(self):
+        content = _read(PROPOSE_PATH)
+        assert "Batch MAUDE" in content, \
+            "propose.md should batch death event checks"
+
+
+# ──────────────────────────────────────────────
+# API reference: enforcement endpoint & data dictionary
+# ──────────────────────────────────────────────
+
+class TestEnforcementDocs:
+    """openfda-api.md should document the /device/enforcement endpoint."""
+
+    def test_enforcement_section_exists(self):
+        content = _read(REF_PATH)
+        assert "/device/enforcement" in content, \
+            "API reference should document /device/enforcement endpoint"
+
+    def test_enforcement_classification_documented(self):
+        content = _read(REF_PATH)
+        # Verify the old error is fixed — classification is NOT only in enforcement
+        assert "NOT `/device/recall`" not in content, \
+            "The old error claiming classification is only in enforcement should be removed"
+
+    def test_enforcement_classification_both_endpoints(self):
+        content = _read(REF_PATH)
+        assert "BOTH `/device/recall` AND `/device/enforcement`" in content, \
+            "Should document that classification is in both recall and enforcement"
+
+
+class TestDataDictionary:
+    """Data dictionary reference should exist and cover all endpoints."""
+
+    DICT_PATH = os.path.join(
+        os.path.dirname(COMMANDS_DIR), "skills", "fda-510k-knowledge",
+        "references", "openfda-data-dictionary.md"
+    )
+
+    def test_data_dictionary_exists(self):
+        assert os.path.isfile(self.DICT_PATH), \
+            f"Data dictionary reference should exist at {self.DICT_PATH}"
+
+    def test_data_dictionary_has_key_endpoints(self):
+        content = _read(self.DICT_PATH)
+        # The Excel groups fields by dataset number, not endpoint name;
+        # datasets 1-5 cover all fields (event, udi, 510k, registration, classification)
+        for term in ["device/event", "device/510k", "device/classification"]:
+            assert term in content, \
+                f"Data dictionary should document {term}"
+
+    def test_data_dictionary_has_field_count(self):
+        content = _read(self.DICT_PATH)
+        assert "Total fields:" in content
+        # Should have 300+ fields
+        import re
+        m = re.search(r"Total fields:\s*(\d+)", content)
+        assert m, "Data dictionary should state total field count"
+        assert int(m.group(1)) >= 300, \
+            f"Data dictionary should have 300+ fields, got {m.group(1)}"
+
+
+# ──────────────────────────────────────────────
+# README data protection section
+# ──────────────────────────────────────────────
+
+class TestREADMEDisclaimer:
+    """README should have prominent data protection guidance."""
+
+    README_PATH = os.path.join(os.path.dirname(COMMANDS_DIR), "README.md")
+
+    def test_readme_has_confidential_warning(self):
+        content = _read(self.README_PATH)
+        assert "CONFIDENTIAL DATA WARNING" in content, \
+            "README should have a prominent confidential data warning"
+
+    def test_readme_has_protecting_data_section(self):
+        content = _read(self.README_PATH)
+        assert "Protecting Your Data" in content, \
+            "README should have a Protecting Your Data section"
+
+    def test_readme_has_account_type_table(self):
+        content = _read(self.README_PATH)
+        assert "Team / Enterprise" in content and "Free / Pro / Max" in content, \
+            "README should explain training policy by account type"
+
+    def test_readme_links_to_privacy_settings(self):
+        content = _read(self.README_PATH)
+        assert "claude.ai/settings/data-privacy-controls" in content, \
+            "README should link to privacy settings"
+
+
+# ──────────────────────────────────────────────
 # FDAClient tests
 # ──────────────────────────────────────────────
 
@@ -257,3 +428,98 @@ class TestAPIFeatures:
             pytest.skip("API unavailable")
         total = result.get("meta", {}).get("results", {}).get("total", 0)
         assert total >= 1, "OR batch should return at least 1 result"
+
+    def test_skip_offsets_results(self, tmp_path):
+        """Verify skip parameter returns different results than offset 0."""
+        from fda_api_client import FDAClient
+        client = FDAClient(cache_dir=str(tmp_path / "skip_cache"))
+        # First page
+        r1 = client._request("510k", {
+            "search": 'product_code:"OVE"',
+            "limit": "5",
+            "sort": "decision_date:desc"
+        })
+        if r1.get("degraded"):
+            pytest.skip("API unavailable")
+        # Second page (skip 5)
+        import time
+        time.sleep(0.5)
+        r2 = client._request("510k", {
+            "search": 'product_code:"OVE"',
+            "limit": "5",
+            "skip": "5",
+            "sort": "decision_date:desc"
+        })
+        if r2.get("degraded"):
+            pytest.skip("API unavailable")
+        k1 = [r.get("k_number") for r in r1.get("results", [])]
+        k2 = [r.get("k_number") for r in r2.get("results", [])]
+        # The two pages should not overlap
+        assert set(k1).isdisjoint(set(k2)), \
+            f"Skip=5 should return different K-numbers: page1={k1}, page2={k2}"
+
+    def test_wildcard_search(self, tmp_path):
+        """Verify wildcard prefix search works on the API."""
+        from fda_api_client import FDAClient
+        client = FDAClient(cache_dir=str(tmp_path / "wildcard_cache"))
+        # Search for applicants starting with "MEDTRONIC"
+        result = client._request("510k", {
+            "search": 'applicant:MEDTRONIC*',
+            "limit": "3"
+        })
+        if result.get("degraded"):
+            pytest.skip("API unavailable")
+        total = result.get("meta", {}).get("results", {}).get("total", 0)
+        assert total > 0, "Wildcard search for MEDTRONIC* should return results"
+
+    @pytest.mark.skip(reason="_missing_ returns 404 on all Device endpoints — documented as unsupported")
+    def test_missing_field_filter(self, tmp_path):
+        """_missing_ filter is NOT supported on Device API endpoints (returns 404)."""
+        pass
+
+    def test_exists_field_filter(self, tmp_path):
+        """Verify _exists_ field filter works."""
+        from fda_api_client import FDAClient
+        client = FDAClient(cache_dir=str(tmp_path / "exists_cache"))
+        result = client._request("510k", {
+            "search": '_exists_:third_party_flag',
+            "limit": "3"
+        })
+        if result.get("degraded"):
+            pytest.skip("API unavailable")
+        total = result.get("meta", {}).get("results", {}).get("total", 0)
+        assert total > 0, "_exists_:third_party_flag should find records"
+        # Verify the field actually exists in returned results
+        for r in result.get("results", []):
+            assert "third_party_flag" in r, \
+                f"Result should have third_party_flag: {r.get('k_number')}"
+
+    def test_count_field_returns_buckets(self, tmp_path):
+        """Verify count_field returns aggregated buckets."""
+        from fda_api_client import FDAClient
+        client = FDAClient(cache_dir=str(tmp_path / "count_cache"))
+        result = client._request("510k", {
+            "search": 'product_code:"OVE"',
+            "count": "decision_code.exact"
+        })
+        if result.get("degraded"):
+            pytest.skip("API unavailable")
+        results = result.get("results", [])
+        assert len(results) > 0, "Count query should return buckets"
+        # Each bucket should have 'term' and 'count'
+        for bucket in results:
+            assert "term" in bucket, f"Bucket missing 'term': {bucket}"
+            assert "count" in bucket, f"Bucket missing 'count': {bucket}"
+
+    def test_enforcement_classification_field(self, tmp_path):
+        """Verify /device/enforcement supports classification field."""
+        from fda_api_client import FDAClient
+        client = FDAClient(cache_dir=str(tmp_path / "enforcement_cache"))
+        result = client._request("enforcement", {
+            "search": 'classification:"Class I"',
+            "limit": "3"
+        })
+        if result.get("degraded"):
+            pytest.skip("API unavailable")
+        total = result.get("meta", {}).get("results", {}).get("total", 0)
+        assert total > 0, "Enforcement Class I search should return results"

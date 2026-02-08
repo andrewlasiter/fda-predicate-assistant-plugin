@@ -243,24 +243,29 @@ if os.path.exists(settings_path):
 # Replace with actual device numbers to look up
 devices_to_check = ["K123456", "K234567"]
 
-if api_enabled:
-    for knumber in devices_to_check:
-        params = {"search": f'k_number:"{knumber}"', "limit": "1"}
-        if api_key:
-            params["api_key"] = api_key
-        url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
-        try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                data = json.loads(resp.read())
-                if data.get("results"):
-                    r = data["results"][0]
+if api_enabled and devices_to_check:
+    # Batch lookup: single OR query for all devices (1 call instead of N)
+    batch_search = "+OR+".join(f'k_number:"{kn}"' for kn in devices_to_check)
+    params = {"search": batch_search, "limit": str(len(devices_to_check))}
+    if api_key:
+        params["api_key"] = api_key
+    # Fix URL encoding: replace + with space before urlencode
+    params["search"] = params["search"].replace("+", " ")
+    url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.4.0)"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read())
+            results_by_k = {r.get("k_number", ""): r for r in data.get("results", [])}
+            for knumber in devices_to_check:
+                r = results_by_k.get(knumber)
+                if r:
                     print(f"{knumber}|PRODUCT_CODE:{r.get('product_code', '?')}|DECISION_DATE:{r.get('decision_date', '?')}|APPLICANT:{r.get('applicant', '?')}|DEVICE_NAME:{r.get('device_name', '?')}|STATEMENT_OR_SUMMARY:{r.get('statement_or_summary', '?')}")
                 else:
                     print(f"{knumber}|NOT_FOUND")
-        except Exception as e:
+    except Exception as e:
+        for knumber in devices_to_check:
             print(f"{knumber}|ERROR:{e}")
-        time.sleep(0.5)
 else:
     # Fallback to flat files
     print("API_DISABLED:use_flatfiles")
@@ -314,12 +319,16 @@ devices = [
     {"knumber": "K123456", "product_code": "KGN", "applicant": "COMPANY"},
 ]
 
-def fda_query(endpoint, search, limit=5):
+def fda_query(endpoint, search, limit=5, count_field=None):
     params = {"search": search, "limit": str(limit)}
+    if count_field:
+        params["count"] = count_field
     if api_key:
         params["api_key"] = api_key
+    # Fix URL encoding: replace + with space before urlencode
+    params["search"] = params["search"].replace("+", " ")
     url = f"https://api.fda.gov/device/{endpoint}.json?{urllib.parse.urlencode(params)}"
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.4.0)"})
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             return json.loads(resp.read())
@@ -330,34 +339,51 @@ def fda_query(endpoint, search, limit=5):
     except Exception as e:
         return {"error": str(e)}
 
+# Batch safety check: collect unique product codes, then query once per endpoint
+unique_pcs = list(set(d["product_code"] for d in devices if d["product_code"]))
+
+# Batch recall check for all product codes (1 call instead of N)
+recall_by_pc = {}
+if unique_pcs:
+    recall_search = "+OR+".join(f'product_code:"{pc}"' for pc in unique_pcs)
+    recalls = fda_query("recall", recall_search, limit=50)
+    for r in recalls.get("results", []):
+        rpc = r.get("product_code", "")
+        if rpc not in recall_by_pc:
+            recall_by_pc[rpc] = []
+        recall_by_pc[rpc].append(r)
+
+time.sleep(0.5)
+
+# Batch MAUDE event counts by product code (1 call instead of N)
+event_counts = {}
+if unique_pcs:
+    event_search = "+OR+".join(f'device.device_report_product_code:"{pc}"' for pc in unique_pcs)
+    event_result = fda_query("event", event_search, count_field="device.device_report_product_code.exact")
+    for r in event_result.get("results", []):
+        event_counts[r.get("term", "")] = r["count"]
+
+time.sleep(0.5)
+
+# Batch death event counts by product code (1 call instead of N)
+death_counts = {}
+if unique_pcs:
+    death_search = "(" + "+OR+".join(f'device.device_report_product_code:"{pc}"' for pc in unique_pcs) + ')+AND+event_type:"Death"'
+    death_result = fda_query("event", death_search, count_field="device.device_report_product_code.exact")
+    for r in death_result.get("results", []):
+        death_counts[r.get("term", "")] = r["count"]
+
+# Output per-device results
 for device in devices:
     kn = device["knumber"]
     pc = device["product_code"]
-    applicant = device["applicant"]
     print(f"=== {kn} ===")
-
-    # Check recalls for this specific device/applicant
-    recalls = fda_query("recall", f'product_code:"{pc}"+AND+recalling_firm:"{applicant}"')
-    total_recalls = recalls.get("meta", {}).get("results", {}).get("total", 0)
-    if recalls.get("results"):
-        for r in recalls["results"][:3]:
-            print(f"RECALL:{r.get('recall_status', '?')}|{r.get('res_event_number', '?')}|{r.get('reason_for_recall', 'N/A')[:80]}")
-    print(f"TOTAL_RECALLS:{total_recalls}")
-
-    time.sleep(0.5)
-
-    # Check MAUDE events for this product code
-    events = fda_query("event", f'device.device_report_product_code:"{pc}"', limit=1)
-    total_events = events.get("meta", {}).get("results", {}).get("total", 0)
-    print(f"TOTAL_MAUDE_EVENTS:{total_events}")
-
-    # Check for death events specifically
-    time.sleep(0.5)
-    deaths = fda_query("event", f'device.device_report_product_code:"{pc}"+AND+event_type:"Death"', limit=1)
-    total_deaths = deaths.get("meta", {}).get("results", {}).get("total", 0)
-    print(f"DEATH_EVENTS:{total_deaths}")
-
-    time.sleep(0.5)
+    pc_recalls = recall_by_pc.get(pc, [])
+    for r in pc_recalls[:3]:
+        print(f"RECALL:{r.get('recall_status', '?')}|{r.get('res_event_number', '?')}|{r.get('reason_for_recall', 'N/A')[:80]}")
+    print(f"TOTAL_RECALLS:{len(pc_recalls)}")
+    print(f"TOTAL_MAUDE_EVENTS:{event_counts.get(pc, 0)}")
+    print(f"DEATH_EVENTS:{death_counts.get(pc, 0)}")
 PYEOF
 ```
 

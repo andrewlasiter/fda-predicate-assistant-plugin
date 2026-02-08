@@ -150,24 +150,29 @@ if pc:
     except Exception as e:
         print(f"API_ERROR:{e}")
 
-# Validate predicate K-numbers
-for pred in data.get('predicates', [])[:5]:
-    kn = pred.get('k_number', '')
-    if kn.startswith('K'):
-        params = {"search": f'k_number:"{kn}"', "limit": "1"}
-        if api_key:
-            params["api_key"] = api_key
-        url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
-        try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
-                result = json.loads(resp.read())
-                if result.get("results"):
-                    r = result["results"][0]
+# Validate predicate K-numbers — batch OR query (1 call instead of N)
+pred_knumbers = [p.get('k_number', '') for p in data.get('predicates', [])[:5] if p.get('k_number', '').startswith('K')]
+if pred_knumbers:
+    batch_search = "+OR+".join(f'k_number:"{kn}"' for kn in pred_knumbers)
+    params = {"search": batch_search, "limit": str(len(pred_knumbers))}
+    if api_key:
+        params["api_key"] = api_key
+    # Fix URL encoding: replace + with space before urlencode
+    params["search"] = params["search"].replace("+", " ")
+    url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.4.0)"})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            result = json.loads(resp.read())
+            found = {r.get("k_number", ""): r for r in result.get("results", [])}
+            for kn in pred_knumbers:
+                r = found.get(kn)
+                if r:
                     print(f"PREDICATE_VALID:{kn} = {r.get('device_name', 'N/A')} ({r.get('applicant', 'N/A')})")
                 else:
                     print(f"PREDICATE_NOT_FOUND:{kn}")
-        except Exception as e:
+    except Exception as e:
+        for kn in pred_knumbers:
             print(f"API_ERROR:{kn}:{e}")
 PYEOF
 ```

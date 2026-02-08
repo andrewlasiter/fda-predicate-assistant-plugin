@@ -6,6 +6,10 @@
 ![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-blueviolet)
 ![FDA 510(k)](https://img.shields.io/badge/FDA-510(k)-red)
 
+> **CONFIDENTIAL DATA WARNING**
+>
+> This plugin processes text through Anthropic's Claude LLM. **Do not submit trade secrets, proprietary device designs, unpublished clinical data, or confidential regulatory strategies.** See [Protecting Your Data](#protecting-your-data) below for details on training policies and opt-out options by account type.
+
 # FDA Predicate Assistant
 
 **Your AI-powered regulatory assistant for FDA 510(k) submissions.**
@@ -218,18 +222,47 @@ To update to the latest version:
 
 ---
 
-<details>
-<summary><strong>Important Notices</strong></summary>
+## Protecting Your Data
+
+All text you provide to this plugin — device descriptions, intended use statements, file contents, command arguments — is sent to Anthropic's Claude LLM for processing. Your data protection depends on your Anthropic account type.
+
+### Training Policy by Account Type
+
+| Account Type | Data Used for Training? | Retention | How to Opt Out |
+|-------------|------------------------|-----------|----------------|
+| **Free / Pro / Max** (consumer) | **Yes, by default** (since Sep 28, 2025) | 5 years if training enabled; 30 days if disabled | [claude.ai/settings/data-privacy-controls](https://claude.ai/settings/data-privacy-controls) |
+| **Team / Enterprise** (commercial) | **No** — Anthropic does not train on commercial data | 30 days (customizable for Enterprise) | Already protected by commercial terms |
+| **API** (direct) | **No** (unless opted in to Developer Partner Program) | 30 days (7 days for API logs) | Already protected by API terms |
+| **Bedrock / Vertex / Foundry** | **No** — third-party provider terms apply | Provider-specific | Already protected |
+
+### Recommendations for Confidential Work
+
+1. **Use a Team or Enterprise account** — commercial terms explicitly prohibit training on your data
+2. **If on a consumer plan**: disable model improvement at [claude.ai/settings/data-privacy-controls](https://claude.ai/settings/data-privacy-controls) before using the plugin with any sensitive content
+3. **Enterprise users**: configure custom data retention (minimum 30 days) via Admin Settings > Data and Privacy
+4. **Zero data retention**: available for Enterprise and API customers by arrangement with Anthropic
+5. **Never submit**: trade secrets, unpublished clinical data, proprietary designs, patient-identifiable information, or confidential regulatory strategies through any consumer account regardless of settings
+
+### What This Plugin Sends to Claude
+
+- Device descriptions and intended use statements you provide
+- K-numbers, product codes, and regulatory identifiers (public FDA data)
+- File contents when you use `/fda:import` or reference local files
+- Command arguments and conversation context
+
+The plugin does NOT send your files to any server other than Anthropic's API. openFDA queries go directly to api.fda.gov. PDF downloads come directly from accessdata.fda.gov.
+
+> **Sources**: [Anthropic Data Usage (Claude Code)](https://code.claude.com/docs/en/data-usage) | [Anthropic Privacy Center](https://privacy.claude.com) | [Consumer Terms Update (Sep 2025)](https://www.anthropic.com/news/updates-to-our-consumer-terms)
+
+---
+
+### Important Notices
 
 **Research purposes only.** This tool analyzes publicly available FDA data (510(k) summaries, classification databases, MAUDE reports, and other records published by the U.S. Food and Drug Administration).
-
-**Do not use with confidential documents.** All text you provide — including device descriptions, intended use statements, and file contents — is processed by Claude (Anthropic's LLM). Depending on your Anthropic account settings, this content may be used for model training. Even when training is disabled, there is no independent means to verify that data is excluded. Do not submit trade secrets, proprietary designs, or confidential regulatory strategies.
 
 **LLM accuracy is not guaranteed.** Large language models make mistakes. Device number extraction, predicate identification, section classification, and all other outputs may contain errors, omissions, or hallucinations. Always independently verify every device number, predicate relationship, regulatory citation, and testing recommendation before relying on it.
 
 **Not legal or regulatory advice.** Consult qualified regulatory affairs professionals and legal counsel before making submission decisions. The developers and Anthropic accept no liability for regulatory outcomes based on this tool's output.
-
-</details>
 
 ---
 

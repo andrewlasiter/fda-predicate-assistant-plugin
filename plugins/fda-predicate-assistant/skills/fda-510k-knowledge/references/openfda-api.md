@@ -364,7 +364,7 @@ fda_api("event", 'device.device_report_product_code:"KGN"', count_field="product
 **Response fields**:
 - `res_event_number`, `cfres_id`, `product_res_number`
 - `event_date_initiated`, `event_date_created`, `event_date_posted`, `event_date_terminated`
-- `recall_status` (Ongoing, Completed, Terminated) — NOTE: `classification` (Class I/II/III recall severity) is in `/device/enforcement`, NOT `/device/recall`
+- `recall_status` (Ongoing, Completed, Terminated), `classification` (Class I/II/III recall severity — available in BOTH `/device/recall` AND `/device/enforcement`)
 - `product_description`, `code_info`, `reason_for_recall`, `root_cause_description`
 - `recalling_firm`, `firm_fei_number`, `address_1`, `address_2`, `city`, `state`, `postal_code`, `country`
 - `additional_info_contact`, `action`
@@ -389,6 +389,48 @@ fda_api("recall", 'product_code:"KGN"+AND+recall_status:"Ongoing"')
 
 # Root causes for recalls in this product code
 fda_api("recall", 'product_code:"KGN"', count_field="root_cause_description.exact")
+```
+
+### 4b. `/device/enforcement` — FDA Enforcement Actions
+
+**Purpose**: Look up FDA enforcement reports (recalls with enforcement classification). Similar to `/device/recall` but sourced from FDA's enforcement reporting system with additional regulatory detail.
+
+**Key searchable fields**:
+| Field | Description | Example |
+|-------|-------------|---------|
+| `recall_number` | FDA recall number | `recall_number:"Z-0123-2024"` |
+| `product_code` | Product code | `product_code:"KGN"` |
+| `recalling_firm` | Company name | `recalling_firm:"MEDTRONIC"` |
+| `classification` | Recall class (I/II/III) | `classification:"Class+I"` |
+| `status` | Recall status | `status:"Ongoing"` |
+| `reason_for_recall` | Reason text | `reason_for_recall:"sterility"` |
+| `product_description` | Product description | `product_description:"wound+dressing"` |
+| `distribution_pattern` | Distribution scope | |
+| `voluntary_mandated` | Voluntary vs mandated | `voluntary_mandated:"Voluntary:+Firm+Initiated"` |
+| `report_date` | Report date | `report_date:[20200101+TO+20261231]` |
+| `recall_initiation_date` | Recall start date | `recall_initiation_date:[20200101+TO+20261231]` |
+| `center_classification_date` | FDA classification date | |
+| `termination_date` | Recall end date | |
+| `city`, `state`, `country` | Location fields | `state:"CA"` |
+| `openfda.device_name` | Device name (nested) | |
+| `openfda.device_class` | Device class (nested) | |
+| `openfda.regulation_number` | Regulation number (nested) | |
+
+> **Note**: The `/device/enforcement` endpoint also has a `classification` field for recall severity (Class I/II/III), same as `/device/recall`. Both endpoints support this field.
+
+**Common queries**:
+```python
+# Class I recalls for a product code
+fda_api("enforcement", 'product_code:"KGN"+AND+classification:"Class+I"')
+
+# Ongoing enforcement actions
+fda_api("enforcement", 'product_code:"KGN"+AND+status:"Ongoing"')
+
+# Count enforcement actions by classification
+fda_api("enforcement", 'product_code:"KGN"', count_field="classification.exact")
+
+# Recent enforcement actions sorted by report date
+fda_api("enforcement", 'product_code:"KGN"', sort="report_date:desc", limit=20)
 ```
 
 ### 5. `/device/pma` — Premarket Approvals
@@ -778,7 +820,7 @@ def check_api_available():
 - **Wildcard**: Supported — `field:prefix*`, `field.exact:"*partial*"`, `field:*` (match any)
 - **Parenthetical grouping**: `field:("value1"+"value2")` — matches any of the values
 - **OR batch query**: `field:"val1"+OR+field:"val2"` — multiple values in one request
-- **Missing/Exists**: `_missing_:field` (field absent) or `_exists_:field` (field present)
+- **Exists filter**: `_exists_:field` (field present in record) — NOTE: `_missing_:field` returns 404 on Device endpoints; use negation instead
 - **Sort**: `sort=field:asc` or `sort=field:desc` — order results by any field
 - **Spaces in values**: Use `+` instead of spaces: `device_name:"wound+dressing"`
 - **Count endpoint**: Add `count=field.exact` to get aggregated counts instead of results
