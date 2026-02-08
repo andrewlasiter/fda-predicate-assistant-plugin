@@ -197,7 +197,7 @@ class TestPluginVersionAndCounts58:
     def test_version_is_5_8_0(self):
         with open(PLUGIN_JSON) as f:
             data = json.load(f)
-        assert data["version"] == "5.8.0"
+        assert data["version"] == "5.9.0"
 
     def test_command_count_is_36(self):
         """Verify 36 .md files in commands directory."""

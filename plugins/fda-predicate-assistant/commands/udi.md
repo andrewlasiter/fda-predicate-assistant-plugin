@@ -1,7 +1,7 @@
 ---
-description: Look up UDI/GUDID records from openFDA — search by device identifier, product code, company, or brand name
-allowed-tools: Bash, Read, Glob, Grep, Write
-argument-hint: "--product-code CODE | --di NUMBER | --company NAME | --brand NAME [--project NAME] [--save]"
+description: Look up UDI/GUDID records from openFDA and AccessGUDID — search by device identifier, product code, company, or brand name, with device history and SNOMED mapping
+allowed-tools: Bash, Read, Glob, Grep, Write, WebFetch
+argument-hint: "--product-code CODE | --di NUMBER | --company NAME | --brand NAME [--history] [--snomed] [--parse-udi UDI] [--project NAME] [--save]"
 ---
 
 # FDA UDI/GUDID Database Lookup
@@ -29,21 +29,28 @@ echo "FDA_PLUGIN_ROOT=$FDA_PLUGIN_ROOT"
 
 ---
 
-You are querying the openFDA UDI (Unique Device Identification) endpoint to look up GUDID (Global Unique Device Identification Database) records.
+You are querying the **openFDA UDI** endpoint for broad searches and the **AccessGUDID v3 API** (NLM) for detailed device lookups, history tracking, SNOMED mapping, and UDI barcode parsing.
+
+**Data source strategy:**
+- **openFDA** for searches by product code, company name, brand name (Elasticsearch queries)
+- **AccessGUDID v3** for DI-specific lookups, device history, SNOMED terms, UDI parsing (authoritative, real-time)
 
 ## Parse Arguments
 
 From `$ARGUMENTS`, extract:
 
-- `--product-code CODE` — Search by FDA product code
-- `--di NUMBER` — Search by primary device identifier (DI)
-- `--company NAME` — Search by company name
-- `--brand NAME` — Search by brand name
+- `--product-code CODE` — Search by FDA product code (openFDA)
+- `--di NUMBER` — Search by primary device identifier (openFDA + AccessGUDID for enrichment)
+- `--company NAME` — Search by company name (openFDA)
+- `--brand NAME` — Search by brand name (openFDA)
+- `--history` — Show device modification history (AccessGUDID)
+- `--snomed` — Show SNOMED CT clinical terminology mapping (AccessGUDID)
+- `--parse-udi UDI` — Parse a raw UDI barcode into components (AccessGUDID)
 - `--project NAME` — Associate results with a project
 - `--save` — Save results to project folder
 - `--limit N` — Max results (default 10)
 
-At least one of `--product-code`, `--di`, `--company`, or `--brand` is required.
+At least one of `--product-code`, `--di`, `--company`, `--brand`, or `--parse-udi` is required.
 
 ## Step 1: Query openFDA UDI Endpoint
 
@@ -151,13 +158,72 @@ except Exception as e:
 PYEOF
 ```
 
-## Step 2: Present Results
+## Step 2: AccessGUDID Enrichment (when --di is provided or DI found from openFDA)
+
+If a DI (Device Identifier) is available — either from `--di` directly or extracted from openFDA results — query AccessGUDID v3 for enrichment data.
+
+### Device Detail Lookup
+
+```bash
+curl -s "https://accessgudid.nlm.nih.gov/api/v3/devices/lookup.json?di=DEVICE_IDENTIFIER"
+```
+
+This returns the authoritative GUDID record with:
+- Manufacturer contacts (phone, email)
+- Storage/handling conditions (temperature range, humidity, special conditions)
+- Distribution end date (if device was discontinued)
+- Device publish date
+
+### Device History (if --history)
+
+```bash
+curl -s "https://accessgudid.nlm.nih.gov/api/v3/devices/history.json?di=DEVICE_IDENTIFIER"
+```
+
+Shows a timeline of changes to the device's GUDID record — when fields were modified, new versions published, or distribution status changed. Useful for tracking device evolution.
+
+### SNOMED CT Mapping (if --snomed)
+
+```bash
+curl -s "https://accessgudid.nlm.nih.gov/api/v3/devices/snomed.json?di=DEVICE_IDENTIFIER"
+```
+
+Returns SNOMED CT clinical terminology codes linked to the device. Useful for:
+- Clinical terminology alignment in submission documents
+- Mapping device function to clinical concepts
+- Cross-referencing with clinical evidence searches
+
+### Parse UDI Barcode (if --parse-udi)
+
+```bash
+curl -s "https://accessgudid.nlm.nih.gov/api/v3/parse_udi.json?udi=ENCODED_UDI_STRING"
+```
+
+Parses a raw UDI barcode string (from GS1, HIBCC, or ICCBBA format) into structured components:
+- Device Identifier (DI)
+- Manufacturing date
+- Expiration date
+- Lot number
+- Serial number
+- Issuing agency
+
+**Note:** The UDI string must be percent-encoded in the URL.
+
+### Implantable Status Check
+
+If the device might be implantable, also check:
+
+```bash
+curl -s "https://accessgudid.nlm.nih.gov/api/v3/devices/implantable_list.json?di=DEVICE_IDENTIFIER"
+```
+
+## Step 3: Present Results
 
 ```
   FDA UDI/GUDID Database Lookup
   {search context}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Source: openFDA UDI | v4.9.0
+  Generated: {date} | Source: openFDA UDI + AccessGUDID v3 | v5.9.0
 
 SEARCH RESULTS ({total} records found)
 ────────────────────────────────────────
@@ -192,12 +258,57 @@ SEARCH RESULTS ({total} records found)
 
   Record 2: ...
 
+ACCESSGUDID ENRICHMENT (if DI available)
+────────────────────────────────────────
+
+  Manufacturer Contact:
+    Phone: {phone}
+    Email: {email}
+
+  Storage Conditions:
+    | Condition   | Low    | High   |
+    |-------------|--------|--------|
+    | Temperature | 15 C   | 30 C   |
+    | Humidity    | 20%    | 80%    |
+
+  Published: {devicePublishDate}
+  Distribution End: {deviceCommDistributionEndDate or "Active"}
+
+DEVICE HISTORY (if --history)
+────────────────────────────────────────
+
+  | Date       | Change                                    |
+  |------------|------------------------------------------|
+  | 2024-03-15 | Initial publication                       |
+  | 2024-09-01 | Updated sterilization method              |
+  | 2025-01-10 | Added new product code                    |
+
+SNOMED CT MAPPING (if --snomed)
+────────────────────────────────────────
+
+  | SNOMED Code | Preferred Term                    |
+  |-------------|----------------------------------|
+  | 12345678    | Orthopedic fusion cage device     |
+
+UDI BARCODE PARSE (if --parse-udi)
+────────────────────────────────────────
+
+  UDI String: {raw_udi}
+  Issuing Agency: {GS1/HIBCC/ICCBBA}
+  Device Identifier (DI): {di}
+  Manufacturing Date: {date or N/A}
+  Expiration Date: {date or N/A}
+  Lot Number: {lot or N/A}
+  Serial Number: {serial or N/A}
+
 RECOMMENDATIONS
 ────────────────────────────────────────
 
   1. UDI data helps populate eSTAR labeling section
   2. For labeling compliance: /fda:draft labeling --project NAME
   3. For full device profile: /fda:validate {K-number}
+  4. Device history tracks modifications useful for SE arguments
+  5. SNOMED terms align clinical terminology across submission docs
 
 ────────────────────────────────────────
   This report is AI-generated from public FDA data.
