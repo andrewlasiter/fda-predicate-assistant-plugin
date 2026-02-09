@@ -7,8 +7,7 @@ tools:
   - Grep
   - Bash
   - Write
-  - WebFetch
-  - WebSearch
+  - AskUserQuestion
 ---
 
 # FDA 510(k) Submission Assembler Agent
@@ -21,6 +20,7 @@ This agent combines the work of these individual commands into one autonomous wo
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
+| `/fda:draft` | Generate section drafts (if missing) | Pre-Assembly |
 | `/fda:consistency` | Cross-document validation (10 checks) | Validation |
 | `/fda:assemble` | Build eSTAR directory structure | Assembly |
 | `/fda:export` | Export as eSTAR XML or ZIP | Export |
@@ -34,12 +34,12 @@ Before running this agent, check that required files exist. If files are missing
 **Required:**
 1. Project exists at `{projects_dir}/{project_name}/`
 2. `review.json` has accepted predicates
-3. `drafts/` directory contains at least one section draft (e.g., `drafts/device-description.md`)
+3. At least one section draft file exists (e.g., `draft_device-description.md` in the project directory)
 
 **Check sequence:**
 1. Read `~/.claude/fda-predicate-assistant.local.md` for `projects_dir`
 2. Verify `{projects_dir}/{project_name}/review.json` exists
-3. Verify `{projects_dir}/{project_name}/drafts/` directory has `.md` files
+3. Verify `{projects_dir}/{project_name}/draft_*.md` files exist (flat files in project root)
 4. If review.json missing: output `"Required file review.json not found. Run /fda:review --project {name} first."`
 5. If drafts missing: output `"No section drafts found. Run the submission-writer agent first to draft all sections, or use /fda:draft --project {name} to draft individual sections."`
 
@@ -53,8 +53,8 @@ Before running this agent, check that required files exist. If files are missing
 ### Phase 1: Draft Inventory
 
 1. **Locate project directory** and read `review.json`
-2. **Inventory existing drafts** in `{project}/drafts/`:
-   - List all `.md` files with word counts
+2. **Inventory existing drafts** — find `{project}/draft_*.md` files:
+   - List all draft files with word counts
    - Count `[TODO:]` and `[CITATION NEEDED]` markers per file
 3. **Determine applicable sections** based on device type:
    - All devices: device-description, se-discussion, 510k-summary, cover-letter
@@ -70,7 +70,7 @@ Before running this agent, check that required files exist. If files are missing
 Only generate documents that don't already exist:
 1. **Substantial Equivalence Comparison** — Generate SE comparison table using `/fda:compare-se` logic (if `se_comparison.md` doesn't exist)
 2. **Traceability Matrix** — Generate RTM using `/fda:traceability` logic (if `traceability_matrix.md` doesn't exist)
-3. Save to `{project}/drafts/se-comparison.md` and `{project}/drafts/rtm.md`
+3. Save to `{project}/draft_se-comparison.md` and `{project}/draft_rtm.md`
 
 ### Phase 3: Consistency Validation
 
@@ -88,7 +88,7 @@ Run all 10 consistency checks from `/fda:consistency`:
 
 Report findings and auto-fix where `--fix` would apply.
 
-### Phase 5: Package Assembly
+### Phase 4: Package Assembly
 
 Using `/fda:assemble` logic:
 1. Create eSTAR-compatible directory structure
@@ -96,7 +96,7 @@ Using `/fda:assemble` logic:
 3. Generate `eSTAR_index.md` with section status
 4. Calculate submission readiness score
 
-### Phase 6: Readiness Report
+### Phase 5: Readiness Report
 
 ```
   510(k) Submission Readiness Report

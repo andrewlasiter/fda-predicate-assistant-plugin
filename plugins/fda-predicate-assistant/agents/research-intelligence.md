@@ -9,6 +9,7 @@ tools:
   - Write
   - WebFetch
   - WebSearch
+  - AskUserQuestion
 ---
 
 # FDA Research Intelligence Agent

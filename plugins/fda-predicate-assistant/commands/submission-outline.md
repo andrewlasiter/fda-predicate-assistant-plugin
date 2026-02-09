@@ -353,7 +353,7 @@ Write the complete submission outline document (see `references/output-formattin
 **Pathway:** {Traditional/Special/Abbreviated/De Novo}
 **Product Code:** {CODE} — {device_name}
 **Classification:** Class {class}, 21 CFR {regulation}
-**Generated:** {today's date} | v5.0.0
+**Generated:** {today's date} | v5.15.0
 **Project:** {project_name or "N/A"}
 
 ---

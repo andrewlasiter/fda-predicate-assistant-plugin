@@ -890,13 +890,14 @@ class TestAgentDeduplication:
         # Writer should not have assemble or export in its orchestrated commands
         assert "/fda:assemble" not in self.writer or "submission-assembler" in self.writer
 
-    def test_assembler_does_not_draft(self):
-        """submission-assembler should not use /fda:draft."""
-        # Assembler commands table should not include /fda:draft
-        commands_section = self.assembler.split("## Commands You Orchestrate")[1].split("##")[0] \
-            if "## Commands You Orchestrate" in self.assembler else ""
-        assert "/fda:draft" not in commands_section, \
-            "submission-assembler should not orchestrate /fda:draft"
+    def test_assembler_draft_is_pre_assembly_only(self):
+        """submission-assembler may reference /fda:draft but only for pre-assembly gap-filling."""
+        # Assembler can reference /fda:draft as a pre-assembly step to generate missing drafts
+        # but its primary description should not claim to be a drafting agent
+        match = re.search(r"description:\s*(.+?)(?:\n)", self.assembler)
+        desc = match.group(1).lower() if match else ""
+        assert "draft" not in desc or "post-draft" in desc, \
+            "submission-assembler description should emphasize packaging, not drafting"
 
     def test_writer_references_assembler_as_next_step(self):
         """submission-writer should tell user to run assembler next."""

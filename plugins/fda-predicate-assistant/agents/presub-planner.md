@@ -9,6 +9,7 @@ tools:
   - Write
   - WebFetch
   - WebSearch
+  - AskUserQuestion
 ---
 
 # FDA Pre-Submission Planner Agent
@@ -31,6 +32,25 @@ This agent requires minimal input but needs a functioning environment.
 - **Project name** for data storage
 
 If product code is not provided, the agent will attempt to identify it from the device description via openFDA classification search.
+
+## Commands You Orchestrate
+
+This agent combines the work of these individual commands into one autonomous workflow:
+
+| Command | Purpose | Phase |
+|---------|---------|-------|
+| `/fda:research` | Clearance landscape, predicate identification | Phase 1 |
+| `/fda:pathway` | Regulatory pathway recommendation | Phase 1 |
+| `/fda:guidance` | Applicable guidance and requirements | Phase 2 |
+| `/fda:standards` | Recognized consensus standards | Phase 2 |
+| `/fda:safety` | MAUDE adverse events and recalls | Phase 3 |
+| `/fda:literature` | PubMed and clinical evidence search | Phase 4 |
+| `/fda:presub` | Pre-Sub package generation | Phase 5 |
+
+**References:**
+- `references/pathway-decision-tree.md` — Regulatory pathway selection logic
+- `references/rta-checklist.md` — RTA prevention items to address in Pre-Sub questions
+- `references/confidence-scoring.md` — Predicate scoring algorithm
 
 ## Autonomous Workflow
 
@@ -79,11 +99,12 @@ If product code is not provided, the agent will attempt to identify it from the 
 
 ### Phase 4: Literature Review
 
-8. **PubMed search** — Search for clinical evidence:
+8. **PubMed search** — Using `/fda:literature` logic, search for clinical evidence:
    - Device-type specific studies
    - Comparative effectiveness data
    - Safety data from clinical use
    - Gap analysis vs guidance requirements
+   - Systematic reviews or meta-analyses for the device type
 
 ### Phase 5: Pre-Sub Generation
 
@@ -129,7 +150,7 @@ Write all output to `$PROJECTS_DIR/{project_name}/`:
   FDA Pre-Sub Planner Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Project: {name} | v4.6.0
+  Generated: {date} | Project: {name} | v5.15.0
 
 PLANNING SUMMARY
 ────────────────────────────────────────

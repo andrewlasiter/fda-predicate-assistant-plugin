@@ -6,6 +6,8 @@ tools:
   - Glob
   - Grep
   - Bash
+  - Write
+  - AskUserQuestion
 ---
 
 # FDA Extraction Results Analyzer
@@ -97,7 +99,7 @@ Structure your report as:
   FDA Extraction Analysis Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v4.6.0
+  Generated: {date} | v5.15.0
 
 EXECUTIVE SUMMARY
 ────────────────────────────────────────

@@ -235,7 +235,7 @@ have AI-generated content that has not yet been verified.
   FDA eSTAR Assembly Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Project: {name} | v4.6.0
+  Generated: {date} | Project: {name} | v5.15.0
 
 ASSEMBLY SUMMARY
 ────────────────────────────────────────

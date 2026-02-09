@@ -27,7 +27,7 @@ AGENT_FILES = [
 
 VALID_TOOLS = {
     "Read", "Write", "Glob", "Grep", "Bash",
-    "WebFetch", "WebSearch", "Edit", "NotebookEdit",
+    "WebFetch", "WebSearch", "Edit", "NotebookEdit", "AskUserQuestion",
 }
 
 INVALID_FRONTMATTER_FIELDS = {"version", "argument-hint", "allowed-tools", "user-invocable"}

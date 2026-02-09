@@ -7,6 +7,7 @@ tools:
   - Grep
   - Bash
   - Write
+  - AskUserQuestion
 ---
 
 # FDA Data Pipeline Manager Agent
@@ -42,22 +43,26 @@ This agent combines the work of these individual commands into one autonomous wo
 
 ## Data Layout
 
-The pipeline operates on a standard directory structure:
+The pipeline reads configured paths from `~/.claude/fda-predicate-assistant.local.md`. If not configured, defaults are shown below.
+
+**Path resolution order:**
+1. Read `~/.claude/fda-predicate-assistant.local.md` for `data_dir`, `extraction_dir`, `projects_dir`
+2. Fall back to defaults if not configured
 
 ```
-~/fda-510k-data/
+{data_dir}/                    # Default: ~/fda-510k-data/
   batchfetch/
     510k_download.csv          # FDA catalog metadata
     510ks/                     # Downloaded PDF files
-  extraction/
+{extraction_dir}/              # Default: {data_dir}/extraction/
     output.csv                 # Extraction results
     supplement.csv             # Supplement devices
     pdf_data.json              # Cached text extraction
     error_log.txt              # Failed PDFs
-  projects/
+{projects_dir}/                # Default: {data_dir}/projects/
     {project_name}/            # Per-project data
       review.json
-      drafts/
+      draft_*.md               # Section draft files
 ```
 
 ## Workflow
@@ -65,8 +70,8 @@ The pipeline operates on a standard directory structure:
 ### Step 1: Pipeline Health Assessment
 
 1. **Check current data state** using `/fda:status` logic:
-   - Count PDFs in `~/fda-510k-data/batchfetch/510ks/`
-   - Count rows in `output.csv`
+   - Count PDFs in `{data_dir}/batchfetch/510ks/`
+   - Count rows in `{extraction_dir}/output.csv`
    - Check FDA database file freshness (5-day cache)
    - Verify `pdf_data.json` integrity
 2. **Report current coverage** metrics

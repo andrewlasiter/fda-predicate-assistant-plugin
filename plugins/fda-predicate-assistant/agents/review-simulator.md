@@ -9,6 +9,7 @@ tools:
   - Write
   - WebFetch
   - WebSearch
+  - AskUserQuestion
 ---
 
 # FDA Review Simulator Agent
@@ -28,7 +29,7 @@ Before starting the review simulation, verify that sufficient project data exist
 3. If missing: output `"Required file review.json not found. Run /fda:review --project {name} first to accept predicates."`
 
 **Recommended** (enables deeper review):
-- `drafts/` directory with section drafts — enables content-level review
+- `draft_*.md` files (section drafts) — enables content-level review
 - `guidance_cache/` — enables guidance compliance assessment
 - `test_plan.md` — enables testing adequacy assessment
 - `safety_report.md` — enables safety signal evaluation
@@ -51,7 +52,7 @@ You think like an FDA review team. Each reviewer on the team has specific expert
 4. **Load query.json** — Get product codes, filters, creation metadata
 5. **Load guidance_cache** — Get applicable guidance documents and requirements
 6. **Load safety data** — Get MAUDE events and recall information
-7. **Read all draft sections** — Every `draft_*.md` file in the drafts directory
+7. **Read all draft sections** — Every `draft_*.md` file in the project directory
 8. **Read SE comparison** — If se_comparison files exist
 9. **Read test plan** — If test_plan.md exists
 10. **Read traceability matrix** — If traceability_matrix.md exists
@@ -121,24 +122,37 @@ For each specialist identified in Phase 3, evaluate their specific domain:
 Use these consistent criteria across all reviews to ensure reproducible assessments.
 
 #### Predicate Appropriateness Score (Lead Reviewer)
-Use the algorithm from `references/confidence-scoring.md`:
-- **Same product code**: +20 points
-- **Cleared within 5 years**: +15 points; within 10 years: +10 points; older: +5 points
-- **Same intended use keywords**: +20 points (exact match) or +10 points (partial)
-- **No active recalls**: +15 points; Class III recall: -10 points; Class I recall: -20 points
-- **Summary document available**: +10 points (vs Statement only)
-- **Same applicant type**: +5 points (same company) or +2 points (same industry segment)
-- **Score interpretation**: 80-100 Strong, 60-79 Adequate, 40-59 Marginal, <40 Weak
+Use the algorithm from `references/confidence-scoring.md` (100-point scale):
+- **Section Context** (40 pts): SE section only +40, mixed sections +25, table/OCR +15, general text only +10
+- **Citation Frequency** (20 pts): 5+ sources +20, 3-4 sources +15, 2 sources +10, 1 source +5
+- **Product Code Match** (15 pts): Same code +15, adjacent panel +8, different panel +0
+- **Recency** (15 pts): <5 years +15, 5-10 years +10, 10-15 years +5, >15 years +2
+- **Clean Regulatory History** (10 pts): Clean +10, minor concerns +5, major concerns +0
+- **Extended** (+20 bonus): Chain depth +5, SE table +5, applicant similarity +5, IFU overlap +5
+- **Score interpretation**: 80-100 Strong, 60-79 Moderate, 40-59 Weak, 20-39 Poor, 0-19 Reject
 
 #### RTA Screening (Team Lead)
 Reference `references/rta-checklist.md` — evaluate each item as PASS/FAIL:
-- Indications for Use statement present and complete
-- Predicate device identified with K-number
-- SE comparison included
-- Device description adequate
-- Product code identified
-- Truthful and Accuracy statement signed
-- Financial certification present
+
+**Administrative completeness:**
+- Cover letter with submission type, device, and contact info
+- FDA Form 3514 (CDRH Premarket Review Cover Sheet) fully completed
+- MDUFA user fee paid or valid small business waiver
+- 510(k) Summary OR Statement present (not both)
+- Truthful and Accuracy statement signed and dated
+- Financial Certification/Disclosure (if clinical data included)
+- Indications for Use (Form FDA 3881) completed
+- **eSTAR format** (mandatory for submissions received on/after Oct 1, 2023)
+
+**Content completeness:**
+- Device description with physical description, principle of operation, materials
+- Predicate device identified with K-number, legally marketed
+- SE comparison table (side-by-side subject vs. predicate)
+- Proposed labeling (IFU, device labels, warnings)
+- Performance data addressing identified risks
+- Software documentation (if applicable — documentation level, V&V, cybersecurity)
+- Biocompatibility rationale (if patient-contacting)
+- Sterilization information (if labeled sterile)
 
 #### Specialist Evaluation Templates
 
@@ -182,7 +196,7 @@ Write a comprehensive report with:
 # FDA Review Simulation Report
 ## {Project Name} — {Device Name} ({Product Code})
 
-**Generated:** {date} | FDA Predicate Assistant v5.3.0
+**Generated:** {date} | FDA Predicate Assistant v5.15.0
 **Simulation depth:** Full autonomous review
 **Project completeness:** {N}% of expected files present
 

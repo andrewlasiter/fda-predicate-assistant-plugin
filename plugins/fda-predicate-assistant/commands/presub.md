@@ -229,7 +229,7 @@ Write the `presub_plan.md` document using the Pre-Sub format from `references/su
 **Date:** {today's date}
 **Requested Meeting Type:** {meeting_type}
 **Product Code:** {CODE} — {device_name}
-**Generated:** {today's date} | v4.6.0
+**Generated:** {today's date} | v5.15.0
 **Classification:** Class {class}, 21 CFR {regulation}
 **Review Panel:** {panel}
 
@@ -987,7 +987,7 @@ Read `$PROJECTS_DIR/$PROJECT_NAME/fda_correspondence.json` and display:
   FDA Correspondence History
   Project: {project_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Source: Project Data | v4.9.0
+  Generated: {date} | Source: Project Data | v5.15.0
 
 SUMMARY
 ────────────────────────────────────────

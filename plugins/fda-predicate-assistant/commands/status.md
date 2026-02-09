@@ -306,7 +306,7 @@ Then display the normal status report:
   FDA Pipeline Status
   Data inventory and connectivity check
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v4.6.0
+  Generated: {date} | v5.15.0
 
 PLUGIN SCRIPTS
 ────────────────────────────────────────

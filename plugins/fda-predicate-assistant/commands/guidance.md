@@ -565,7 +565,7 @@ Use the standard FDA Professional CLI format (see `references/output-formatting.
   FDA Guidance Analysis
   {PRODUCT_CODE} — {DEVICE_NAME}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Class: {class} | 21 CFR {regulation} | v4.6.0
+  Generated: {date} | Class: {class} | 21 CFR {regulation} | v5.15.0
 
 DEVICE CLASSIFICATION
 ────────────────────────────────────────

@@ -181,8 +181,12 @@ Maps eSTAR sections to `/fda:draft` section names:
 |---------|--------------|-------------------|--------|
 | 01 | Cover Letter | `cover-letter` | v4.3.0 |
 | 03 | 510(k) Summary | `510k-summary` | v4.6.0 |
+| 04 | Truthful & Accuracy | `truthful-accuracy` | v4.6.0 |
+| 05 | Financial Certification | `financial-certification` | v4.6.0 |
 | 06 | Device Description | `device-description` | v4.6.0 |
 | 07 | SE Comparison | `se-discussion` | v4.6.0 |
+| — | Predicate Justification | `predicate-justification` | v4.6.0 |
+| — | Testing Rationale | `testing-rationale` | v4.6.0 |
 | 08 | Standards | (via `/fda:test-plan`) | — |
 | 09 | Labeling | `labeling` | v4.3.0 |
 | 10 | Sterilization | `sterilization` | v4.3.0 |
@@ -192,6 +196,8 @@ Maps eSTAR sections to `/fda:draft` section names:
 | 14 | EMC/Electrical | `emc-electrical` | v4.3.0 |
 | 15 | Performance Testing | `performance-summary` | v4.6.0 |
 | 16 | Clinical | `clinical` | v4.3.0 |
+| — | Declaration of Conformity | `doc` | v5.0.0 |
+| — | Human Factors | `human-factors` | v5.1.0 |
 
 ## Section Number to XML Element Mapping
 

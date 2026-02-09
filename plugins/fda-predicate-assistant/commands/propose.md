@@ -477,7 +477,7 @@ Report the proposal summary to the user:
   FDA Predicate Proposal
   {project_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.2.0
+  Generated: {date} | v5.15.0
 
 PROPOSED PREDICATES
 ────────────────────────────────────────

@@ -9,6 +9,7 @@ tools:
   - Write
   - WebFetch
   - WebSearch
+  - AskUserQuestion
 ---
 
 # FDA 510(k) Submission Writer Agent
@@ -45,28 +46,30 @@ Before starting, verify that the project has sufficient data. If required files 
 1. Read all available project files
 2. Determine product code, device name, and accepted predicates
 3. Identify which eSTAR sections can be auto-populated vs. which need templates
-4. Create a drafting plan listing all 16 sections with data source status
+4. Create a drafting plan listing all 18 sections with data source status
 
 ### Phase 2: Sequential Section Drafting
 
 Draft each section using `/fda:draft` patterns, in this order (dependencies first):
 
 1. **Device Description** (Section 06) — Foundation for all other sections
-2. **Indications for Use** — Referenced by SE discussion, labeling, and 510(k) summary
-3. **SE Discussion** (Section 07) — Requires predicate data and device description
+2. **SE Discussion** (Section 07) — Requires predicate data and device description
+3. **Predicate Justification** — Why each predicate was selected, defensibility
 4. **Performance Summary** (Section 15) — From test plan and guidance
-5. **Labeling** (Section 09) — Uses IFU text
-6. **Sterilization** (Section 10) — If applicable
-7. **Shelf Life** (Section 11) — If applicable
-8. **Biocompatibility** (Section 12) — If applicable
-9. **Software** (Section 13) — If applicable
-10. **EMC/Electrical** (Section 14) — If applicable
-11. **Clinical** (Section 16) — Literature + safety data
-12. **Cover Letter** (Section 01) — References all included sections
-13. **510(k) Summary** (Section 03) — Synthesizes all sections
-14. **Truthful & Accuracy** (Section 04) — Template
-15. **Financial Certification** (Section 05) — Template
-16. **Testing Rationale** — Cross-references guidance and test plan
+5. **Testing Rationale** — Cross-references guidance and test plan
+6. **Labeling** (Section 09) — Uses IFU text
+7. **Sterilization** (Section 10) — If applicable
+8. **Shelf Life** (Section 11) — If applicable
+9. **Biocompatibility** (Section 12) — If applicable
+10. **Software** (Section 13) — If applicable
+11. **EMC/Electrical** (Section 14) — If applicable
+12. **Clinical** (Section 16) — Literature + safety data
+13. **Human Factors** — IEC 62366-1 usability, if applicable
+14. **Declaration of Conformity** (DoC) — Standards compliance declaration
+15. **Cover Letter** (Section 01) — References all included sections
+16. **510(k) Summary** (Section 03) — Synthesizes all sections
+17. **Truthful & Accuracy** (Section 04) — Template
+18. **Financial Certification** (Section 05) — Template
 
 For each section:
 - Follow the templates in `references/draft-templates.md`
@@ -93,12 +96,12 @@ Generate a final readiness report:
   FDA Submission Writer Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Project: {name} | v4.6.0
+  Generated: {date} | Project: {name} | v5.15.0
 
 DRAFTING SUMMARY
 ────────────────────────────────────────
 
-  Sections drafted: {N}/16
+  Sections drafted: {N}/18
   Auto-populated paragraphs: {N}
   [TODO:] items remaining: {N}
   [CITATION NEEDED] items: {N}
@@ -134,7 +137,7 @@ READINESS SCORE
 NEXT STEPS
 ────────────────────────────────────────
 
-  1. Review all draft files in {project_dir}/drafts/
+  1. Review all draft files (draft_*.md) in {project_dir}/
   2. Fill in [TODO:] items with company-specific data
   3. Verify [CITATION NEEDED] items
   4. Run the **submission-assembler** agent to package drafts into eSTAR structure
