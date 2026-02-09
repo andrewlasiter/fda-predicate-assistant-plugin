@@ -53,11 +53,128 @@ Rows: Intended Use, Indications for Use, Measurement Principle, Measurand/Analyt
 **Wound Dressings** (KGN, FRO, MGP):
 Rows: Intended Use, Indications for Use, Dressing Type/Category, Materials/Composition, Layer Structure, Contact Layer, Adhesive Border, Sizes Available, Fluid Handling/Absorption, MVTR, Antimicrobial Agent (if applicable), Antimicrobial Testing, Biocompatibility, Sterilization, Shelf Life, Clinical Data
 
-**Orthopedic Implants** (various):
-Rows: Intended Use, Indications for Use, Device Configuration, Materials, Anatomical Site, Fixation Method, Surface Treatment, Mechanical Testing (fatigue, compression, etc.), Biocompatibility, Sterilization, Shelf Life, Clinical Data
+**Orthopedic — Joint Arthroplasty** (hip: HCE/HCF/HDO/HDP/HEA/HEB; knee: HFK/HFG; shoulder: HNS/HNT):
+Rows: Intended Use, Indications for Use, Prosthesis Type/Configuration, Anatomical Site, Fixation Method (cemented/uncemented/hybrid), Materials (bearing surfaces, stem/shell alloy), Surface Treatment (porous coating, HA, 3D-printed), Fatigue Testing (ASTM F2068/ISO 7206 hip, ASTM F1800 knee), Wear Testing (ISO 14242 hip/ISO 14243 knee — cycles, wear rate, debris), Corrosion (ASTM F2129, F1875 taper), Material Characterization (ASTM F136/F1537/F648), MRI Safety (ASTM F2052/F2213/F2182/F2119), Biocompatibility (permanent implant — ISO 10993 extended battery), Sterilization, Shelf Life, Clinical Data
 
-**Cardiovascular** (DXY, DTB, etc.):
-Rows: Intended Use, Indications for Use, Device Design, Materials, Contact Duration, Blood Contact, Hemodynamic Performance, Biocompatibility, Sterilization, Shelf Life, MRI Safety, Clinical Data
+**Orthopedic — Spinal Devices** (MQP, MAX, NKB):
+Rows: Intended Use, Indications for Use, Device Type (pedicle screw/interbody cage/disc replacement), Configuration, Materials, Fatigue Testing (ASTM F1717 constructs, ASTM F2077 IBF), Subsidence Testing, Radiolucency/Radiopacity, MRI Safety, Biocompatibility, Sterilization, Shelf Life, Clinical Data (fusion rate)
+
+**Orthopedic — Fracture Fixation** (HRS, HRX, HOV):
+Rows: Intended Use, Indications for Use, Device Type (plate/screw/nail/wire), Anatomical Site, Materials, Fatigue Testing (ASTM F382 plates, ASTM F543 screws), Corrosion Testing (ASTM F2129), MRI Safety, Biocompatibility, Sterilization, Shelf Life, Clinical Data
+
+**Cardiovascular — Intravascular Stents** (DXY, NIQ):
+Rows: Intended Use, Indications for Use, Stent Design (open/closed cell, self/balloon-expanding), Materials, Dimensions (diameter, length), Radial Strength/Recoil, Fatigue Testing (ASTM F2477 — ≥4×10^8 cycles), Corrosion (ASTM F2129), Coating (drug-eluting: drug, dose, elution kinetics), Hemocompatibility (ISO 10993-4), Biocompatibility, Delivery System, MRI Safety, Sterilization, Shelf Life, Clinical Data
+
+**Cardiovascular — Cardiac Implantable Electronic Devices** (DTB, DXA, LWS):
+Rows: Intended Use, Indications for Use, Device Type (pacemaker/ICD/CRT-D/CRT-P), Lead Configuration, Pulse Generator, Sensing/Pacing Parameters, Battery Technology/Longevity, EMC (IEC 60601-2-31/-2-4), MRI Safety (ISO/TS 10974), Software (IEC 62304 Class C), Cybersecurity, Biocompatibility, Sterilization, Shelf Life, Clinical Data
+
+**Cardiovascular — Heart Valves** (DTK, MVB):
+Rows: Intended Use, Indications for Use, Valve Type (mechanical/bioprosthetic/TAVR), Materials, Hemodynamic Performance (ISO 5840 — EOA, regurgitation), Durability Testing (≥200M cycles), Delivery System (if TAVR), Biocompatibility, Hemocompatibility (ISO 10993-4), MRI Safety, Sterilization, Shelf Life, Clinical Data
+
+**Cardiovascular — General** (other CV product codes):
+Rows: Intended Use, Indications for Use, Device Design, Materials, Contact Duration, Blood Contact, Hemodynamic Performance, Hemocompatibility (ISO 10993-4), Biocompatibility, Sterilization, Shelf Life, MRI Safety, Clinical Data
+
+**Radiological — X-Ray Systems** (IYO, JAK, IYN):
+Rows: Intended Use, Indications for Use, X-ray Generator Type, Tube Assembly (focal spot, HU rating), Detector Type (flat panel/CR/II+CCD), Image Matrix/Pixel Pitch, AEC, Dose Indices (DAP, entrance skin dose), 21 CFR 1020.30-31 Compliance, DICOM Conformance, Collimation/Beam Limitation, Pediatric Protocols, IEC 60601-2-54, Software, Electrical Safety
+
+**Radiological — CT Scanners** (JAK):
+Rows: Intended Use, Indications for Use, Detector Configuration (rows, slice thickness), Rotation Speed, CTDIvol/DLP at Reference Protocols, Spatial Resolution (MTF), Low-Contrast Detectability, Reconstruction Algorithms (FBP/iterative/DL), Scan Range/Coverage Speed, Dual-Energy Capability, ECG Gating, Pediatric Dose Protocols, 21 CFR 1020.33 Compliance, IEC 60601-2-44, NEMA XR 25/29, DICOM/RDSR, Software, Electrical Safety
+
+**Radiological — MRI Systems** (IZL, LNH, LNI):
+Rows: Intended Use, Indications for Use, Field Strength, Gradient Performance (amplitude, slew rate), RF Coil Configuration, Bore Size, SAR Limits/Monitoring, dB/dt Limits, Acoustic Noise Levels, Pulse Sequences, Imaging Speed (parallel imaging, compressed sensing), IEC 60601-2-33, DICOM, Software, Electrical Safety
+
+**Radiological — Diagnostic Ultrasound** (IYO):
+Rows: Intended Use, Indications for Use, Transducer Types (linear/curved/phased), Frequency Range, Imaging Modes (B-mode/M-mode/Doppler/3D/4D), MI/TI Display and Limits (ODS/IEC 62359), Image Quality (spatial/contrast resolution), Frame Rate, IEC 60601-2-37, DICOM, Software, Electrical Safety
+
+**Radiological — AI/ML Software** (QAS, QIH, QMT):
+Rows: Intended Use, Indications for Use, Algorithm Type (DNN/CNN/ensemble), Target Pathology/Body Region, Compatible Imaging Modalities, Training Dataset (size, sources, demographics), Standalone Performance (sensitivity, specificity, AUC), Reader Study Results, Processing Time/Latency, PCCP (if applicable), Software (IEC 62304), Cybersecurity (Section 524B)
+
+**Surgical — Electrosurgical** (GEI, GEX):
+Rows: Intended Use, Indications for Use, Device Type (monopolar/bipolar/vessel sealing), Output Modes, Output Power Range, Frequency, IEC 60601-2-2 Compliance, Thermal Spread, Neutral Electrode Monitoring, Software, Biocompatibility, Sterilization, Clinical Data
+
+**Surgical — Staplers** (GAT, GBD):
+Rows: Intended Use, Indications for Use, Staple Configuration, Staple Leg Length, Tissue Thickness Range, Firing Force, Staple Line Hemostasis, Human Factors (per reclassification), Labeling (per FDA stapler guidance), Biocompatibility, Sterilization, Shelf Life
+
+**Surgical — Mesh** (ORC, OPK):
+Rows: Intended Use, Indications for Use, Mesh Type (synthetic/biologic), Material/Composition, Pore Size, Weight (g/m²), Burst Strength, Tear Resistance, Suture Pull-Out Strength, Absorbable Component (if applicable), Biocompatibility (permanent implant), Labeling (per hernia mesh guidance 2024), Sterilization, Shelf Life, Clinical Data
+
+**Neurological — Neurostimulators** (GWB, PFC, QBH):
+Rows: Intended Use, Indications for Use, Stimulation Type (TMS/tDCS/TENS/DBS/VNS/SCS), Output Parameters (waveform, frequency, amplitude, pulse width), Maximum Output, Safety Cutoffs, IEC 60601-2-10 (if TENS/NMES), Electrode Configuration, Biocompatibility, Software (IEC 62304), MRI Safety (if implantable), Clinical Data (sham-controlled)
+
+**Neurological — CSF Shunts** (LYA, KEB):
+Rows: Intended Use, Indications for Use, Valve Type (fixed/programmable), Pressure-Flow Characterization, Opening/Closing Pressure, Programmability (if applicable — magnetic adjustment, MRI setting retention), Catheter Properties (tensile, kink resistance, radiopacity), Biocompatibility (permanent CNS implant), MRI Safety, Sterilization, Shelf Life
+
+**Gastroenterology/Urology — Endoscopes** (FDS, FDT, FGB):
+Rows: Intended Use, Indications for Use, Endoscope Type (gastroscope/colonoscope/duodenoscope), Imaging (resolution, FOV, depth of field), Illumination, Working Channel(s), IEC 60601-2-18 Compliance, Reprocessing Validation (AAMI ST91, AAMI TIR30), Biocompatibility, Electrical Safety, Software
+
+**Obstetrics — Fetal Monitors** (HEL, HGM):
+Rows: Intended Use, Indications for Use, Monitoring Type (external/internal), FHR Detection Accuracy, Alarm Sensitivity/Specificity, Signal Quality (maternal movement, obesity, multiple gestation), IEC 60601-2-37 (ultrasound output), Biocompatibility, Electrical Safety, Software, Clinical Data
+
+**Obstetrics — Intrauterine Devices** (HBL, HIH):
+Rows: Intended Use, Indications for Use, IUD Type (copper/hormonal/inert), Dimensions, Retention Mechanism, Radiopacity, Removal Force, Drug Release Kinetics (if hormonal — 21 CFR Part 4), Corrosion/Ion Release (if copper), Biocompatibility (permanent mucosal), Sterilization, Shelf Life, Clinical Data
+
+**General Hospital — Infusion Pumps** (FRN, MEB, MEA):
+Rows: Intended Use, Indications for Use, Pump Type (large volume/syringe/ambulatory/PCA), Flow Rate Range, Flow Rate Accuracy (IEC 60601-2-24 trumpet curve), Bolus Accuracy, Alarm System (IEC 60601-1-8), Air-in-Line Detection, Occlusion Detection, Free-Flow Protection, Software (Enhanced Documentation Level per TPLC), Cybersecurity (if networked), Human Factors (IEC 62366-1), Battery Backup, Electrical Safety, Biocompatibility
+
+**Dental — Implants** (various 872.3xxx):
+Rows: Intended Use, Indications for Use, Implant Type (endosseous/subperiosteal), Material, Surface Treatment (roughness, chemistry), Implant-Abutment Connection, Fatigue Testing (ISO 14801 — ≥5M cycles at 30°), Corrosion (ASTM F2129), Biocompatibility (ISO 7405 + ISO 10993), MRI Safety, Sterilization, Shelf Life, Clinical Data (≥2yr follow-up)
+
+**Dental — Restorative Materials** (various 872.3xxx):
+Rows: Intended Use, Indications for Use, Material Type (ceramic/composite/cement), Flexural Strength (ISO 6872 or ISO 4049), Color Stability, Wear Resistance, Water Sorption/Solubility (ISO 4049), Radiopacity, Biocompatibility (ISO 7405 + ISO 10993-5), Shelf Life
+
+**ENT — Hearing Aids** (various 874.3xxx):
+Rows: Intended Use, Indications for Use, Type (OTC/prescription), Style (BTE/ITE/CIC/RIC), Electroacoustic Performance (ANSI S3.22 — OSPL90, HFA-FOG, THD, equivalent input noise), Output Limits (111/117 dB SPL per 21 CFR 800.30), IEC 60601-2-66, Wireless/Bluetooth, Biocompatibility, Battery/Charging, Human Factors, Labeling (21 CFR 801.420-422), Self-Fitting Algorithm (if applicable)
+
+**ENT — Sleep Apnea Oral Appliances** (QBE, QDM):
+Rows: Intended Use, Indications for Use, Mandibular Advancement Range, Titratability, Biocompatibility (ISO 7405 + ISO 10993), Dental Side Effects, Efficacy (AHI/RDI reduction), Human Factors (home use), Clinical Data
+
+**Anesthesia — Workstations/Ventilators** (BSZ, BTD, BZD):
+Rows: Intended Use, Indications for Use, Device Type (anesthesia workstation/ventilator/CPAP/BiPAP), Ventilation Modes (VCV/PCV/PSV/SIMV), Tidal Volume/Pressure/Flow Accuracy, Agent Delivery Accuracy (if anesthesia), Alarm System (IEC 60601-1-8), Hypoxia Prevention, ISO 80601-2-13 (anesthesia) or ISO 80601-2-12 (critical care) or ISO 80601-2-70 (sleep), Connector Compliance (ISO 5356-1/ISO 80369-6), Battery Backup, Software (IEC 62304), Cybersecurity, Electrical Safety
+
+**Anesthesia — Pulse Oximeters** (DQA, MUD):
+Rows: Intended Use, Indications for Use, SpO2 Accuracy (70-100% range), Low Perfusion Performance, Motion Artifact Performance, Skin Pigmentation Testing, Sensor Type, Alarm System, ISO 80601-2-61, Electrical Safety, Software
+
+**Ophthalmic — Intraocular Lenses** (HQL, HQF, HQH):
+Rows: Intended Use, Indications for Use, IOL Type (monofocal/multifocal/toric/EDOF), Material (hydrophobic/hydrophilic acrylic, silicone), Optical Performance (ISO 11979-2 — MTF, spectral transmittance, power tolerance), Haptic Design (ISO 11979-3 — compression force, loop memory), Biocompatibility (ISO 11979-5 — uveal, LEC, PCO), Endotoxin Testing (≥0.2 EU/mL), Injector System Compatibility, Glistening Evaluation, Sterilization, Shelf Life, Clinical Data
+
+**Ophthalmic — Contact Lenses** (LPL, MRC, MQI):
+Rows: Intended Use, Indications for Use, Lens Type (daily wear/extended/ortho-k), Material, Dk/Dk(t) (ISO 18369-4), Water Content, Dimensional Tolerances (ISO 18369-3), Spectral/UV Transmittance (ISO 18369-2), Extractables/Leachables, Biocompatibility, Performance Criteria Pathway (2023), Care System Compatibility, Labeling (21 CFR 801), Clinical Data
+
+**Physical Medicine — Powered Wheelchairs** (IOR, ITB):
+Rows: Intended Use, Indications for Use, Wheelchair Type (power/power-assist/scooter), Drive Configuration, Maximum Speed, Range per Charge, Weight Capacity, Stability (ISO 7176-1 static, ISO 7176-2 dynamic), Braking (ISO 7176-3), Fatigue/Strength (ISO 7176-8), Obstacle Climbing (ISO 7176-10), Control Interface, Battery (IEC 62133), EMC (IEC 60601-1-2), Software, Human Factors, Electrical Safety
+
+**Physical Medicine — TENS/NMES** (ILY, NUH):
+Rows: Intended Use, Indications for Use, Stimulation Type (TENS/NMES/FES), Waveform, Output Channels, Max Output Current/Voltage, Frequency Range, Pulse Width Range, IEC 60601-2-10 Compliance, Electrode Type, Biocompatibility (electrode contact), Power Source, EMC, Human Factors (home use), Labeling
+
+**Physical Medicine — Prosthetic Limbs** (ISF, ITN):
+Rows: Intended Use, Indications for Use, Prosthetic Type (foot/ankle/knee/hip), Mechanism (passive/energy-storing/microprocessor), Weight Limit, Activity Level (K0-K4), Structural Testing (ISO 10328), Fatigue Testing (ISO 22675), Materials, Biocompatibility (socket interface), Software (if microprocessor), Battery (if powered), Waterproof Rating
+
+**IVD — Clinical Chemistry Analyzers** (CZD, CRJ, CHN):
+Rows: Intended Use, Indications for Use, Analyte(s) Measured, Measurement Methodology, Sample Types, Reportable Range, Precision (CV% per CLSI EP05), Accuracy/Bias (CLSI EP09), Linearity (CLSI EP06), LOD/LOQ (CLSI EP17), Interference Panel (HIL per CLSI EP07), Calibration Traceability (NIST/WHO/IFCC), CLIA Complexity, Throughput, Sample Volume, Reagent System, Software, Electrical Safety
+
+**IVD — Hematology Analyzers** (JHR, JJX):
+Rows: Intended Use, Indications for Use, CBC Parameters, WBC Differential (3-part/5-part/6-part), Measurement Technology (impedance/optical/fluorescence), Flagging Capabilities, Sample Type, Precision (CLSI EP05), Accuracy (CLSI H15/H20), Carryover, Linearity, Reagent System, Throughput, Software, Electrical Safety
+
+**IVD — Immunoassay Systems** (various IM codes):
+Rows: Intended Use, Indications for Use, Analyte(s), Assay Methodology (chemiluminescent/ELISA/lateral flow), Sample Types, Measuring Range, Precision (CLSI EP05), Accuracy (CLSI EP09), LOD/LOQ, Hook Effect, Heterophilic Ab Interference, Biotin Interference, Cross-Reactivity, Standardization (reference material), Clinical Performance, CLIA Complexity, Throughput, Software
+
+**IVD — Molecular Diagnostics** (QKO and MI-panel codes):
+Rows: Intended Use, Indications for Use, Assay Technology (PCR/isothermal/hybridization/NGS), Target Organisms/Analytes, Specimen Types, LOD (copies/mL or CFU/mL), Inclusivity, Exclusivity/Cross-Reactivity, Clinical Sensitivity (PPA), Clinical Specificity (NPA), Time to Result, Internal Controls, CLIA Complexity, Throughput, Software
+
+**IVD — AST Systems** (various MI codes):
+Rows: Intended Use, Indications for Use, AST Methodology (broth dilution/disk diffusion/automated), Organism-Drug Combinations, Essential Agreement (≥90%), Categorical Agreement (≥90%), VME Rate (<1.5%), ME Rate (<3%), Breakpoints (CLSI M100 edition), PCCP for Breakpoint Updates, Software
+
+**IVD — NGS/Genomics** (PA-panel codes):
+Rows: Intended Use, Indications for Use, Panel/Gene Coverage, Variant Types (SNV/indel/CNV/fusion/MSI/TMB), Sequencing Platform, LOD (VAF), Accuracy (vs. orthogonal methods), Precision, Bioinformatics Pipeline, Specimen Types (FFPE/fresh/liquid biopsy), DNA/RNA Input, Reference Materials, CDx Claims, Turnaround Time, CLIA Complexity, Software
+
+**IVD — Drugs of Abuse Rapid Tests** (various TX codes):
+Rows: Intended Use, Indications for Use, Drug Panels, Assay Technology (lateral flow/immunoassay), Cutoff Concentrations (per SAMHSA), Specimen Type (urine/oral fluid/blood), Sensitivity (PPA), Specificity (NPA), Cross-Reactivity, Near-Cutoff Precision, Time to Result, Read Window, CLIA Complexity, Visual Read Agreement, Specimen Validity Testing, Confirmation Method Referenced
+
+**IVD — Coagulation** (GKM, JKA):
+Rows: Intended Use, Indications for Use, Analyte(s) (PT/INR, APTT, fibrinogen, D-dimer), Methodology, ISI/INR Calibration Traceability, Heparin Sensitivity (APTT), Precision (CLSI EP05), Accuracy (CLSI EP09), Sample Types, CLIA Complexity, Throughput, Software
+
+**General Hospital — Examination Gloves** (LYY, LYZ):
+Rows: Intended Use, Indications for Use, Material (nitrile/latex/vinyl), Physical Dimensions (ASTM D3578/D6319), Tensile Strength/Elongation (before/after aging), AQL, Barrier Integrity (ASTM F1671), Biocompatibility (ISO 10993-5/-10), Protein Allergen (ASTM D5712 if NRL), Powder-Free Verification, Shelf Life
 
 **Default (Unknown Product Code)**:
 Rows: Intended Use, Indications for Use, Device Description, Technology/Principle of Operation, Materials, Key Performance Characteristics, Biocompatibility, Sterilization, Shelf Life, Software (if applicable), Electrical Safety (if applicable), Clinical Data
@@ -350,7 +467,7 @@ Present the table in clean markdown format (see `references/output-formatting.md
 **Predicate Device(s):** {K-numbers with device names}
 **Reference Device(s):** {K-numbers with device names, or "None"}
 **Product Code:** {CODE} — {Device Name} (Class {class})
-**Generated:** {date} | v5.20.0
+**Generated:** {date} | v5.21.0
 
 ---
 
@@ -506,7 +623,7 @@ If the user chooses to export, append or replace the SE Comparison section in `s
 
 {THE FULL SE COMPARISON TABLE}
 
-**Generated:** {date} | v5.20.0
+**Generated:** {date} | v5.21.0
 **Predicates:** {K-numbers}
 **Cells requiring input:** {count}
 **Cells requiring review:** {count}

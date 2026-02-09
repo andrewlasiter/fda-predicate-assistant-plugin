@@ -121,12 +121,33 @@ All keywords use word-boundary regex (`\b...\b`) and negation-awareness (skip if
 | **Latex** | `latex`, `natural rubber`, `natural rubber latex` |
 | **Electrical** | `battery-powered`, `battery powered`, `ac mains`, `rechargeable`, `electrically powered`, `mains-powered`, `lithium battery`, `electrical stimulation` |
 
+### Specialty Keyword Categories (v5.21.0)
+
+| Category | Keywords |
+|----------|----------|
+| **Cardiovascular** | `stent`, `catheter`, `guidewire`, `balloon catheter`, `oxygenator`, `heart valve`, `pacemaker`, `defibrillator`, `vascular graft`, `angioplasty` |
+| **Orthopedic** | `arthroplasty`, `joint replacement`, `pedicle screw`, `spinal fusion`, `bone cement`, `fracture fixation`, `bone plate`, `orthopedic implant` |
+| **Gastroenterology/Urology** | `endoscope`, `colonoscope`, `lithotripter`, `dialysis`, `hemodialysis`, `foley catheter`, `urinary catheter`, `ureteral stent` |
+| **Dental** | `dental implant`, `endosseous implant`, `orthodontic`, `dental composite`, `intraoral scanner`, `dental handpiece`, `root canal`, `endodontic` |
+| **ENT** | `hearing aid`, `cochlear implant`, `tympanostomy`, `otoscope`, `audiometer`, `laryngoscope`, `sleep apnea`, `bone-anchored hearing` |
+| **Anesthesia/Respiratory** | `anesthesia`, `ventilator`, `cpap`, `bipap`, `capnograph`, `endotracheal tube`, `oxygen concentrator`, `breathing circuit` |
+| **Neurological** | `neurostimulator`, `deep brain stimulation`, `eeg`, `tens`, `tms`, `vagus nerve stimulator`, `spinal cord stimulator`, `brain-computer interface` |
+| **Ophthalmic** | `intraocular lens`, `contact lens`, `optical coherence tomography`, `fundus camera`, `glaucoma`, `phacoemulsification`, `tonometer`, `slit lamp` |
+| **Surgery** | `electrosurgical`, `surgical stapler`, `suture`, `hemostatic`, `tissue adhesive`, `surgical mesh`, `surgical robot`, `laparoscopic` |
+| **Physical Medicine** | `wheelchair`, `exoskeleton`, `prosthetic limb`, `muscle stimulator`, `continuous passive motion`, `rehabilitation device`, `orthotic` |
+| **General Hospital** | `infusion pump`, `syringe pump`, `patient monitor`, `vital signs monitor`, `hospital bed`, `surgical glove`, `compression device`, `thermometer` |
+| **Obstetrics/Gynecology** | `fetal monitor`, `cardiotocograph`, `intrauterine device`, `hysteroscope`, `colposcope`, `morcellator`, `breast implant`, `pelvic mesh` |
+| **Radiology/Imaging** | `x-ray`, `computed tomography`, `ct scan`, `mri`, `magnetic resonance`, `ultrasound`, `mammography`, `fluoroscopy`, `dicom`, `pacs` |
+| **IVD (expanded)** | `blood gas`, `point-of-care`, `hba1c`, `coagulation`, `next-generation sequencing`, `flow cytometry`, `immunoassay`, `molecular diagnostic`, `pcr` |
+
 ## Recognized Consensus Standards by Device Category
 
 ### Universal Standards (All Devices)
 - **ISO 10993-1**: Biological evaluation framework
 - **ISO 14971**: Risk management
 - **IEC 62366-1**: Usability engineering (if applicable)
+- **ISO 11607**: Packaging for terminally sterilized devices
+- **ASTM F1980**: Accelerated aging for shelf life
 
 ### Wound Dressings (KGN, FRO, MGP)
 | Standard | Purpose |
@@ -152,38 +173,249 @@ All keywords use word-boundary regex (`\b...\b`) and negation-awareness (skip if
 | ISO 10993-5, -10 | Biocompatibility |
 | ASTM F2761 | iCGM special controls |
 
-### Orthopedic Implants
+### Orthopedic Implants (OHT6)
 | Standard | Purpose |
 |----------|---------|
-| ASTM F2077 | Test methods for intervertebral body fusion devices |
+| ASTM F2077 | Intervertebral body fusion devices |
 | ASTM F1717 | Spinal implant constructs |
+| ASTM F2068 | Femoral stem fatigue |
+| ISO 7206-4, -6 | Hip stem endurance testing |
+| ISO 14879 | Tibial component testing |
+| ASTM F1800 | Tibial tray fatigue (knee) |
+| ISO 14242 | Hip joint wear simulator |
+| ISO 14243 | Knee joint wear simulator |
+| ASTM F382 | Metallic bone plate bending |
+| ASTM F543 | Metallic bone screw specifications |
+| ASTM F2033 | Hip endoprosthesis bearing surface |
 | ASTM F136 | Ti-6Al-4V alloy |
-| ASTM F1295 | Ti-6Al-7Nb alloy |
+| ASTM F1537 | Wrought CoCrMo alloy |
+| ASTM F648 | UHMWPE specifications |
+| ASTM F2565 | Highly cross-linked UHMWPE |
+| ASTM F2026 | PEEK polymers for implants |
 | ASTM F2129 | Corrosion susceptibility |
+| ASTM F1875 | Fretting corrosion of modular joints |
+| ASTM F3129 | Taper junction material loss |
+| ASTM F1295 | Ti-6Al-7Nb alloy |
 | ASTM F1160 | Fatigue testing of metallic implants |
-| ISO 12189 | Implants for surgery — mechanical testing |
+| ASTM F451 | Acrylic bone cement |
+| ISO 5833 | Acrylic resin bone cements |
+| ASTM F1147 | Porous coating tensile/shear bond |
+| ISO 13779 | HA coatings on implants |
+| ASTM F3001, F2924 | Additive manufactured Ti alloys |
+| ASTM F2052, F2213, F2182, F2119 | MRI safety testing |
+| ASTM F2503 | MR Conditional labeling |
 
-### Cardiovascular Devices (DXY, DTB)
+### Cardiovascular Devices (OHT2)
 | Standard | Purpose |
 |----------|---------|
 | ISO 10993-4 | Hemocompatibility |
-| ISO 5840 | Cardiovascular implants — cardiac valve prostheses |
-| ISO 25539 | Endovascular devices |
-| ASTM F2394 | Measuring securement of balloon-expandable stents |
+| ISO 5840-1, -2, -3 | Heart valve prostheses |
+| ISO 25539-1, -2 | Endovascular devices |
+| ASTM F2394 | Balloon-expandable stent securement |
+| ASTM F2477 | Stent pulsatile fatigue |
+| ASTM F2129 | Corrosion susceptibility |
+| ISO 14708-2, -6 | Active cardiac implants (leads, defibrillators) |
+| IEC 60601-2-31 | Cardiac pacemaker safety |
+| IEC 60601-2-4 | Cardiac defibrillator safety |
+| EN 45502-2-1, -2-2 | Active cardiac implant performance |
+| ISO/TS 10974 | MRI safety for active implants |
+| ANSI/AAMI VP20 | Vascular graft prostheses |
 | IEC 60601-1 | Electrical safety |
 | ASTM F2052, F2213, F2182 | MRI safety |
 
-### IVD Devices
+### Surgical Devices (OHT4)
 | Standard | Purpose |
 |----------|---------|
+| IEC 60601-2-2 | Electrosurgical equipment safety |
+| IEC 60601-2-18 | Endoscopic equipment |
+| IEC 80601-2-77 | Robotic-assisted surgical equipment |
+| AAMI TIR30 | Worst-case soil reprocessing testing |
+| AAMI ST79 | Steam sterilization in healthcare |
+| ASTM D1002 | Tissue adhesive bond strength (lap shear) |
+| ISO 7740 | Surgical instruments — surgical scissors |
+| USP <881> | Tensile strength of sutures |
+
+### Anesthesia and Respiratory Devices (OHT1 — AN)
+| Standard | Purpose |
+|----------|---------|
+| ISO 80601-2-13 | Anesthesia workstations |
+| ISO 80601-2-12 | Critical care ventilators |
+| ISO 80601-2-70 | Sleep apnea therapy equipment |
+| ISO 80601-2-55 | Respiratory gas monitors |
+| ISO 80601-2-61 | Pulse oximeter equipment |
+| ISO 80601-2-80 | Ventilatory support equipment |
+| IEC 60601-1-8 | Alarm systems |
+| ISO 5356-1 | Conical connectors (breathing systems) |
+| ISO 80369-6 | Small-bore connectors (neuraxial/intrathecal) |
+| AAMI TIR30 | Reprocessing worst-case soil testing |
+
+### Dental Devices (OHT1 — DE)
+| Standard | Purpose |
+|----------|---------|
+| ISO 14801 | Dental implant fatigue testing |
+| ISO 7405:2025 | Dental biocompatibility evaluation |
+| ISO 6872 | Dental ceramic properties |
+| ISO 4049 | Dental composite properties |
+| ISO 22674 | Dental metallic materials |
+| ISO 9917 | Dental cements |
+| ISO 12836 | Intraoral scanner accuracy |
+| IEC 60825-1 | Laser safety |
+| IEC 60601-2-22 | Laser equipment safety |
+| EN 1811 | Nickel release (NiTi wires) |
+| ASTM F2129 | Corrosion susceptibility |
+
+### ENT Devices (OHT1 — EN)
+| Standard | Purpose |
+|----------|---------|
+| ANSI S3.22 | Hearing aid electroacoustic performance |
+| ANSI S3.7 / IEC 60118-0 | Hearing aid measurements |
+| IEC 60601-2-66 | Hearing instrument safety |
+| IEC 60118-13 | Hearing aid electromagnetic immunity |
+| ISO 14708-7 | Cochlear implant systems |
+| ISO 7405 | Dental/oral biocompatibility (sleep apnea appliances) |
+
+### Ophthalmic Devices (OHT1 — OP)
+| Standard | Purpose |
+|----------|---------|
+| ISO 11979-2 | IOL optical properties |
+| ISO 11979-3 | IOL mechanical properties (haptics) |
+| ISO 11979-5 | IOL biocompatibility |
+| ISO 18369-2 | Contact lens — physical optics and tolerances |
+| ISO 18369-3 | Contact lens — measurement methods |
+| ISO 18369-4 | Contact lens — physiochemical properties (Dk) |
+| ISO 15798 | Ophthalmic viscosurgical devices |
+| IEC 60825-1 | Laser safety |
+| IEC 60601-2-22 | Ophthalmic laser safety |
+| IEC 62220 | Digital X-ray imaging — DQE (ophthalmic imaging) |
+
+### Neurological Devices (OHT5 — NE)
+| Standard | Purpose |
+|----------|---------|
+| IEC 60601-2-10 | TENS/NMES nerve and muscle stimulators |
+| IEC 60601-2-26 | EEG electroencephalographs |
+| IEC 60601-2-40 | EMG electromyographs |
+| ISO 14708-3 | Active implantable — neurostimulators |
+| ASTM F2052, F2213, F2182, F2119 | MRI safety (implantable NE devices) |
+| IEC 60601-1-8 | Alarm systems (seizure detection) |
+
+### Physical Medicine Devices (OHT5 — PM)
+| Standard | Purpose |
+|----------|---------|
+| ISO 7176-1 | Wheelchair static stability |
+| ISO 7176-2 | Wheelchair dynamic stability (powered) |
+| ISO 7176-3 | Wheelchair braking effectiveness |
+| ISO 7176-4 | Wheelchair energy consumption/range |
+| ISO 7176-6 | Wheelchair maximum speed/acceleration |
+| ISO 7176-8 | Wheelchair static, impact, fatigue strengths |
+| ISO 7176-10 | Wheelchair obstacle climbing |
+| ISO 7176-14 | Wheelchair power and control systems |
+| ISO 10328 | Lower-limb prosthesis structural testing |
+| ISO 22675 | Prosthetic ankle-foot device testing |
+| ISO 22523 | External limb prostheses requirements |
+| IEC 60601-2-10 | TENS/NMES particular standard |
+| IEC 60601-2-3 | Shortwave diathermy |
+| IEC 60601-2-5 | Ultrasonic diathermy |
+| IEC 62133 | Lithium battery safety |
+
+### Gastroenterology/Urology Devices (OHT3 — GU)
+| Standard | Purpose |
+|----------|---------|
+| IEC 60601-2-18 | Endoscopic equipment |
+| IEC 60601-2-36 | Lithotripsy equipment |
+| IEC 61846 | Lithotripsy acoustic output |
+| ANSI/AAMI ST91:2021 | Flexible endoscope reprocessing |
+| AAMI TIR30 | Worst-case soil testing |
+| ISO 20696 | Washer-disinfectors for medical devices |
+| ASTM F623 | Foley catheter requirements |
+| ASTM F1828 | Ureteral stent requirements |
+| ISO 10993-4 | Hemocompatibility (dialysis) |
+
+### Obstetrics/Gynecology Devices (OHT3 — OB)
+| Standard | Purpose |
+|----------|---------|
+| IEC 60601-2-37 | Ultrasonic diagnostic (fetal monitors) |
+| IEC 60601-1-8 | Alarm systems |
+| ISO 7439 | Intrauterine contraceptive devices |
+| ISO 10993-6 | Implantation effects testing |
+| AIUM ODS | Ultrasound output display standard |
+
+### General Hospital Devices (OHT3 — HO)
+| Standard | Purpose |
+|----------|---------|
+| IEC 60601-2-24 | Infusion pump safety and performance |
+| IEC 60601-1-8 | Alarm systems |
+| AAMI TIR101:2021 | Infusion device clinical alarm testing |
+| ASTM D3578 | Nitrile examination glove specifications |
+| ASTM D6319 | Nitrile examination glove (non-powder) |
+| ASTM D5712 | Protein allergen testing (NRL gloves) |
+| ASTM F1670, F1671 | Gown/drape barrier integrity |
+| AAMI PB70 | Protective barrier materials classification |
+| ISO 80369-6 | Small-bore connectors |
+
+### Radiological Devices (OHT8 — RA)
+| Standard | Purpose |
+|----------|---------|
+| IEC 60601-2-44 | CT equipment safety |
+| IEC 60601-2-54 | Radiographic/fluoroscopic X-ray |
+| IEC 60601-2-43 | Interventional X-ray |
+| IEC 60601-2-33 | MRI equipment safety |
+| IEC 60601-2-37 | Ultrasonic diagnostic equipment |
+| IEC 60601-2-45 | Mammographic X-ray |
+| IEC 60601-2-1 | Medical electron accelerators (LINAC) |
+| IEC 62220-1 | Digital X-ray detector — DQE |
+| IEC 62464-1 | MRI image quality parameters |
+| IEC 62359 | Ultrasound acoustic output measurement |
+| IEC 62083 | Radiation therapy treatment planning systems |
+| NEMA XR 25 | CT dose check |
+| NEMA XR 29 | CT dose optimization attributes |
+| AIUM ODS | Ultrasound output display standard |
+| 21 CFR 1020.30-33 | Diagnostic X-ray performance standards (mandatory) |
+
+### IVD Devices (OHT7 — expanded)
+| Standard | Purpose |
+|----------|---------|
+| **Cross-IVD (EP-series):** | |
 | CLSI EP05 | Precision evaluation |
 | CLSI EP06 | Linearity |
 | CLSI EP07 | Interference testing |
-| CLSI EP12 | User protocol for evaluation of qualitative tests |
-| CLSI EP15 | Verification of precision and estimation of bias |
-| CLSI EP17 | Detection capability |
-| CLSI C28 | Reference intervals |
+| CLSI EP09 | Method comparison / bias estimation |
+| CLSI EP10 | Sample carryover evaluation |
+| CLSI EP12 | CLIA waiver qualitative test evaluation |
+| CLSI EP15 | Verification of precision and bias |
+| CLSI EP17 | Detection capability (LOB/LOD/LOQ) |
+| CLSI EP25 | Reagent stability evaluation |
+| CLSI EP28 | Reference intervals (replaces C28) |
+| CLSI EP30 | Specimen type characterization |
 | ISO 18113 | IVD labeling |
+| ISO 17511 | Traceability of calibrators/controls |
+| **Hematology (H-series):** | |
+| CLSI H15 | Reference procedure for hemoglobin |
+| CLSI H20 | Reference WBC differential count |
+| CLSI H26 | Automated hematology analyzer validation |
+| CLSI H44 | Blood reference intervals |
+| CLSI H47 | One-stage PT and APTT testing |
+| CLSI H54 | INR validation / local PT/INR calibration |
+| **Microbiology (M-series):** | |
+| CLSI M02 | Disk diffusion AST |
+| CLSI M07 | Dilution AST methods |
+| CLSI M23 | Standards development for AST |
+| CLSI M27 | Antifungal susceptibility (yeasts) |
+| CLSI M100 | AST performance standards (updated annually) |
+| ISO 16256 | Reference method for MIC testing |
+| **Molecular (MM-series):** | |
+| CLSI MM03 | Molecular methods for infectious diseases |
+| CLSI MM06 | Quantitative molecular methods |
+| CLSI MM17 | Nucleic acid amplification V&V |
+| **Pathology:** | |
+| CLSI MM09 | Nucleic acid sequencing methods |
+| CLSI MM14 | Genomic copy number microarrays |
+| DICOM Supplement 145 | Whole slide imaging standard |
+| **Toxicology:** | |
+| SAMHSA Guidelines | Federal workplace drug testing cutoffs |
+| CLSI C43 | GC-MS confirmation methods |
+| CLSI C50 | Mass spectrometry clinical chemistry |
+| ISO 15197 | Blood glucose monitoring (CGM-specific) |
+| CLSI POCT05 | CGM performance metrics |
 
 ### Software / Digital Health
 | Standard | Purpose |
@@ -193,6 +425,7 @@ All keywords use word-boundary regex (`\b...\b`) and negation-awareness (skip if
 | AAMI TIR57 | Principles for medical device security |
 | NIST SP 800-53 | Security and privacy controls |
 | ISO 14971 | Risk management (applied to software) |
+| ANSI C63.27 | Wireless coexistence testing |
 
 ## Guidance-to-Testing Category Mapping
 

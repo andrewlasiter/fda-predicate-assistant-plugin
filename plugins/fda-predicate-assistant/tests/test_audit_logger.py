@@ -1,4 +1,4 @@
-"""Tests for fda_audit_logger.py — Decision Traceability System (v5.20.0)."""
+"""Tests for fda_audit_logger.py — Decision Traceability System (v5.21.0)."""
 
 import argparse
 import json
@@ -47,7 +47,7 @@ class TestAppendEntry(unittest.TestCase):
         self.assertEqual(data["command"], "review")
         self.assertEqual(data["action"], "predicate_accepted")
         self.assertIn("timestamp", data)
-        self.assertEqual(data["version"], "5.20.0")
+        self.assertEqual(data["version"], "5.21.0")
 
     def test_auto_populate_timestamp(self):
         entry = {"command": "review", "action": "review_completed", "mode": "auto"}
@@ -65,7 +65,7 @@ class TestAppendEntry(unittest.TestCase):
         log_path = os.path.join(self.tmpdir, "audit_log.jsonl")
         with open(log_path) as f:
             data = json.loads(f.readline())
-        self.assertEqual(data["version"], "5.20.0")
+        self.assertEqual(data["version"], "5.21.0")
 
     def test_custom_timestamp_preserved(self):
         entry = {
@@ -138,19 +138,19 @@ class TestValidation(unittest.TestCase):
 
     def test_missing_command(self):
         entry = {"action": "predicate_accepted", "mode": "auto",
-                 "timestamp": "2026-01-01T00:00:00Z", "version": "5.20.0"}
+                 "timestamp": "2026-01-01T00:00:00Z", "version": "5.21.0"}
         errors = logger.validate_entry(entry)
         self.assertTrue(any("command" in e for e in errors))
 
     def test_missing_action(self):
         entry = {"command": "review", "mode": "auto",
-                 "timestamp": "2026-01-01T00:00:00Z", "version": "5.20.0"}
+                 "timestamp": "2026-01-01T00:00:00Z", "version": "5.21.0"}
         errors = logger.validate_entry(entry)
         self.assertTrue(any("action" in e for e in errors))
 
     def test_invalid_action_type(self):
         entry = {"command": "review", "action": "invalid_action", "mode": "auto",
-                 "timestamp": "2026-01-01T00:00:00Z", "version": "5.20.0"}
+                 "timestamp": "2026-01-01T00:00:00Z", "version": "5.21.0"}
         errors = logger.validate_entry(entry)
         self.assertTrue(any("Invalid action type" in e for e in errors))
 
@@ -161,13 +161,13 @@ class TestValidation(unittest.TestCase):
                         "section_drafted", "agent_decision",
                         "deficiency_identified", "sri_calculated"]:
             entry = {"command": "test", "action": action, "mode": "auto",
-                     "timestamp": "2026-01-01T00:00:00Z", "version": "5.20.0"}
+                     "timestamp": "2026-01-01T00:00:00Z", "version": "5.21.0"}
             errors = logger.validate_entry(entry)
             self.assertEqual(errors, [], f"Action {action} should be valid")
 
     def test_invalid_decision_type(self):
         entry = {"command": "review", "action": "predicate_accepted", "mode": "auto",
-                 "timestamp": "2026-01-01T00:00:00Z", "version": "5.20.0",
+                 "timestamp": "2026-01-01T00:00:00Z", "version": "5.21.0",
                  "decision_type": "invalid"}
         errors = logger.validate_entry(entry)
         self.assertTrue(any("decision_type" in e for e in errors))
@@ -175,28 +175,28 @@ class TestValidation(unittest.TestCase):
     def test_valid_decision_types(self):
         for dt in ["auto", "manual", "deferred"]:
             entry = {"command": "review", "action": "predicate_accepted", "mode": "auto",
-                     "timestamp": "2026-01-01T00:00:00Z", "version": "5.20.0",
+                     "timestamp": "2026-01-01T00:00:00Z", "version": "5.21.0",
                      "decision_type": dt}
             errors = logger.validate_entry(entry)
             self.assertEqual(errors, [], f"decision_type '{dt}' should be valid")
 
     def test_confidence_score_range_valid(self):
         entry = {"command": "review", "action": "predicate_accepted", "mode": "auto",
-                 "timestamp": "2026-01-01T00:00:00Z", "version": "5.20.0",
+                 "timestamp": "2026-01-01T00:00:00Z", "version": "5.21.0",
                  "confidence_score": 85}
         errors = logger.validate_entry(entry)
         self.assertEqual(errors, [])
 
     def test_confidence_score_out_of_range(self):
         entry = {"command": "review", "action": "predicate_accepted", "mode": "auto",
-                 "timestamp": "2026-01-01T00:00:00Z", "version": "5.20.0",
+                 "timestamp": "2026-01-01T00:00:00Z", "version": "5.21.0",
                  "confidence_score": 150}
         errors = logger.validate_entry(entry)
         self.assertTrue(any("confidence_score" in e for e in errors))
 
     def test_confidence_score_negative(self):
         entry = {"command": "review", "action": "predicate_accepted", "mode": "auto",
-                 "timestamp": "2026-01-01T00:00:00Z", "version": "5.20.0",
+                 "timestamp": "2026-01-01T00:00:00Z", "version": "5.21.0",
                  "confidence_score": -5}
         errors = logger.validate_entry(entry)
         self.assertTrue(any("confidence_score" in e for e in errors))
@@ -238,18 +238,18 @@ class TestReadLog(unittest.TestCase):
     def test_read_malformed_line_skipped(self):
         log_path = os.path.join(self.tmpdir, "audit_log.jsonl")
         with open(log_path, "w") as f:
-            f.write('{"command":"review","action":"predicate_accepted","version":"5.20.0","mode":"auto","timestamp":"2026-01-01T00:00:00Z","entry_id":"12345678"}\n')
+            f.write('{"command":"review","action":"predicate_accepted","version":"5.21.0","mode":"auto","timestamp":"2026-01-01T00:00:00Z","entry_id":"12345678"}\n')
             f.write("not json\n")
-            f.write('{"command":"safety","action":"risk_level_assigned","version":"5.20.0","mode":"auto","timestamp":"2026-01-01T00:00:00Z","entry_id":"87654321"}\n')
+            f.write('{"command":"safety","action":"risk_level_assigned","version":"5.21.0","mode":"auto","timestamp":"2026-01-01T00:00:00Z","entry_id":"87654321"}\n')
         entries = logger.read_log(self.tmpdir)
         self.assertEqual(len(entries), 2)
 
     def test_read_blank_lines_skipped(self):
         log_path = os.path.join(self.tmpdir, "audit_log.jsonl")
         with open(log_path, "w") as f:
-            f.write('{"command":"review","action":"predicate_accepted","version":"5.20.0","mode":"auto","timestamp":"2026-01-01T00:00:00Z","entry_id":"12345678"}\n')
+            f.write('{"command":"review","action":"predicate_accepted","version":"5.21.0","mode":"auto","timestamp":"2026-01-01T00:00:00Z","entry_id":"12345678"}\n')
             f.write("\n\n")
-            f.write('{"command":"safety","action":"risk_level_assigned","version":"5.20.0","mode":"auto","timestamp":"2026-01-01T00:00:00Z","entry_id":"87654321"}\n')
+            f.write('{"command":"safety","action":"risk_level_assigned","version":"5.21.0","mode":"auto","timestamp":"2026-01-01T00:00:00Z","entry_id":"87654321"}\n')
         entries = logger.read_log(self.tmpdir)
         self.assertEqual(len(entries), 2)
 
@@ -430,7 +430,7 @@ class TestConsolidatePipeline(unittest.TestCase):
         with open(output_path) as f:
             data = json.load(f)
         self.assertEqual(data["project"], "test_project")
-        self.assertEqual(data["pipeline_version"], "5.20.0")
+        self.assertEqual(data["pipeline_version"], "5.21.0")
         self.assertEqual(data["total_decisions"], 2)
         self.assertEqual(data["auto_decisions"], 2)
         self.assertIn("extract", data["steps"])
@@ -547,7 +547,7 @@ class TestSchemaConsistency(unittest.TestCase):
 
     def test_version_matches(self):
         """Plugin version in logger matches expected."""
-        self.assertEqual(logger.PLUGIN_VERSION, "5.20.0")
+        self.assertEqual(logger.PLUGIN_VERSION, "5.21.0")
 
     def test_decision_types_complete(self):
         """All valid decision types are present."""
@@ -683,7 +683,7 @@ class TestPluginMetadata(unittest.TestCase):
         path = os.path.join(self.PLUGIN_ROOT, ".claude-plugin", "plugin.json")
         with open(path) as f:
             data = json.load(f)
-        self.assertEqual(data["version"], "5.20.0")
+        self.assertEqual(data["version"], "5.21.0")
 
     def test_plugin_json_command_count(self):
         path = os.path.join(self.PLUGIN_ROOT, ".claude-plugin", "plugin.json")

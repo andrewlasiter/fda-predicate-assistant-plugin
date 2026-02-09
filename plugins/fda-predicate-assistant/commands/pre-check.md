@@ -487,7 +487,7 @@ Write `pre_check_report.md` to the project folder:
   FDA Pre-Check Report
   {project_name} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.20.0
+  Generated: {date} | v5.21.0
   Depth: {quick|standard|deep}
   Focus: {predicate|testing|labeling|clinical|all}
 

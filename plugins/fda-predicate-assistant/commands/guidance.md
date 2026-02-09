@@ -368,8 +368,12 @@ if kw_match(desc, ["artificial intelligence", "ai-enabled", "ai-based", "ai/ml",
 if kw_match(desc, ["wireless", "bluetooth", "wifi", "wi-fi", "network-connected", "cloud-connected",
                     "internet of things", "iot device", "rf communication", "rf wireless",
                     "radio frequency", "cellular", "zigbee", "lora", "near-field communication", "nfc"]):
+    # Disambiguation: "radio frequency" false-positives for therapeutic RF ablation devices (CV, NE).
+    # If ablation-related terms are present, this is a therapeutic RF device, not a wireless device.
+    rf_ablation = kw_match(desc, ["ablation", "rf ablation", "radiofrequency ablation", "catheter ablation"])
     triggers.append(("Cybersecurity", "Cybersecurity in Medical Devices", "kw_wireless"))
-    triggers.append(("EMC/Wireless", "Radio Frequency Wireless Technology in Medical Devices", "kw_wireless"))
+    if not rf_ablation:
+        triggers.append(("EMC/Wireless", "Radio Frequency Wireless Technology in Medical Devices", "kw_wireless"))
 
 # USB connectivity — triggers cybersecurity only (not EMC/wireless)
 if kw_match(desc, ["usb data", "usb communication", "usb port", "usb connectivity",
@@ -394,9 +398,16 @@ if not any(t[0] == "Implantable" for t in triggers):
 if not any(t[0] == "Reprocessing" for t in triggers):
     if kw_match(desc, ["reusable", "reprocessing", "reprocessed", "multi-use",
                         "cleaning validation", "disinfection"]):
-        triggers.append(("Reprocessing", "Reprocessing Medical Devices in Health Care Settings", "kw_reusable"))
+        # Suppression: capsule endoscopy and ingestible devices are single-use by nature.
+        # The "endoscop" substring can false-positive from device descriptions that mention
+        # "capsule endoscopy" as a procedure context, not as a reprocessable instrument.
+        capsule_endo_suppressed = (
+            kw_match(desc, ["capsule endoscop", "ingestible"]) and gudid_single_use == True
+        )
+        if not capsule_endo_suppressed:
+            triggers.append(("Reprocessing", "Reprocessing Medical Devices in Health Care Settings", "kw_reusable"))
 
-# ── New categories (v5.20.0) ──
+# ── New categories (v5.21.0) ──
 
 # 3D Printing / Additive Manufacturing
 if kw_match(desc, ["3d print", "3d-printed", "3d printed",
@@ -433,18 +444,216 @@ if kw_match(desc, ["battery-powered", "battery powered", "ac mains", "rechargeab
                     "lithium battery", "power supply", "electrical stimulation"]):
     triggers.append(("Electrical Safety", "IEC 60601-1 Electrical Safety Guidance", "kw_electrical"))
 
+# ── Specialty keyword categories (v5.21.0) ──
+# These enhance guidance specificity. Tier 3 reg family mapping provides the safety net.
+
+# Cardiovascular (points to Section 5.1 in guidance index)
+if kw_match(desc, ["stent", "coronary stent", "drug-eluting stent", "bare-metal stent",
+                    "catheter", "guiding catheter", "guidewire", "balloon catheter",
+                    "oxygenator", "cardiopulmonary bypass", "heart-lung machine",
+                    "ablation catheter", "cardiac ablation",
+                    "heart valve", "transcatheter valve", "prosthetic valve",
+                    "vascular graft", "endograft", "stent graft",
+                    "pacemaker", "defibrillator", "icd", "cardiac resynchronization",
+                    "cardiac lead", "pacing lead",
+                    "pta balloon", "angioplasty",
+                    "septal occluder", "laa closure",
+                    "ecmo", "extracorporeal membrane oxygenation",
+                    "hemocompatibility", "perfusion"]):
+    triggers.append(("Cardiovascular", "Cardiovascular device guidance (Section 5.1)", "kw_cv"))
+
+# Orthopedic (points to Section 5.2 in guidance index)
+if kw_match(desc, ["arthroplasty", "joint replacement", "hip replacement", "knee replacement",
+                    "pedicle screw", "spinal screw", "spinal rod",
+                    "spinal fusion", "interbody fusion", "vertebral body",
+                    "bone cement", "bone void filler", "bone graft",
+                    "fracture fixation", "bone plate", "bone screw", "intramedullary nail",
+                    "disc replacement", "artificial disc",
+                    "wear testing", "fatigue testing",
+                    "orthopedic implant", "orthopedic",
+                    "total hip", "total knee", "total shoulder",
+                    "acetabular", "femoral stem", "tibial tray"]):
+    triggers.append(("Orthopedic", "Orthopedic device guidance (Section 5.2)", "kw_or"))
+
+# Gastroenterology / Urology (points to Section 5.14 in guidance index)
+if kw_match(desc, ["endoscope", "colonoscope", "gastroscope", "duodenoscope",
+                    "lithotripter", "lithotripsy", "eswl", "shock wave",
+                    "dialysis", "hemodialysis", "peritoneal dialysis", "dialyzer",
+                    "foley catheter", "urinary catheter", "urethral catheter",
+                    "ureteral stent", "biliary stent",
+                    "ureteroscope", "cystoscope", "nephroscope",
+                    "stone basket", "stone retrieval",
+                    "capsule endoscopy", "video capsule"]):
+    triggers.append(("Gastroenterology/Urology", "GU device guidance (Section 5.14)", "kw_gu"))
+
+# Dental (points to Section 5.5 in guidance index)
+if kw_match(desc, ["dental implant", "endosseous implant", "dental abutment",
+                    "dental ceramic", "dental porcelain", "dental restoration",
+                    "orthodontic", "orthodontic bracket", "orthodontic wire",
+                    "dental composite", "dental resin",
+                    "intraoral scanner", "dental cad/cam", "dental milling",
+                    "dental handpiece", "dental drill",
+                    "dental bone graft", "alveolar bone",
+                    "dental laser",
+                    "dental cement", "dental luting",
+                    "dentifrice", "toothbrush",
+                    "dental impression", "dental alginate",
+                    "root canal", "endodontic",
+                    "dental curing light"]):
+    triggers.append(("Dental", "Dental device guidance (Section 5.5)", "kw_de"))
+
+# ENT / Ear, Nose, Throat (points to Section 5.13 in guidance index)
+if kw_match(desc, ["hearing aid", "otc hearing aid", "air-conduction hearing",
+                    "cochlear implant", "cochlear",
+                    "tympanostomy", "ear tube", "myringotomy",
+                    "otoscope", "audiometer", "tympanometer",
+                    "laryngoscope", "sinuscope", "nasopharyngoscope",
+                    "sinus", "nasal",
+                    "sleep apnea", "oral appliance", "mandibular advancement",
+                    "bone-anchored hearing", "baha",
+                    "middle ear implant"]):
+    triggers.append(("ENT", "ENT device guidance (Section 5.13)", "kw_en"))
+
+# Anesthesia / Respiratory (points to Section 5.8 in guidance index)
+if kw_match(desc, ["anesthesia", "anaesthesia", "anesthesia machine", "anesthesia workstation",
+                    "ventilator", "mechanical ventilation", "positive pressure ventilation",
+                    "cpap", "bipap", "continuous positive airway pressure",
+                    "capnograph", "capnometry", "end-tidal co2",
+                    "vaporizer", "anesthetic vaporizer",
+                    "breathing circuit", "breathing system",
+                    "laryngeal mask", "supraglottic airway",
+                    "endotracheal tube", "tracheal tube",
+                    "gas monitor", "anesthetic gas",
+                    "humidifier", "heated humidifier",
+                    "oxygen concentrator", "oxygen therapy"]):
+    triggers.append(("Anesthesia/Respiratory", "Anesthesia/respiratory device guidance (Section 5.8)", "kw_an"))
+
+# Neurological (points to Section 5.11 in guidance index)
+if kw_match(desc, ["neurostimulator", "deep brain stimulation", "dbs",
+                    "eeg", "electroencephalograph",
+                    "tens", "transcutaneous electrical nerve",
+                    "tms", "transcranial magnetic stimulation",
+                    "vagus nerve stimulator", "vns",
+                    "seizure detection", "seizure monitor",
+                    "intracranial", "cranial",
+                    "brain-computer interface", "bci",
+                    "spinal cord stimulator", "scs",
+                    "cerebrospinal fluid shunt", "csf shunt",
+                    "digital therapeutics", "prescription digital therapeutic"]):
+    triggers.append(("Neurological", "Neurological device guidance (Section 5.11)", "kw_ne"))
+
+# Ophthalmic (points to Section 5.6 in guidance index)
+if kw_match(desc, ["intraocular lens", "iol", "phakic iol",
+                    "contact lens", "soft contact lens", "rgp contact lens",
+                    "oct", "optical coherence tomography",
+                    "fundus camera", "fundus imaging",
+                    "glaucoma", "migs", "minimally invasive glaucoma",
+                    "phacoemulsification", "phaco",
+                    "ophthalmic viscosurgical", "ovd", "viscoelastic",
+                    "keratoprosthesis",
+                    "excimer laser", "corneal",
+                    "retinal", "vitrectomy",
+                    "slit lamp", "perimeter", "visual field",
+                    "tonometer", "intraocular pressure"]):
+    triggers.append(("Ophthalmic", "Ophthalmic device guidance (Section 5.6)", "kw_op"))
+
+# General/Plastic Surgery (points to Section 5.12 in guidance index)
+if kw_match(desc, ["electrosurgical", "electrocautery", "radiofrequency surgery",
+                    "surgical stapler", "stapling device",
+                    "suture", "surgical suture", "absorbable suture",
+                    "hemostatic", "hemostatic agent", "fibrin sealant",
+                    "tissue adhesive", "tissue sealant", "cyanoacrylate",
+                    "surgical mesh", "hernia mesh",
+                    "sterilant", "high-level disinfectant", "chemical sterilant",
+                    "surgical robot", "robotic surgery", "robotic-assisted",
+                    "laparoscopic", "trocar",
+                    "surgical gown", "surgical drape", "surgical mask"]):
+    triggers.append(("Surgery", "Surgical device guidance (Section 5.12)", "kw_su"))
+
+# Physical Medicine (points to Section 5.16 in guidance index)
+if kw_match(desc, ["wheelchair", "powered wheelchair", "motorized wheelchair",
+                    "exoskeleton", "powered exoskeleton",
+                    "prosthetic limb", "prosthetic leg", "prosthetic arm",
+                    "muscle stimulator", "nmes", "neuromuscular electrical",
+                    "continuous passive motion", "cpm",
+                    "rehabilitation device", "gait trainer",
+                    "orthotic", "orthosis"]):
+    triggers.append(("Physical Medicine", "Physical medicine device guidance (Section 5.16)", "kw_pm"))
+
+# General Hospital (points to Section 5.9 in guidance index)
+if kw_match(desc, ["infusion pump", "syringe pump", "iv pump",
+                    "patient monitor", "physiological monitor", "vital signs monitor",
+                    "hospital bed", "medical bed",
+                    "examination glove", "surgical glove", "medical glove",
+                    "compression device", "sequential compression", "pneumatic compression",
+                    "thermometer", "clinical thermometer"]):
+    triggers.append(("General Hospital", "General hospital device guidance (Section 5.9)", "kw_ho"))
+
+# Obstetrics / Gynecology (points to Section 5.15 in guidance index)
+if kw_match(desc, ["fetal monitor", "fetal heart rate", "cardiotocograph",
+                    "uterine", "endometrial",
+                    "iud", "intrauterine device", "intrauterine contraceptive",
+                    "hysteroscope", "colposcope",
+                    "morcellator", "morcellation",
+                    "cervical dilator",
+                    "pelvic mesh", "transvaginal mesh",
+                    "breast implant",
+                    "obstetric", "gynecologic"]):
+    triggers.append(("Obstetrics/Gynecology", "OB/GYN device guidance (Section 5.15)", "kw_ob"))
+
+# Expanded IVD keywords (enhance existing IVD trigger at Tier 1)
+# Note: The basic IVD trigger already fires via Tier 1 (review panel check).
+# These keywords help when the device description mentions IVD-specific terms
+# but the API panel data hasn't been fetched yet.
+if not any(t[0] == "IVD" for t in triggers):
+    if kw_match(desc, ["blood gas", "blood gas analyzer",
+                        "point-of-care", "poct", "point of care testing",
+                        "hba1c", "hemoglobin a1c", "glycated hemoglobin",
+                        "cholesterol", "lipid panel",
+                        "coagulation", "prothrombin", "inr", "aptt",
+                        "next-generation sequencing", "ngs", "genomic",
+                        "flow cytometry", "flow cytometer",
+                        "drugs of abuse", "doa", "drug screening",
+                        "immunoassay", "elisa", "lateral flow",
+                        "molecular diagnostic", "pcr", "nucleic acid",
+                        "clinical analyzer", "chemistry analyzer",
+                        "hematology analyzer", "cell counter",
+                        "urinalysis", "urine test strip",
+                        "blood bank", "crossmatch", "blood typing"]):
+        triggers.append(("IVD", "IVD-specific guidance (CLSI standards)", "kw_ivd_expanded"))
+
+# Radiology / Imaging (points to Section 5.10 in guidance index)
+if kw_match(desc, ["x-ray", "x ray", "radiograph", "radiographic",
+                    "computed tomography", "ct scan", "ct scanner",
+                    "mri", "magnetic resonance", "magnetic resonance imaging",
+                    "ultrasound", "ultrasonic", "sonography", "transducer",
+                    "mammograph", "mammography", "digital mammography",
+                    "fluoroscop", "fluoroscopy",
+                    "linac", "linear accelerator", "radiation therapy",
+                    "dicom", "pacs",
+                    "cade", "cadx", "computer-aided detection",
+                    "image display", "medical display",
+                    "dose management", "dose monitoring"]):
+    triggers.append(("Radiology/Imaging", "Imaging device guidance (Section 5.10)", "kw_ra"))
+
 # ══════════════════════════════════════════════════════════════════════
 #  TIER 3 — Classification Heuristics (safety net)
 # ══════════════════════════════════════════════════════════════════════
 # Regulation number family mapping — catches devices missed by Tiers 1-2
 reg_prefix = (regulation_number or "")[:3]
 REG_FAMILY_TRIGGERS = {
-    "870": "Cardiovascular guidance (21 CFR 870)",
-    "888": "Orthopedic guidance (21 CFR 888)",
-    "878": "General/plastic surgery guidance (21 CFR 878)",
     "862": "Clinical chemistry (possible IVD)",
     "864": "Hematology/pathology (possible IVD)",
     "866": "Immunology/microbiology (possible IVD)",
+    "868": "Anesthesia/respiratory devices (21 CFR 868)",
+    "870": "Cardiovascular guidance (21 CFR 870)",
+    "872": "Dental devices (21 CFR 872)",
+    "874": "Ear, nose, throat devices (21 CFR 874)",
+    "876": "Gastroenterology/urology devices (21 CFR 876)",
+    "878": "General/plastic surgery guidance (21 CFR 878)",
+    "880": "General hospital devices (21 CFR 880)",
+    "884": "Obstetrics/gynecology devices (21 CFR 884)",
+    "888": "Orthopedic guidance (21 CFR 888)",
     "892": "Radiology guidance (21 CFR 892)",
 }
 if reg_prefix in REG_FAMILY_TRIGGERS:
@@ -536,7 +745,7 @@ Use the standard FDA Professional CLI format (see `references/output-formatting.
   FDA Guidance Analysis
   {PRODUCT_CODE} — {DEVICE_NAME}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Class: {class} | 21 CFR {regulation} | v5.20.0
+  Generated: {date} | Class: {class} | 21 CFR {regulation} | v5.21.0
 
 DEVICE CLASSIFICATION
 ────────────────────────────────────────

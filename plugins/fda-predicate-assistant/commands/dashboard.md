@@ -185,7 +185,7 @@ Present using standard FDA Professional CLI format:
   FDA Project Dashboard
   {product_code} — {project_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.20.0
+  Generated: {date} | v5.21.0
 
 SUBMISSION READINESS
 ────────────────────────────────────────

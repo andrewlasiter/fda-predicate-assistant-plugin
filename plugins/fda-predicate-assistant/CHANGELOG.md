@@ -1,5 +1,43 @@
 # Changelog
 
+## [5.21.0] - 2026-02-09
+
+### Added — Specialty Audit Remediation (70 items, 5 phases)
+
+**Phase 1: Structural Fixes**
+- OHT numbering corrected across cdrh-review-structure.md (OHT1-OHT8 alignment)
+- Division-level DHT code mapping for all 8 CDRH offices
+- Section cross-referencing anchors added
+
+**Phase 2: Guidance Index Expansion (fda-guidance-index.md)**
+- Expanded from 3 device categories to 13+ with sub-category guidance
+- Added regulation-to-guidance mapping for CV, OR, IVD, SU, NE, DE, EN, AN, OP, PM, GU, OB, HO, RA
+- FY2026 agenda items and emerging guidance topics
+
+**Phase 3: Keyword Trigger Expansion (guidance.md)**
+- 19-specialty keyword trigger system for guidance matching
+- Device-type-specific terminology for accurate guidance lookup
+- Negation-aware pattern matching improvements
+
+**Phase 4: Reviewer Templates (cdrh-review-structure.md, +907 lines)**
+- 14 new specialty reviewer templates: CV, OR, SU, NE, GU, OB, HO, DE, EN, AN, OP, PM, RA, IVD (6 sub-panels)
+- 19 FDA advisory panel specialties now covered
+- Each template includes: assessment criteria, scoring rubric, deficiency templates, specialty-specific checks
+- IVD split into 6 sub-panels: CH (Chemistry), HE (Hematology), IM (Immunology), MI (Microbiology), PA (Pathology), TX (Toxicology)
+- RA expanded with imaging subtypes (X-ray, CT, MRI, Ultrasound, Mammography, LINAC) and AI/ML assessment table
+
+**Phase 5: SE Templates + Standards**
+- 39 device-type-specific SE comparison templates in compare-se.md (was 5)
+- 200+ consensus standards in guidance-lookup.md across 19 specialty sections (was 7)
+- Standards organized by IEC 60601-2-xx, CLSI series, ASTM, ISO, ANSI/AAMI
+
+### Changed
+- cdrh-review-structure.md: 632 → 1,539+ lines
+- compare-se.md: 5 → 39 SE comparison templates
+- guidance-lookup.md: 7 → 19 standards sections, ~50 → 200+ standards
+- guidance.md: expanded keyword trigger categories
+- fda-guidance-index.md: expanded device category coverage
+
 ## [5.20.0] - 2026-02-09
 
 ### Added — Decision Traceability System (Zero-Trust Audit Trail)
