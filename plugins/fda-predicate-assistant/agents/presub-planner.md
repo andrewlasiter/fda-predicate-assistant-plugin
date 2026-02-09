@@ -204,7 +204,7 @@ Write all output to `$PROJECTS_DIR/{project_name}/`:
   FDA Pre-Sub Planner Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Project: {name} | v5.18.0
+  Generated: {date} | Project: {name} | v5.20.0
 
 PLANNING SUMMARY
 ────────────────────────────────────────

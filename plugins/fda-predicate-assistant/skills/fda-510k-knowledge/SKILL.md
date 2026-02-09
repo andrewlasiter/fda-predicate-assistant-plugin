@@ -226,7 +226,7 @@ See the **Workflow Guide** section above for the full 5-stage workflow. Here's t
 - `/fda:trials --device TERM` — ClinicalTrials.gov device study search
 - `/fda:warnings --query TERM` — FDA warning letters and enforcement
 
-## Available Commands (41)
+## Available Commands (42)
 
 ### Stage 1: Setup
 | Command | Purpose |
@@ -291,6 +291,7 @@ See the **Workflow Guide** section above for the full 5-stage workflow. Here's t
 | `/fda:gap-analysis` | 3-way PMN/CSV/PDF cross-reference to find missing data |
 | `/fda:monitor` | Watch FDA databases for new clearances, recalls, events |
 | `/fda:pipeline` | Run the full 7-step pipeline autonomously |
+| `/fda:audit` | View the decision audit trail — filter by command, action, date, subject; full exclusion rationale |
 | `/fda:summarize` | Compare sections across 510(k) summary PDFs |
 
 ## Agents (7)
@@ -355,7 +356,7 @@ Autonomous agents handle complex multi-step workflows. Launch them with the Task
 
 Each step builds on previous data but degrades gracefully if run independently.
 
-## Resources (41 references)
+## Resources (42 references)
 
 For detailed reference information, see:
 - `references/accessgudid-api.md` - AccessGUDID v3 API reference for UDI/device history lookups
@@ -369,6 +370,7 @@ For detailed reference information, see:
 - `references/common-issues.md` - Troubleshooting extraction problems
 - `references/complaint-handling-framework.md` - 21 CFR 820.198 complaint handling procedures
 - `references/confidence-scoring.md` - Predicate confidence scoring algorithm (with DEN handling)
+- `references/decision-traceability.md` - Zero-trust decision traceability system for audit trail reviewability
 - `references/cybersecurity-framework.md` - Cybersecurity documentation framework, Section 524B, and templates
 - `references/device-classes.md` - Device classification details
 - `references/dhf-checklist.md` - Design History File (DHF) checklist per 21 CFR 820

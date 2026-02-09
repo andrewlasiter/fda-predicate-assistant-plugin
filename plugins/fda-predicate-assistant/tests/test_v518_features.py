@@ -66,7 +66,7 @@ class TestStartCommand:
         assert "/fda:" in self.content
 
     def test_has_version_marker(self):
-        assert "v5.18.0" in self.content
+        assert "v5.20.0" in self.content
 
     def test_registered_in_skill_md(self):
         skill = _read(os.path.join(SKILLS_DIR, "SKILL.md"))
@@ -117,7 +117,7 @@ class TestDashboardCommand:
         assert "NEXT STEPS" in self.content or "next step" in self.content.lower()
 
     def test_has_version_marker(self):
-        assert "v5.18.0" in self.content
+        assert "v5.20.0" in self.content
 
     def test_registered_in_skill_md(self):
         skill = _read(os.path.join(SKILLS_DIR, "SKILL.md"))
@@ -163,7 +163,7 @@ class TestCommandGrouping:
         self.content = _read(os.path.join(SKILLS_DIR, "SKILL.md"))
 
     def test_has_41_commands(self):
-        assert "Available Commands (41)" in self.content
+        assert "Available Commands (42)" in self.content
 
     def test_has_stage_1_setup(self):
         assert "Stage 1: Setup" in self.content
@@ -447,18 +447,18 @@ class TestVersionBump:
         import json
         with open(os.path.join(PLUGIN_DIR, "plugin.json")) as f:
             data = json.load(f)
-        assert data["version"] == "5.19.0"
+        assert data["version"] == "5.20.0"
 
     def test_plugin_json_41_commands(self):
         import json
         with open(os.path.join(PLUGIN_DIR, "plugin.json")) as f:
             data = json.load(f)
-        assert "41 commands" in data["description"]
+        assert "42 commands" in data["description"]
 
     def test_skill_md_41_commands(self):
         skill = _read(os.path.join(SKILLS_DIR, "SKILL.md"))
-        assert "Available Commands (41)" in skill
+        assert "Available Commands (42)" in skill
 
     def test_skill_md_41_references(self):
         skill = _read(os.path.join(SKILLS_DIR, "SKILL.md"))
-        assert "41 references" in skill
+        assert "42 references" in skill

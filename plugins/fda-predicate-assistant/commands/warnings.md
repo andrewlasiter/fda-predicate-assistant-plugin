@@ -190,7 +190,7 @@ Risk Score = (Class_I_recalls × 10) + (Class_II_recalls × 3) + (Class_III_reca
   FDA Enforcement Intelligence
   {SEARCH_TERM}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Search: {type} | Years: {range} | v5.18.0
+  Generated: {date} | Search: {type} | Years: {range} | v5.20.0
 
 RECALL ENFORCEMENT
 ────────────────────────────────────────

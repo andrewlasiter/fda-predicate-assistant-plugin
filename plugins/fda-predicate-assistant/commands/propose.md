@@ -521,7 +521,7 @@ Report the proposal summary to the user:
   FDA Predicate Proposal
   {project_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.18.0
+  Generated: {date} | v5.20.0
 
 PROPOSED PREDICATES
 ────────────────────────────────────────
@@ -576,6 +576,44 @@ NEXT STEPS
   This report is AI-generated from public FDA data.
   Verify independently. Not regulatory advice.
 ────────────────────────────────────────
+```
+
+## Audit Logging
+
+After proposal validation is complete, log the result using `fda_audit_logger.py`:
+
+### Log predicate proposal
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command propose \
+  --action predicate_proposed \
+  --subject "$K_NUMBER" \
+  --decision "$VALIDATION_OUTCOME" \
+  --confidence "$CONFIDENCE_SCORE" \
+  --mode interactive \
+  --decision-type manual \
+  --rationale "$VALIDATION_SUMMARY" \
+  --data-sources "openFDA 510k API,openFDA recall API,openFDA classification" \
+  --metadata "{\"product_code_match\":$PC_MATCH,\"ifu_overlap\":$IFU_OVERLAP,\"recall_check\":\"$RECALL_STATUS\"}" \
+  --files-written "$PROJECTS_DIR/$PROJECT_NAME/review.json"
+```
+
+### Log validation failures
+
+If validation finds issues (recall, withdrawn, wrong class):
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command propose \
+  --action predicate_validation_result \
+  --subject "$K_NUMBER" \
+  --decision "validation_$RESULT" \
+  --mode interactive \
+  --decision-type auto \
+  --rationale "$VALIDATION_ISSUE_DETAIL"
 ```
 
 ## Error Handling

@@ -142,7 +142,7 @@ Write the complete test plan (see `references/output-formatting.md` for formatti
 # 510(k) Testing Plan
 ## {Device Description} — Product Code {CODE}
 
-**Generated:** {date} | v5.18.0
+**Generated:** {date} | v5.20.0
 **Risk Framework:** ISO 14971
 **Project:** {project_name or "N/A"}
 
@@ -237,6 +237,41 @@ Add a `Risk Priority` column to the test plan output:
 For recognized standard verification, use `/fda:standards --product-code CODE` to verify current standard editions.
 
 For shelf life calculations, use `/fda:calc shelf-life` to calculate accelerated aging parameters.
+
+## Audit Logging
+
+After test prioritization is complete, log each test decision using `fda_audit_logger.py`:
+
+### Log each prioritized test
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command test-plan \
+  --action test_prioritized \
+  --subject "$TEST_NAME" \
+  --decision "$PRIORITY" \
+  --mode interactive \
+  --decision-type auto \
+  --rationale "$RATIONALE (source: $GUIDANCE_OR_STANDARD)" \
+  --data-sources "$DATA_SOURCES"
+```
+
+### Log excluded tests
+
+For tests that were considered but excluded (e.g., "MRI safety not applicable for non-implant"):
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command test-plan \
+  --action test_excluded \
+  --subject "$TEST_NAME" \
+  --decision "excluded" \
+  --mode interactive \
+  --decision-type auto \
+  --rationale "Not applicable: $REASON"
+```
 
 ## Error Handling
 

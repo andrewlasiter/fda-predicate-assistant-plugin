@@ -143,7 +143,7 @@ Combine all findings into a structured report:
   FDA Regulatory Intelligence Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.18.0
+  Generated: {date} | v5.20.0
 
 EXECUTIVE SUMMARY
 ────────────────────────────────────────
@@ -276,6 +276,41 @@ At minimum, the **Predicate Landscape** section (Step 2) must succeed for the re
 If 4 or more of the 8 data sources fail, add a prominent warning to the Executive Summary:
 
 > "⚠ LOW CONFIDENCE — Only {N}/8 data sources were available. This report may be incomplete. Re-run when API access is restored or use individual /fda: commands."
+
+## Audit Logging
+
+Log key autonomous decisions at each step using `fda_audit_logger.py`. The agent should log:
+
+1. **Step 2 — Predicate candidate selection**: Log `agent_decision` for each candidate with selection rationale
+2. **Step 3 — Safety signal severity**: Log `risk_level_assigned` with the assessed severity and methodology
+3. **Step 4 — Guidance applicability**: Log `guidance_matched`/`guidance_excluded` for each guidance document
+4. **Step 10 — Intelligence synthesis**: Log `agent_decision` with the overall pathway recommendation and weighting factors
+
+```bash
+# Example: predicate candidate selection
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command research \
+  --action agent_decision \
+  --subject "K241335" \
+  --decision "strong candidate" \
+  --mode pipeline \
+  --decision-type auto \
+  --rationale "Same product code, cleared 2024, same applicant, no recalls" \
+  --data-sources "openFDA 510k API,openFDA recall API"
+
+# Example: safety signal severity
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command safety \
+  --action risk_level_assigned \
+  --subject "$PRODUCT_CODE" \
+  --decision "$RISK_LEVEL" \
+  --mode pipeline \
+  --decision-type auto \
+  --rationale "Event rate: $RATE ($CATEGORY). $DEATHS deaths, $RECALLS recalls. Trend: $TREND." \
+  --data-sources "openFDA MAUDE API,openFDA recall API"
+```
 
 ## Communication Style
 

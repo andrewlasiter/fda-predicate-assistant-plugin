@@ -259,7 +259,7 @@ class TestPreCheckCommand:
         assert "pre_check_report.md" in self.content
 
     def test_has_audit_logging(self):
-        assert "audit_log.jsonl" in self.content
+        assert "fda_audit_logger.py" in self.content
 
     def test_has_error_handling(self):
         assert "No project" in self.content or "--project" in self.content

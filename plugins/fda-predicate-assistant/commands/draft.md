@@ -593,7 +593,7 @@ section marked as not applicable.
 3. **DRAFT disclaimer**: Every generated section starts with:
    ```
    ⚠ DRAFT — AI-generated regulatory prose. Review with regulatory affairs team before submission.
-   Generated: {date} | Project: {name} | Plugin: fda-predicate-assistant v5.18.0
+   Generated: {date} | Project: {name} | Plugin: fda-predicate-assistant v5.20.0
    ```
 4. **Unverified claims**: Anything that cannot be substantiated from project data gets `[CITATION NEEDED]` or `[TODO: Company-specific — verify]`.
 5. **No fabrication**: Never invent test results, clinical data, or device specifications. If data isn't available, say so.
@@ -624,6 +624,42 @@ Next steps:
 
 > **Disclaimer:** This draft is AI-generated from public FDA data.
 > Verify independently. Not regulatory advice.
+```
+
+## Audit Logging
+
+After each section is drafted, log the generation decision using `fda_audit_logger.py`:
+
+### Log section drafted
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command draft \
+  --action section_drafted \
+  --subject "$SECTION_NAME" \
+  --decision "drafted" \
+  --mode interactive \
+  --decision-type auto \
+  --rationale "Section $SECTION_NAME drafted using data from: $SOURCES_USED" \
+  --data-sources "$SOURCES_USED" \
+  --files-written "$PROJECTS_DIR/$PROJECT_NAME/drafts/draft_$SECTION_NAME.md"
+```
+
+### Log content decisions (when multiple sources conflict)
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command draft \
+  --action content_decision \
+  --subject "$SECTION_NAME" \
+  --decision "$CHOSEN_SOURCE" \
+  --mode interactive \
+  --decision-type auto \
+  --rationale "Used $CHOSEN_SOURCE over $ALTERNATIVE_SOURCE because: $REASON" \
+  --alternatives "[\"$CHOSEN_SOURCE\",\"$ALTERNATIVE_SOURCE\"]" \
+  --exclusions "{\"$ALTERNATIVE_SOURCE\":\"$REASON\"}"
 ```
 
 ## Error Handling

@@ -485,13 +485,69 @@ Template phrases per scoring component:
 
 ## Audit Logging
 
-After all predicate decisions are made, write audit log entries per `references/audit-logging.md`:
+After all predicate decisions are made, write audit log entries using `fda_audit_logger.py`.
 
-- For each predicate decision: write a `predicate_accepted`, `predicate_rejected`, or `predicate_deferred` entry with the score, rationale, and data sources used
-- For each reclassification: write a `predicate_reclassified` entry
-- At completion: write a `review_completed` entry with summary counts
+### Log each predicate decision
 
-Append all entries to `$PROJECTS_DIR/$PROJECT_NAME/audit_log.jsonl`.
+For **each** predicate that was accepted, rejected, or deferred, run:
+
+```bash
+# Build exclusion JSON from the rejected alternatives in this review session
+# EXCLUSIONS_JSON should be a JSON object mapping rejected K-numbers to reasons
+# e.g., '{"K222222":"Different product code (KGN), score 35","K111111":"Class I recall 2024, score 12"}'
+
+# ALTERNATIVES_JSON should list ALL predicates evaluated (including the chosen one)
+# e.g., '["K241335","K222222","K111111"]'
+
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command review \
+  --action predicate_accepted \
+  --subject "$K_NUMBER" \
+  --decision accepted \
+  --confidence "$SCORE" \
+  --mode "$REVIEW_MODE" \
+  --decision-type "$DECISION_TYPE" \
+  --rationale "$JUSTIFICATION_NARRATIVE" \
+  --data-sources "output.csv,openFDA 510k API,openFDA recall API" \
+  --alternatives "$ALTERNATIVES_JSON" \
+  --exclusions "$EXCLUSIONS_JSON" \
+  --metadata "{\"score_breakdown\":{\"section_context\":$SC,\"citation_frequency\":$CF,\"product_code_match\":$PCM,\"recency\":$REC,\"regulatory_history\":$RH}}" \
+  --files-written "$PROJECTS_DIR/$PROJECT_NAME/review.json"
+```
+
+Use `predicate_rejected` or `predicate_deferred` for the corresponding decisions. The `--decision-type` should be `auto` for `--full-auto` mode, `manual` for interactive decisions, and `deferred` for deferred predicates.
+
+### Log reclassifications
+
+For each reclassified predicate:
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command review \
+  --action predicate_reclassified \
+  --subject "$K_NUMBER" \
+  --decision "$NEW_CLASSIFICATION" \
+  --mode "$REVIEW_MODE" \
+  --rationale "Reclassified from $ORIGINAL to $NEW_CLASSIFICATION based on SE section context"
+```
+
+### Log review completion
+
+After all decisions:
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command review \
+  --action review_completed \
+  --decision "completed" \
+  --mode "$REVIEW_MODE" \
+  --rationale "Review complete: $ACCEPTED accepted, $REJECTED rejected, $DEFERRED deferred, $RECLASSIFIED reclassified" \
+  --metadata "{\"accepted\":$ACCEPTED,\"rejected\":$REJECTED,\"deferred\":$DEFERRED,\"reclassified\":$RECLASSIFIED}" \
+  --files-written "$PROJECTS_DIR/$PROJECT_NAME/review.json,$PROJECTS_DIR/$PROJECT_NAME/output_reviewed.csv"
+```
 
 ## Step 6: Write Outputs
 
@@ -573,7 +629,7 @@ After all predicates are reviewed, present a summary:
   FDA Predicate Review Summary
   Project: {name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.18.0
+  Generated: {date} | v5.20.0
 
 RESULTS
 ────────────────────────────────────────

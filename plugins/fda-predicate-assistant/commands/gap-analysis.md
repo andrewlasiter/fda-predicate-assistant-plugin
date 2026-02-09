@@ -145,7 +145,7 @@ Present the results using the standard FDA Professional CLI format:
   FDA Gap Analysis
   510(k) Data Completeness Report
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.18.0
+  Generated: {date} | v5.20.0
 
 FILTERS
 ────────────────────────────────────────
@@ -207,7 +207,7 @@ NEXT STEPS
   2. Extract from existing PDFs — `/fda:extract stage2 --project {NAME}`
   3. View full status — `/fda:status`
 
-PIPELINE CHAIN (v5.18.0)
+PIPELINE CHAIN (v5.20.0)
 ────────────────────────────────────────
 
   Chain the gap manifest directly into batchfetch for automated download:

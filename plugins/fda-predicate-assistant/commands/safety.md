@@ -398,7 +398,7 @@ Structure the report using the standard FDA Professional CLI format (see `refere
   FDA Safety Intelligence Report
   {CODE} — {DEVICE NAME}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Class: {CLASS} | Regulation: {REG} | v5.18.0
+  Generated: {date} | Class: {CLASS} | Regulation: {REG} | v5.20.0
 
 DEVICE CONTEXT
 ────────────────────────────────────────
@@ -555,4 +555,40 @@ Thresholds:
 
 > Customize this template per 21 CFR 820.198 (complaint files)
 > and 21 CFR 803 (MDR reporting requirements).
+```
+
+## Audit Logging
+
+After the risk profile is determined, log the safety assessment using `fda_audit_logger.py`:
+
+### Log risk level assignment
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command safety \
+  --action risk_level_assigned \
+  --subject "$PRODUCT_CODE" \
+  --decision "$RISK_LEVEL" \
+  --mode interactive \
+  --decision-type auto \
+  --rationale "Risk profile: Event rate $EVENT_RATE ($RATE_CATEGORY), Recall severity $RECALL_SEVERITY, Trend $TREND, Deaths $DEATH_COUNT" \
+  --data-sources "openFDA MAUDE API,openFDA recall API,openFDA classification" \
+  --metadata "{\"total_events\":$TOTAL_EVENTS,\"total_recalls\":$TOTAL_RECALLS,\"class_i_recalls\":$CLASS_I,\"deaths\":$DEATHS,\"event_rate\":$EVENT_RATE,\"trend\":\"$TREND\"}"
+```
+
+### Log peer benchmarking
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command safety \
+  --action peer_benchmark_completed \
+  --subject "$PRODUCT_CODE" \
+  --decision "${PERCENTILE}th percentile" \
+  --mode interactive \
+  --decision-type auto \
+  --rationale "Ranked $RANK/$TOTAL among peer product codes under 21 CFR $REGULATION. ${PERCENTILE}th percentile ($INTERPRETATION)." \
+  --data-sources "openFDA MAUDE API,openFDA classification" \
+  --metadata "{\"percentile\":$PERCENTILE,\"rank\":$RANK,\"total_peers\":$TOTAL,\"peer_codes\":$PEER_CODES_JSON}"
 ```

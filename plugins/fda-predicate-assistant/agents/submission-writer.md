@@ -191,6 +191,40 @@ NEXT STEPS
 - Flag any concerns about data quality or completeness
 - Use the standard FDA Professional CLI format for all output
 
+## Audit Logging
+
+Log key autonomous decisions at each phase using `fda_audit_logger.py`. The agent should log:
+
+1. **Phase 1 — Section applicability**: For each of the 18 possible sections, log `agent_decision` with "applicable" or "not applicable" and the trigger (e.g., "sterilization: applicable — device is sterile per GUDID")
+2. **Phase 2 — Data source selection**: For each section, log `section_drafted` with the data sources used
+3. **Phase 3 — Consistency fix vs flag**: When the 11-check consistency validator finds issues, log `agent_decision` for whether it was auto-fixed or flagged for user review
+
+```bash
+# Example: section applicability decision
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command draft \
+  --action agent_decision \
+  --subject "sterilization" \
+  --decision "applicable" \
+  --mode pipeline \
+  --decision-type auto \
+  --rationale "Device is sterile per GUDID. Sterilization method: EO. Section required."
+
+# Example: consistency resolution
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command consistency \
+  --action agent_decision \
+  --subject "IFU text mismatch" \
+  --decision "auto-fixed" \
+  --mode pipeline \
+  --decision-type auto \
+  --rationale "IFU in draft_labeling.md differed from draft_510k-summary.md. Auto-aligned to review.json canonical IFU." \
+  --alternatives '["auto-fix","flag for user"]' \
+  --exclusions '{"flag for user":"Minor formatting difference, canonical IFU available in review.json"}'
+```
+
 ## Error Handling
 
 - If insufficient data for a section, generate the template and note what's needed

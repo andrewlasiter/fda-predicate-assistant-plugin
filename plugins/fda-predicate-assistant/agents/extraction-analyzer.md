@@ -105,7 +105,7 @@ Structure your report as:
   FDA Extraction Analysis Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.18.0
+  Generated: {date} | v5.20.0
 
 EXECUTIVE SUMMARY
 ────────────────────────────────────────

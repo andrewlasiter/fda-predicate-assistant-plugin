@@ -365,7 +365,7 @@ Write a comprehensive report with:
 # FDA Review Simulation Report
 ## {Project Name} — {Device Name} ({Product Code})
 
-**Generated:** {date} | FDA Predicate Assistant v5.18.0
+**Generated:** {date} | FDA Predicate Assistant v5.20.0
 **Simulation depth:** Full autonomous review
 **Project completeness:** {N}% of expected files present
 
@@ -470,6 +470,41 @@ Write a comprehensive report with:
 - **Cite evidence** — For each finding, point to the specific project file or section that triggered it
 - **Provide actionable remediation** — Every deficiency must have a specific `/fda:` command to fix it
 - **Professional tone** — Mirror the formal tone of actual FDA review correspondence
+
+## Audit Logging
+
+Log key autonomous decisions at each phase using `fda_audit_logger.py`. The agent should log:
+
+1. **Phase 3 — Specialist selection**: For each specialist assigned, log `agent_decision` with the trigger (e.g., "Software reviewer assigned: draft_software.md found")
+2. **Phase 4 — Reviewer verdicts**: For each specialist's assessment, log `agent_decision` with the verdict and rationale
+3. **Phase 5 — Conflicting opinions**: When reviewer opinions conflict, log `agent_decision` with which opinion was weighted higher and why
+4. **Phase 5 — SRI scoring**: Log `sri_calculated` with the component breakdown
+
+```bash
+# Example: specialist selection decision
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command pre-check \
+  --action agent_decision \
+  --subject "Biocompatibility Reviewer" \
+  --decision "assigned" \
+  --mode pipeline \
+  --decision-type auto \
+  --rationale "Patient-contacting materials found in device description"
+
+# Example: conflicting opinion resolution
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command pre-check \
+  --action agent_decision \
+  --subject "SE Adequacy" \
+  --decision "adequate with conditions" \
+  --mode pipeline \
+  --decision-type auto \
+  --rationale "Lead reviewer: adequate. Biocompat reviewer: missing ISO 10993-5. Resolution: adequate with conditions — biocompatibility gap flagged as MAJOR deficiency." \
+  --alternatives '["adequate","adequate with conditions","inadequate"]' \
+  --exclusions '{"inadequate":"SE comparison covers all required rows, only biocompat testing gap"}'
+```
 
 ## Regulatory Context
 

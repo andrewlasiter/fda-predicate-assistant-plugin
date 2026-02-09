@@ -227,7 +227,7 @@ Present the report using the standard FDA Professional CLI format (see `referenc
   FDA Consistency Validation Report
   Project: {project_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Files: {count} | v5.18.0
+  Generated: {date} | Files: {count} | v5.20.0
 
 RESULTS SUMMARY
 ────────────────────────────────────────
@@ -284,6 +284,50 @@ NEXT STEPS
   This report is AI-generated from public FDA data.
   Verify independently. Not regulatory advice.
 ────────────────────────────────────────
+```
+
+## Audit Logging
+
+After all consistency checks are complete, log each result using `fda_audit_logger.py`:
+
+### Log each check result
+
+For each of the 11 checks, log the result:
+
+```bash
+# For passed checks:
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command consistency \
+  --action check_passed \
+  --subject "Check $CHECK_NUM: $CHECK_NAME" \
+  --decision "pass" \
+  --mode interactive \
+  --decision-type auto \
+  --rationale "$CHECK_DETAILS"
+
+# For failed checks:
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command consistency \
+  --action check_failed \
+  --subject "Check $CHECK_NUM: $CHECK_NAME" \
+  --decision "fail" \
+  --mode interactive \
+  --decision-type auto \
+  --rationale "Expected: $EXPECTED. Found: $FOUND. Files: $FILE1 vs $FILE2" \
+  --data-sources "$FILES_CHECKED"
+
+# For warnings:
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command consistency \
+  --action check_warned \
+  --subject "Check $CHECK_NUM: $CHECK_NAME" \
+  --decision "warn" \
+  --mode interactive \
+  --decision-type auto \
+  --rationale "$WARNING_DETAILS"
 ```
 
 ## Error Handling

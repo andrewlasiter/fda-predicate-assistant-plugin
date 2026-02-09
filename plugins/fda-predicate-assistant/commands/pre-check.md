@@ -487,7 +487,7 @@ Write `pre_check_report.md` to the project folder:
   FDA Pre-Check Report
   {project_name} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.18.0
+  Generated: {date} | v5.20.0
   Depth: {quick|standard|deep}
   Focus: {predicate|testing|labeling|clinical|all}
 
@@ -601,16 +601,84 @@ COMPETITIVE CONTEXT
 
 ## Step 9: Audit Logging
 
-Write audit log entries per `references/audit-logging.md`:
+Write audit log entries using `fda_audit_logger.py`:
 
-- `pre_check_started` entry with depth, focus, project
-- `review_team_identified` entry with OHT, specialists
-- `rta_screening_completed` entry with pass/fail and item counts
-- For each deficiency: `deficiency_identified` entry
-- `readiness_sri_calculated` entry with SRI score and tier
-- At completion: `pre_check_report_generated` entry
+### Log pre-check start
 
-Append all entries to `$PROJECTS_DIR/$PROJECT_NAME/audit_log.jsonl`.
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command pre-check \
+  --action pre_check_started \
+  --subject "$PRODUCT_CODE" \
+  --mode "$MODE" \
+  --rationale "Pre-check started: depth=$DEPTH, focus=$FOCUS" \
+  --metadata "{\"depth\":\"$DEPTH\",\"focus\":\"$FOCUS\"}"
+```
+
+### Log RTA screening result
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command pre-check \
+  --action rta_screening_completed \
+  --subject "$PRODUCT_CODE" \
+  --decision "$RTA_RESULT" \
+  --mode "$MODE" \
+  --decision-type auto \
+  --rationale "RTA screening $RTA_RESULT: $RTA_PRESENT/$RTA_REQUIRED required items present" \
+  --metadata "{\"present\":$RTA_PRESENT,\"required\":$RTA_REQUIRED,\"missing\":$RTA_MISSING}"
+```
+
+### Log each deficiency
+
+For each identified deficiency:
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command pre-check \
+  --action deficiency_identified \
+  --subject "$DEF_ID" \
+  --decision "$SEVERITY" \
+  --mode "$MODE" \
+  --decision-type auto \
+  --rationale "$FINDING_TEXT" \
+  --metadata "{\"severity\":\"$SEVERITY\",\"reviewer\":\"$REVIEWER\",\"remediation_command\":\"$REMEDIATION_CMD\"}"
+```
+
+### Log SRI calculation
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command pre-check \
+  --action sri_calculated \
+  --subject "$PRODUCT_CODE" \
+  --decision "$SRI_TIER" \
+  --confidence "$SRI_SCORE" \
+  --mode "$MODE" \
+  --decision-type auto \
+  --rationale "SRI: $SRI_SCORE/100 ($SRI_TIER). $CRITICAL_COUNT critical, $MAJOR_COUNT major deficiencies." \
+  --metadata "{\"score_breakdown\":{\"rta_completeness\":$RTA_PTS,\"predicate_quality\":$PRED_PTS,\"se_comparison\":$SE_PTS,\"testing_coverage\":$TEST_PTS,\"deficiency_penalty\":$DEF_PTS,\"documentation\":$DOC_PTS}}" \
+  --alternatives '["Ready","Nearly Ready","Significant Gaps","Not Ready","Early Stage"]' \
+  --exclusions "$SRI_EXCLUSIONS_JSON" \
+  --files-written "$PROJECTS_DIR/$PROJECT_NAME/pre_check_report.md"
+```
+
+### Log completion
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command pre-check \
+  --action pre_check_report_generated \
+  --decision "completed" \
+  --mode "$MODE" \
+  --rationale "Pre-check complete: SRI $SRI_SCORE/100, $DEF_TOTAL deficiencies ($CRITICAL_COUNT critical, $MAJOR_COUNT major, $MINOR_COUNT minor)" \
+  --files-written "$PROJECTS_DIR/$PROJECT_NAME/pre_check_report.md"
+```
 
 ## Error Handling
 

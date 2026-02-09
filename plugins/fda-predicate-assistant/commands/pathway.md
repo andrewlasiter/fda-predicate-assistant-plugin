@@ -167,7 +167,7 @@ Rank pathways by score and present using the standard FDA Professional CLI forma
   FDA Regulatory Pathway Recommendation
   {CODE} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Class: {class} | 21 CFR {regulation} | v5.18.0
+  Generated: {date} | Class: {class} | 21 CFR {regulation} | v5.20.0
 
 RECOMMENDED PATHWAY
 ────────────────────────────────────────
@@ -353,6 +353,40 @@ EXPECTED REVIEW TIMELINE
   Abbreviated 510(k): {estimated — similar to traditional}
   De Novo:            {typically 150-300 days}
   PMA:                {typically 180-400 days}
+```
+
+## Audit Logging
+
+After pathway scoring is complete, log the recommendation with all pathway scores and exclusion rationale using `fda_audit_logger.py`:
+
+### Log the recommended pathway
+
+```bash
+python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
+  --project "$PROJECT_NAME" \
+  --command pathway \
+  --action pathway_recommended \
+  --subject "$PRODUCT_CODE" \
+  --decision "$RECOMMENDED_PATHWAY" \
+  --confidence "$TOP_SCORE" \
+  --mode interactive \
+  --decision-type auto \
+  --rationale "Selected $RECOMMENDED_PATHWAY (score $TOP_SCORE/100). $RATIONALE_SUMMARY" \
+  --data-sources "openFDA classification,openFDA 510k,openFDA pma,fda-guidance-index.md" \
+  --alternatives '["Traditional 510(k)","Special 510(k)","Abbreviated 510(k)","De Novo","PMA"]' \
+  --exclusions "$EXCLUSIONS_JSON" \
+  --metadata "{\"score_breakdown\":{\"Traditional\":$TRAD_SCORE,\"Special\":$SPEC_SCORE,\"Abbreviated\":$ABBR_SCORE,\"De Novo\":$DN_SCORE,\"PMA\":$PMA_SCORE}}"
+```
+
+Where `$EXCLUSIONS_JSON` is a JSON object with each non-chosen pathway as key and its exclusion reason as value. Example:
+
+```json
+{
+  "Special 510(k)": "No prior clearance provided. Score: 30/100.",
+  "De Novo": "45 existing clearances for OVE. Score: 15/100.",
+  "PMA": "Device is Class II. Score: 10/100.",
+  "Abbreviated 510(k)": "No device-specific guidance found. Score: 35/100."
+}
 ```
 
 ## Error Handling
