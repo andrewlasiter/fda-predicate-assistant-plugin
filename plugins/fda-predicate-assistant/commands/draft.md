@@ -593,7 +593,7 @@ section marked as not applicable.
 3. **DRAFT disclaimer**: Every generated section starts with:
    ```
    ⚠ DRAFT — AI-generated regulatory prose. Review with regulatory affairs team before submission.
-   Generated: {date} | Project: {name} | Plugin: fda-predicate-assistant v5.17.0
+   Generated: {date} | Project: {name} | Plugin: fda-predicate-assistant v5.18.0
    ```
 4. **Unverified claims**: Anything that cannot be substantiated from project data gets `[CITATION NEEDED]` or `[TODO: Company-specific — verify]`.
 5. **No fabrication**: Never invent test results, clinical data, or device specifications. If data isn't available, say so.

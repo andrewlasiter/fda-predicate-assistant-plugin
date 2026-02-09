@@ -51,9 +51,9 @@ class TestSkillWorkflowStepZero:
 
     def test_main_workflow_has_setup_key_in_stage_1(self):
         """Workflow Guide Stage 1 should include --setup-key before data collection."""
-        # In the new 5-stage Workflow Guide, Stage 1 (Setup) has --setup-key
-        assert "Workflow Guide" in self.content
-        idx_wf = self.content.index("Workflow Guide")
+        # In the new 5-stage layout, --setup-key appears in the Workflow Guide section
+        assert "## Workflow Guide" in self.content
+        idx_wf = self.content.index("## Workflow Guide")
         idx_stage1 = self.content.index("Stage 1: Setup", idx_wf)
         idx_stage2 = self.content.index("Stage 2", idx_stage1)
         stage1_block = self.content[idx_stage1:idx_stage2]

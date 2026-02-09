@@ -288,6 +288,8 @@ Write `eSTAR_readiness.md` to the project directory:
 
 **Status key:** Green = READY (user verified), Yellow = DRAFT (AI-generated, needs review), Red = MISSING
 
+**Readiness scoring:** Use the canonical SRI formula from `references/readiness-score-formula.md` (0-100 scale with 5 tiers: Ready/Nearly Ready/Significant Gaps/Not Ready/Early Stage).
+
 ## Remaining Work
 
 {List of [TODO:] items across all draft files}
@@ -310,7 +312,7 @@ Present using standard FDA Professional CLI format:
   FDA eSTAR Export Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Project: {name} | v5.17.0
+  Generated: {date} | Project: {name} | v5.18.0
 
 EXPORT SUMMARY
 ────────────────────────────────────────

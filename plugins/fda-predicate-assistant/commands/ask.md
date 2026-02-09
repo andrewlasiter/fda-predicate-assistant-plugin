@@ -113,7 +113,7 @@ Present answers using the standard FDA Professional CLI format (see `references/
   FDA Regulatory Q&A
   {question_topic}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.17.0
+  Generated: {date} | v5.18.0
 
 QUESTION
 ────────────────────────────────────────

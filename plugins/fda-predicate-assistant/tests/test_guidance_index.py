@@ -303,8 +303,8 @@ class TestSKILLMDGuidanceIndex:
     def test_lists_guidance_index_reference(self):
         assert "fda-guidance-index.md" in self.content
 
-    def test_resource_count_40(self):
-        assert "40 references" in self.content
+    def test_resource_count_41(self):
+        assert "41 references" in self.content
 
 
 # -- Plugin Metadata -------------------------------------------------
@@ -316,7 +316,7 @@ class TestPluginVersionAndCounts511:
     def test_version_is_5_16_0(self):
         with open(PLUGIN_JSON) as f:
             data = json.load(f)
-        assert data["version"] == "5.17.0"
+        assert data["version"] == "5.18.0"
 
     def test_skill_md_mentions_guidance_index(self):
         """Guidance index is documented in SKILL.md resources, not plugin.json description."""
@@ -324,12 +324,12 @@ class TestPluginVersionAndCounts511:
             content = f.read()
         assert "fda-guidance-index.md" in content
 
-    def test_command_count_is_38(self):
-        """Verify 38 .md files in commands directory."""
+    def test_command_count_is_40(self):
+        """Verify 40 .md files in commands directory."""
         cmd_files = [f for f in os.listdir(CMDS_DIR) if f.endswith(".md")]
-        assert len(cmd_files) == 38, f"Expected 38 commands, found {len(cmd_files)}: {sorted(cmd_files)}"
+        assert len(cmd_files) == 40, f"Expected 40 commands, found {len(cmd_files)}: {sorted(cmd_files)}"
 
-    def test_description_mentions_37_commands(self):
+    def test_description_mentions_40_commands(self):
         with open(PLUGIN_JSON) as f:
             data = json.load(f)
-        assert "38 commands" in data["description"]
+        assert "40 commands" in data["description"]

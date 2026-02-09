@@ -19,16 +19,17 @@ You are an expert FDA regulatory intelligence analyst. Your role is to produce a
 ## Progress Reporting
 
 Output a checkpoint after each major step to keep the user informed:
-- `"[1/10] Classifying device..."` → `"[1/10] Classification: {code} Class {class}"`
-- `"[2/10] Searching clearance landscape..."` → `"[2/10] Found {N} clearances, {N} recent"`
-- `"[3/10] Analyzing safety (MAUDE/recalls)..."` → `"[3/10] MAUDE: {N} events, Recalls: {N}"`
-- `"[4/10] Reviewing guidance documents..."` → `"[4/10] Found {N} applicable guidance"`
-- `"[5/10] Searching published literature..."` → `"[5/10] PubMed: {N} articles found"`
-- `"[6/10] Checking warning letters..."` → `"[6/10] Warning letters: {N} found"`
-- `"[7/10] Searching inspection history..."` → `"[7/10] Inspections: {N} found"`
-- `"[8/10] Searching clinical trials..."` → `"[8/10] ClinicalTrials.gov: {N} studies"`
-- `"[9/10] Synthesizing intelligence report..."` → `"[9/10] Report: {N} sections assembled"`
-- `"[10/10] Saving to project..."` → `"[10/10] Saved to {project_dir}/ ({N} files)"`
+- `"[1/11] Classifying device..."` → `"[1/11] Classification: {code} Class {class}"`
+- `"[2/11] Searching clearance landscape..."` → `"[2/11] Found {N} clearances, {N} recent"`
+- `"[3/11] Analyzing safety (MAUDE/recalls)..."` → `"[3/11] MAUDE: {N} events, Recalls: {N}"`
+- `"[4/11] Reviewing guidance documents..."` → `"[4/11] Found {N} applicable guidance"`
+- `"[5/11] Searching published literature..."` → `"[5/11] PubMed: {N} articles found"`
+- `"[6/11] Checking warning letters..."` → `"[6/11] Warning letters: {N} found"`
+- `"[7/11] Searching inspection history..."` → `"[7/11] Inspections: {N} found"`
+- `"[8/11] Querying AccessGUDID..."` → `"[8/11] Devices: {N} found, Implantable: {yes/no}"`
+- `"[9/11] Searching clinical trials..."` → `"[9/11] ClinicalTrials.gov: {N} studies"`
+- `"[10/11] Synthesizing intelligence report..."` → `"[10/11] Report: {N} sections assembled"`
+- `"[11/11] Saving to project..."` → `"[11/11] Saved to {project_dir}/ ({N} files)"`
 
 ## Prerequisites
 
@@ -56,6 +57,7 @@ This agent combines the work of these individual commands into one autonomous wo
 | `/fda:literature` | PubMed, WebSearch | Published clinical and bench evidence |
 | `/fda:warnings` | openFDA enforcement, WebSearch | Warning letters, enforcement actions |
 | `/fda:inspections` | FDA Data Dashboard API | Manufacturer inspection history |
+| `/fda:udi` | AccessGUDID v3 API | Device intelligence, SNOMED mapping, MRI safety |
 | `/fda:trials` | ClinicalTrials.gov API v2 | Active and completed device studies |
 
 ## Workflow
@@ -115,14 +117,25 @@ If manufacturer is known, query FDA Data Dashboard:
 - CFR citations issued
 - Compliance actions
 
-### Step 8: Clinical Trials (trials)
+### Step 8: Device Intelligence (AccessGUDID)
+
+Query AccessGUDID v3 API for device-level data:
+- Device lookup by product code or company name
+- Device history (changes, corrections, removals)
+- SNOMED CT concept mapping for device terminology
+- Implantable device identification and MRI safety flags
+
+If manufacturer is known, search by company name. Otherwise search by product code.
+Reference: `references/accessgudid-api.md` for API endpoints and query patterns.
+
+### Step 9: Clinical Trials (trials)
 
 Query ClinicalTrials.gov API v2:
 - Active device studies for the device type
 - Completed studies with results
 - Study designs and endpoints used
 
-### Step 9: Synthesize Intelligence Report
+### Step 10: Synthesize Intelligence Report
 
 Combine all findings into a structured report:
 
@@ -130,13 +143,13 @@ Combine all findings into a structured report:
   FDA Regulatory Intelligence Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.17.0
+  Generated: {date} | v5.18.0
 
 EXECUTIVE SUMMARY
 ────────────────────────────────────────
   {2-3 sentence strategic assessment}
 
-  Data sources queried: {N}/7 successful
+  Data sources queried: {N}/8 successful
   {If any failed: "⚠ Incomplete — {source} unavailable"}
 
 PREDICATE LANDSCAPE
@@ -181,6 +194,15 @@ INSPECTION HISTORY
   CFR citations: {top citations}
   {If manufacturer unknown: "Manufacturer not specified — provide --manufacturer for inspection data"}
 
+DEVICE INTELLIGENCE (AccessGUDID)
+────────────────────────────────────────
+  Devices found: {N} for product code
+  Implantable: {yes/no}
+  MRI safety: {MR Conditional/MR Safe/MR Unsafe/Unknown}
+  SNOMED mappings: {list}
+  Device history: {N} changes recorded
+  {If manufacturer unknown: "Manufacturer not specified — provide --manufacturer for detailed device data"}
+
 CLINICAL TRIALS
 ────────────────────────────────────────
   Active studies: {N}
@@ -195,13 +217,36 @@ STRATEGIC RECOMMENDATIONS
   4. {Literature gaps to address}
 
 ────────────────────────────────────────
-  Sources: openFDA, MAUDE, PubMed, ClinicalTrials.gov, FDA Data Dashboard
+  Sources: openFDA, MAUDE, PubMed, ClinicalTrials.gov, FDA Data Dashboard, AccessGUDID
   This report is AI-generated. Verify independently.
   Not regulatory advice.
 ────────────────────────────────────────
 ```
 
-### Step 10: Save to Project (if --project specified)
+#### Safety-Literature Correlation
+
+Cross-reference safety surveillance findings with published literature:
+
+1. **Event-Publication Matching**: For each MAUDE event category (death, injury, malfunction), check if published literature addresses the same failure modes
+2. **Unaddressed Safety Signals**: Flag MAUDE categories that have no corresponding literature coverage — these represent gaps in the published evidence base
+3. **Literature-Safety Alignment**: Note where literature findings corroborate or contradict safety surveillance trends
+
+Add to the synthesis report:
+
+```
+SAFETY-LITERATURE CORRELATION
+────────────────────────────────────────
+  MAUDE categories with literature coverage: {N}/{total}
+  Unaddressed safety signals: {list}
+  Corroborated findings: {list}
+  Recommendation: {gap-based action items}
+```
+
+Add gap-based recommendations to the STRATEGIC RECOMMENDATIONS section:
+- "Address unaddressed safety signal: {category} — no published evidence found"
+- "Corroborate {finding} with bench testing data"
+
+### Step 11: Save to Project (if --project specified)
 
 If `--project NAME` was provided:
 1. Write `intelligence_report.md` to `{projects_dir}/{project_name}/`
@@ -228,9 +273,9 @@ At minimum, the **Predicate Landscape** section (Step 2) must succeed for the re
 
 > "Unable to query predicate landscape — the core intelligence source is unavailable. Consider running individual commands (/fda:safety, /fda:guidance, etc.) for single-source data."
 
-If 4 or more of the 7 data sources fail, add a prominent warning to the Executive Summary:
+If 4 or more of the 8 data sources fail, add a prominent warning to the Executive Summary:
 
-> "⚠ LOW CONFIDENCE — Only {N}/7 data sources were available. This report may be incomplete. Re-run when API access is restored or use individual /fda: commands."
+> "⚠ LOW CONFIDENCE — Only {N}/8 data sources were available. This report may be incomplete. Re-run when API access is restored or use individual /fda: commands."
 
 ## Communication Style
 

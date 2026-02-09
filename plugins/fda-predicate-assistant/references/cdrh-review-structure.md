@@ -102,6 +102,7 @@ PANEL_TO_OHT = {
 | **MRI Safety Reviewer** | Implantable OR metallic components | MR Conditional/Unsafe classification, heating, force, artifact testing | ASTM F2052, F2213, F2182, F2119 |
 | **Materials Reviewer** | Novel material OR new alloy/polymer | Material characterization, biocompatibility rationale, degradation | ISO 10993-13, -14, -15 |
 | **Packaging Reviewer** | Sterile barrier OR shelf life claim | Package integrity, aging validation, transport | ASTM F2095, ASTM D4169 |
+| **IVD Reviewer** | Review panel in {CH, HE, IM, MI, PA, TX} OR IVD/diagnostic/assay keywords | CLIA classification, analytical validation (CLSI EP series), clinical validation, reference standards | 21 CFR 809, CLSI EP05/EP07/EP09/EP12/EP17 |
 
 ### Auto-Detection Logic
 
@@ -171,6 +172,14 @@ def determine_review_team(device_info, classification_data):
         "shelf life" in desc_lower or
         "package integrit" in desc_lower):
         team.append("Packaging")
+
+    # IVD (In Vitro Diagnostic)
+    ivd_panels = {"CH", "HE", "IM", "MI", "PA", "TX"}
+    ivd_keywords = ["ivd", "diagnostic", "assay", "clia", "analyte", "specimen",
+                    "in vitro", "reagent", "immunoassay", "clinical chemistry"]
+    if (classification_data.get("review_panel") in ivd_panels or
+        any(kw in desc_lower for kw in ivd_keywords)):
+        team.append("IVD")
 
     return team
 ```
@@ -375,6 +384,37 @@ Per SOPP 8217 and FDA's Refuse to Accept Policy for 510(k)s (2019 guidance):
 > The submission describes the use of [material/process] which has not been previously cleared for this contact type and duration. Per FDA guidance and ISO 10993-18, a complete chemical characterization of the material is required, including extractable and leachable analysis with toxicological risk assessment. Specifically, [missing element] has not been addressed.
 
 **Score:** materials items addressed / materials items required
+
+### IVD Review — Analytical and Clinical Validation (OHT7 Devices)
+
+**Trigger:** Review panel in {CH, HE, IM, MI, PA, TX} OR device description contains IVD/diagnostic/assay/CLIA keywords.
+
+**Regulatory basis:** 21 CFR 809, CLIA '88, CLSI standards
+
+**Evaluation categories:**
+- CLIA classification (Waived / Moderate / High Complexity)?
+- If CLIA waived: waiver study per CLSI EP12 (3 untrained operators, ≥120 specimens)?
+- Accuracy/method comparison (CLSI EP09)?
+- Precision study (CLSI EP05 — 20-day protocol)?
+- Linearity/reportable range (CLSI EP06)?
+- Analytical sensitivity — LOB/LOD/LOQ (CLSI EP17)?
+- Interference study (CLSI EP07)?
+- Reference interval (CLSI EP28)?
+- Clinical agreement (sensitivity/specificity/PPA/NPA)?
+- Specimen types validated?
+- Calibration traceability (NIST/WHO/IFCC)?
+
+**Deficiency templates:**
+
+> **Analytical performance:** The submission does not include a [precision/accuracy/linearity/LOD] study per CLSI [EP05/EP09/EP06/EP17]. Please provide [study type] data to support the analytical performance claims for [analyte].
+
+> **Clinical performance:** The clinical agreement study does not include sufficient specimens ({N} provided, ≥{M} expected) to support the intended use claim for [analyte/condition]. Please provide additional clinical data.
+
+> **CLIA waiver:** The CLIA waiver study design is incomplete — [missing untrained operators / insufficient specimen count / no comparison to lab method]. Refer to CLSI EP12 for waiver study requirements.
+
+> **Reference traceability:** Calibration traceability to [NIST/WHO/IFCC] reference materials is not documented. Please provide the traceability chain for calibration of [analyte].
+
+**Score:** IVD items addressed / IVD items required
 
 ## 5. SE Decision Framework — Reviewer's Perspective
 

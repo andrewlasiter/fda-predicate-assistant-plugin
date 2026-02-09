@@ -571,6 +571,11 @@ CONTEXT
 
   Original: Predicate (extraction script)
   Reclassified: Uncertain (SE section in 1/3 sources)
+
+JUSTIFICATION
+────────────────────────────────────────
+
+  {Generated narrative — see algorithm below}
 ```
 
 Then ask the user using AskUserQuestion:
@@ -588,6 +593,32 @@ If the user accepts or rejects, ask for optional rationale:
 Optional: Add a note about your decision for K234567?
 (Press Enter to skip, or type your rationale)
 ```
+
+### Justification Narrative Algorithm
+
+For each predicate, generate a 1-3 sentence justification narrative. This narrative is stored in `review.json` as `justification_narrative` and provides human-readable rationale.
+
+**Sentence 1 — Overall Assessment (based on score tier):**
+- Score 80-100: "{K-number} is a strong predicate candidate with high confidence ({score}/100)."
+- Score 60-79: "{K-number} is a moderate predicate candidate ({score}/100) that warrants review."
+- Score 40-59: "{K-number} is a marginal predicate candidate ({score}/100) with limited supporting evidence."
+- Score 20-39: "{K-number} is a weak candidate ({score}/100) and likely not a true predicate."
+- Score 0-19: "{K-number} should be rejected ({score}/100) — insufficient evidence for predicate status."
+
+**Sentence 2 — Top Contributing Factors (pick top 2 by points):**
+Template phrases per scoring component:
+- Section Context (high): "Found in {N} SE comparison sections, indicating direct predicate citation."
+- Section Context (low): "Found only in general text, suggesting incidental mention."
+- Citation Frequency (high): "Cited by {N} different source documents, establishing broad recognition."
+- Citation Frequency (low): "Cited by only {N} source, requiring manual verification."
+- Product Code Match: "Shares product code {CODE} with the subject device." / "Different product code ({CODE}) — may be a reference device."
+- Recency (high): "Cleared {N} years ago, representing current technology." / Recency (low): "Cleared {N} years ago — consider finding a more recent alternative."
+- Regulatory History (clean): "Clean regulatory record with no recalls or safety signals." / (concerns): "Has {concerns} — evaluate risk to predicate chain."
+
+**Sentence 3 — Risk Flag Caveat (optional, only if flags present):**
+- "Note: {flag descriptions, e.g., 'RECALLED (Class II, 2024), OLD (>10 years)'}"
+
+**Generate narrative in all modes** (interactive, auto, full-auto). Store as `justification_narrative` field in review.json alongside each predicate entry.
 
 ## Audit Logging
 
@@ -634,6 +665,7 @@ Write structured review data to the project folder:
       "original_classification": "Predicate",
       "reclassification": "Predicate",
       "auto_decision": false,
+      "justification_narrative": "K234567 is a strong predicate candidate with high confidence (85/100). Found in 2 SE comparison sections, indicating direct predicate citation. Cited by 3 different source documents, establishing broad recognition.",
       "flags": ["OLD"],
       "cited_by": ["K241335", "K251234", "K248765"],
       "se_citations": 2,
@@ -678,7 +710,7 @@ After all predicates are reviewed, present a summary:
   FDA Predicate Review Summary
   Project: {name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.17.0
+  Generated: {date} | v5.18.0
 
 RESULTS
 ────────────────────────────────────────

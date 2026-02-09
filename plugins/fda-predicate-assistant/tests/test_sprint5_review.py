@@ -1,4 +1,4 @@
-"""Sprint 5 Tests — 8-Agent Review Remediation (v5.17.0)
+"""Sprint 5 Tests — 8-Agent Review Remediation (v5.18.0)
 
 Tests for Sprint 5 items implemented from SPRINT5_8AGENT_REVIEW.md:
 - Item 4 (DP-C3): Incremental extraction merge in predicate_extractor.py
@@ -366,12 +366,12 @@ class TestPreExistingItemsStillCorrect:
         assert 'ENFORCEMENT_ACTION' in content
         assert 'legal_status' in content
 
-    def test_research_intelligence_progress_10_steps(self):
-        """Item 8 (RI-C1): research-intelligence.md must show [1/10] to [10/10]."""
+    def test_research_intelligence_progress_11_steps(self):
+        """Item 8 (RI-C1): research-intelligence.md must show [1/11] to [11/11] (v5.18.0: AccessGUDID step added)."""
         with open(os.path.join(AGENTS_DIR, 'research-intelligence.md')) as f:
             content = f.read()
-        assert '[1/10]' in content
-        assert '[10/10]' in content
+        assert '[1/11]' in content
+        assert '[11/11]' in content
 
     def test_data_pipeline_progress_7_steps(self):
         """Item 8 (DP-H4): data-pipeline-manager.md must show [1/7] to [7/7]."""
@@ -426,14 +426,14 @@ class TestPreExistingItemsStillCorrect:
 # ===== Version and Plugin Metadata =====
 
 class TestPluginVersion:
-    """Plugin must be at v5.17.0."""
+    """Plugin must be at v5.18.0."""
 
     def test_plugin_json_version(self):
-        """plugin.json must declare v5.17.0."""
+        """plugin.json must declare v5.18.0."""
         import json
         with open(os.path.join(PLUGIN_ROOT, '.claude-plugin', 'plugin.json')) as f:
             data = json.load(f)
-        assert data['version'] == '5.17.0'
+        assert data['version'] == '5.18.0'
 
     def test_sprint5_review_exists(self):
         """Sprint 5 review document must exist."""

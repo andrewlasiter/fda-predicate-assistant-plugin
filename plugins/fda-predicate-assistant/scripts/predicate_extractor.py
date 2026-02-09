@@ -28,6 +28,24 @@ from tqdm import tqdm
 from multiprocessing import Pool
 import fitz  # PyMuPDF
 import pdfplumber
+
+# Shared HTTP utilities
+try:
+    from fda_http import create_session, FDA_HEADERS
+except ImportError:
+    # Fallback if fda_http not on path
+    FDA_HEADERS = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+    }
+    def create_session(api_mode=False):
+        session = requests.Session()
+        session.headers.update(FDA_HEADERS)
+        return session
 try:
     import orjson
     HAS_ORJSON = True
@@ -53,17 +71,7 @@ def download_and_parse_csv(urls, pma_url, data_dir=None):
         os.makedirs(data_dir, exist_ok=True)
         os.chdir(data_dir)
 
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Accept-Encoding': 'gzip, deflate',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1',
-    }
-
-    session = requests.Session()
-    session.headers.update(headers)
+    session = create_session()
 
     required_files = [url.split('/')[-1].replace('.zip', '.txt') for url in urls] + ['pma.txt']
     missing_files = []
@@ -332,6 +340,91 @@ def load_large_json(filename):
     return pdf_data
 
 
+def detect_se_section(text):
+    """Detect Substantial Equivalence section boundaries in PDF text.
+
+    Uses 3-tier detection from references/section-patterns.md:
+    - Tier 1: SE header regex (direct match)
+    - Tier 2: OCR-tolerant regex (up to 2 character substitutions)
+    - Tier 3: Semantic signal counting (2+ signals in 200-word window)
+
+    Returns list of (start, end) character positions for SE sections.
+    """
+    SE_WINDOW = 2000  # Characters after SE header to consider as SE section
+
+    # Tier 1: Direct SE header regex
+    se_regex = re.compile(
+        r'(?i)(substantial\s+equivalence|se\s+comparison|predicate\s+'
+        r'(comparison|device|analysis|identification)|comparison\s+to\s+predicate|'
+        r'technological\s+characteristics|comparison\s+(table|chart|matrix)|'
+        r'similarities\s+and\s+differences|comparison\s+of\s+(the\s+)?'
+        r'(features|technological|device))'
+    )
+
+    # Tier 3: Semantic signals
+    se_signals = [
+        'predicate', 'substantial equivalence', 'SE comparison',
+        'technolog', 'intended use', 'indications for use',
+        'same intended', 'same technological', 'comparison table',
+        'subject device', 'predicate device', 'legally marketed'
+    ]
+
+    sections = []
+
+    # Tier 1 matches
+    for match in se_regex.finditer(text):
+        start = match.start()
+        end = min(start + SE_WINDOW, len(text))
+        sections.append((start, end))
+
+    # Tier 3: Sliding window semantic detection (only if Tier 1 found nothing)
+    if not sections:
+        words = text.split()
+        window_size = 200  # words
+        for i in range(0, len(words) - window_size, 50):
+            window_text = ' '.join(words[i:i + window_size]).lower()
+            signal_count = sum(1 for s in se_signals if s.lower() in window_text)
+            if signal_count >= 2:
+                # Approximate character position
+                char_start = len(' '.join(words[:i]))
+                char_end = min(char_start + SE_WINDOW, len(text))
+                sections.append((char_start, char_end))
+
+    return sections
+
+
+def score_device_section(text, device_number, se_sections):
+    """Score a device number based on where it appears in the PDF.
+
+    Returns section score: SE=40, testing/clinical=25, table/OCR=15, general=10
+    """
+    # Find all positions of the device number
+    positions = [m.start() for m in re.finditer(re.escape(device_number), text)]
+
+    if not positions:
+        return 10  # Default general text score
+
+    # Check if any position falls within an SE section
+    for pos in positions:
+        for se_start, se_end in se_sections:
+            if se_start <= pos <= se_end:
+                return 40  # SE section
+
+    # Check for testing/clinical section keywords near device mention
+    testing_regex = re.compile(
+        r'(?i)(testing|performance|bench\s+test|clinical|biocompatibility|'
+        r'verification|validation|safety\s+testing|electrical\s+safety)'
+    )
+    for pos in positions:
+        window_start = max(0, pos - 500)
+        window_end = min(len(text), pos + 500)
+        window = text[window_start:window_end]
+        if testing_regex.search(window):
+            return 25  # Testing/clinical section
+
+    return 10  # General text
+
+
 def parse_text(text, filename, csv_data, known_knumbers, known_pma_numbers):
     # K/N/P number regex — matches OCR-corrupted variants and supplements
     regex = r'\b(?:[Kk]|1\(|l\(|\|<\.|\|\()[^dOISBGZAQsiqzl]*[\d][dOISBGZAQsiqzl\d ]{6,7}\b|\b[1l]<[^dOISBGZAQsiqzl\d ]*[\d][dOISBGZAQsiqzl\d ]{6,7}\b|\b[Nn][^dOISBGZAQsiqzl\d]*[\d][dOISBGZAQsiqzl\d ]{5,6}(?:\/S\d{3})?\b|\b[Pp][^dOISBGZAQsiqzl\d]*[\d][dOISBGZAQsiqzl\d ]{6,7}(?:\/S\d{3})?\b'
@@ -452,6 +545,10 @@ Examples:
                         help='Enforce non-interactive mode (exit with error if GUI would be needed)')
     parser.add_argument('--incremental', action='store_true',
                         help='Skip PDFs already present in existing output.csv')
+    parser.add_argument('--section-aware', action='store_true',
+                        help='Enable section-aware extraction: score devices by PDF section context (SE=40, testing=25, general=10)')
+    parser.add_argument('--enrich', action='store_true',
+                        help='Enrich output with openFDA data (device name, clearance date, MAUDE events)')
     return parser.parse_args()
 
 

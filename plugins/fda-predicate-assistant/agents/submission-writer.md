@@ -103,15 +103,25 @@ For each section:
 - Mark all gaps with `[TODO: Company-specific — ...]`
 - Include the DRAFT disclaimer header
 
-### Phase 3: Quick Consistency Check
+### Phase 3: Consistency Check (11 Checks)
 
-Run a lightweight consistency check across drafted sections:
-- Product code consistency across all drafts
-- Predicate list consistency (K-numbers match review.json)
-- IFU text consistency between sections
-- Standards citation matching
+Run the full 11-point consistency check across drafted sections (aligned with `/fda:consistency`):
 
-Note any issues in the readiness report but **do not attempt to assemble or export** — that is the submission-assembler agent's job.
+| # | Check | Severity | What to Verify |
+|---|-------|----------|---------------|
+| 1 | Product Code | CRITICAL | Same product code across all draft files, review.json, query.json |
+| 2 | Predicate List | CRITICAL | K-numbers in SE discussion match review.json accepted predicates |
+| 3 | Intended Use | CRITICAL | IFU text identical in labeling, summary, cover letter, SE discussion |
+| 4 | Device Description | HIGH | Physical description consistent between device-description and SE discussion |
+| 5 | Pathway | HIGH | 510(k) type (Traditional/Special/Abbreviated) consistent across documents |
+| 6 | Placeholder Scan | HIGH | No `[INSERT]`, `[COMPANY]`, `[DATE]` unreplaced placeholders |
+| 7 | Cross-Section Draft | HIGH | Section cross-references (e.g., "see Section 06") resolve to existing drafts |
+| 8 | Section Map | HIGH | eSTAR section numbers match content per `references/section-numbering-crossref.md` |
+| 9 | Standards | MEDIUM | Standard numbers and versions consistent across all references |
+| 10 | Dates/Freshness | LOW | All referenced dates current, no stale data (>30 days) |
+| 11 | Import Alignment | MEDIUM | Imported eSTAR data matches draft content |
+
+Report each check as PASS/FAIL with details. Note any issues in the readiness report but **do not attempt to assemble or export** — that is the submission-assembler agent's job.
 
 ### Phase 4: Readiness Report
 
@@ -121,7 +131,7 @@ Generate a final readiness report:
   FDA Submission Writer Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Project: {name} | v5.17.0
+  Generated: {date} | Project: {name} | v5.18.0
 
 DRAFTING SUMMARY
 ────────────────────────────────────────
@@ -147,17 +157,16 @@ CONSISTENCY CHECK
 
   {Results from consistency validation}
 
-READINESS SCORE
+READINESS SCORE (per references/readiness-score-formula.md)
 ────────────────────────────────────────
 
-  Overall: {score}/100
+  SRI: {score}/100 — {tier}
 
-  Scoring:
-  - Sections with content: +{N} points
-  - Consistency passed: +{N} points
-  - No [CITATION NEEDED]: +{N} points
-  - Test plan present: +{N} points
-  - Guidance analyzed: +{N} points
+  Breakdown:
+  - Mandatory sections:   {N}/50
+  - Optional sections:    {N}/15
+  - Consistency checks:   {N}/25  ({passed}/11 passed)
+  - Penalties:           -{N} ({todo_count} TODOs, {citation_count} citations, {insert_count} inserts)
 
 NEXT STEPS
 ────────────────────────────────────────

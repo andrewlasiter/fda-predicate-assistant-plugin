@@ -91,6 +91,14 @@ Using the classification data (review_panel → OHT):
 2. Identify all specialist reviewers needed (see `references/cdrh-review-structure.md` Section 2)
 3. For each reviewer, note their specific evaluation criteria
 
+    # IVD Reviewer
+    ivd_panels = {"CH", "HE", "IM", "MI", "PA", "TX"}
+    ivd_keywords = ["ivd", "diagnostic", "assay", "clia", "analyte", "specimen",
+                    "in vitro", "reagent", "immunoassay", "clinical chemistry"]
+    if (classification_data.get("review_panel") in ivd_panels or
+        any(kw in desc_lower for kw in ivd_keywords)):
+        team.append("IVD")
+
 ### Phase 4: Individual Reviewer Evaluations
 
 **Evaluate from each reviewer's perspective independently.** Do not let one reviewer's assessment influence another.
@@ -299,6 +307,49 @@ Reference `references/rta-checklist.md` — evaluate each item as PASS/FAIL:
 - For 3D-printed devices: ASTM F3122 (AM process), ASTM F2924/F3001/F3056 (specific metal alloy specs)
 - Score: material characterization items / required items
 
+**IVD** (if In Vitro Diagnostic — review panel in {CH, HE, IM, MI, PA, TX} or keywords "IVD", "diagnostic", "assay", "CLIA", "analyte", "specimen"):
+
+**Regulatory basis:** 21 CFR 809, CLIA '88, CLSI standards, FDA IVD Guidance Documents
+
+Assess each category and score:
+
+**CLIA Classification:**
+- CLIA categorization stated? (Waived, Moderate Complexity, High Complexity)
+- If CLIA waived claim: waiver study design adequate? (meets CLSI EP12, 3 untrained operators, ≥120 specimens)
+- Appropriate test system complexity (personnel, quality control, proficiency testing)?
+
+**Analytical Validation:**
+- Accuracy/method comparison study? (CLSI EP09 — 40+ specimens, Deming/Passing-Bablok regression)
+- Precision study? (CLSI EP05 — 20-day, 2 runs/day, 2 replicates, ≥3 levels)
+- Linearity/reportable range? (CLSI EP06 — polynomial regression, ≥5 levels, ≥4 replicates)
+- Analytical sensitivity (LOB/LOD/LOQ)? (CLSI EP17 — blank + low-level samples)
+- Analytical specificity/interference? (CLSI EP07 — common interferents tested at clinical concentrations)
+- Reference interval study? (CLSI EP28 — ≥120 reference individuals or transference validation)
+
+**Clinical Validation:**
+- Clinical agreement study (sensitivity/specificity/PPA/NPA)?
+- Appropriate comparator method selected?
+- Adequate specimen types and numbers?
+- Clinical sites representative of intended use population?
+
+**Specimen and Matrix:**
+- Specimen type(s) specified and validated (venous blood, capillary blood, urine, swab, etc.)?
+- Matrix effects characterized?
+- Sample stability conditions documented?
+
+**Reference Standards and Calibration:**
+- Traceability to reference materials (NIST, WHO, IFCC)?
+- Calibration method described?
+- Quality control materials specified?
+
+**Score:** IVD items addressed / IVD items required (21 items above)
+
+**IVD Deficiency Templates:**
+- "Analytical performance: The submission does not include a [precision/accuracy/linearity/LOD] study per CLSI [EP05/EP09/EP06/EP17]. Please provide [study type] data to support the analytical performance claims."
+- "Clinical performance: The clinical agreement study does not include sufficient specimens ({N} provided, ≥{M} expected) to support the intended use claim for [analyte/condition]."
+- "CLIA waiver: The CLIA waiver study design is incomplete — [missing untrained operators / insufficient specimen count / no comparison to lab method]. Refer to CLSI EP12 for waiver study requirements."
+- "Reference traceability: Calibration traceability to [NIST/WHO/IFCC] reference materials is not documented. Please provide traceability chain for the calibration of [analyte]."
+
 ### Phase 5: Cross-Reference and Synthesis
 
 1. **Identify conflicting findings** — Where one reviewer's finding affects another's assessment
@@ -314,7 +365,7 @@ Write a comprehensive report with:
 # FDA Review Simulation Report
 ## {Project Name} — {Device Name} ({Product Code})
 
-**Generated:** {date} | FDA Predicate Assistant v5.17.0
+**Generated:** {date} | FDA Predicate Assistant v5.18.0
 **Simulation depth:** Full autonomous review
 **Project completeness:** {N}% of expected files present
 

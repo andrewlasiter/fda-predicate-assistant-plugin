@@ -19,6 +19,7 @@ Usage:
 import os
 import re
 import sys
+import csv
 import time
 import json
 import math
@@ -38,6 +39,23 @@ from collections import defaultdict
 from itertools import zip_longest
 from threading import Lock
 from colorama import init, Fore, Style
+
+# Shared HTTP utilities
+try:
+    from fda_http import create_session, FDA_HEADERS
+except ImportError:
+    FDA_HEADERS = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+    }
+    def create_session(api_mode=False):
+        session = requests.Session()
+        session.headers.update(FDA_HEADERS)
+        return session
 
 # Initialize colorama
 init(autoreset=True)
@@ -211,7 +229,60 @@ Available date range keys:
                         help='Skip PDF download step (only filter and save CSV)')
     parser.add_argument('--delay', type=float, default=30.0,
                         help='Delay between downloads in seconds (default: 30)')
+    parser.add_argument('--from-manifest', type=str, default=None,
+                        help='Path to gap_manifest.csv from /fda:gap-analysis — download only need_download rows')
+    parser.add_argument('--resume', action='store_true',
+                        help='Resume interrupted download using download_progress.json checkpoint file')
     return parser.parse_args()
+
+
+def load_manifest(manifest_path):
+    """Load a gap manifest CSV from /fda:gap-analysis and filter to need_download rows.
+
+    Returns a list of K-numbers that need downloading.
+    """
+    knumbers = []
+    with open(manifest_path, 'r') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            status = row.get('STATUS', row.get('status', ''))
+            if status.strip().lower() == 'need_download':
+                knum = row.get('KNUMBER', row.get('knumber', row.get('K-number', '')))
+                if knum:
+                    knumbers.append(knum.strip())
+    return knumbers
+
+
+def load_progress(output_dir):
+    """Load download progress checkpoint file for --resume support.
+
+    Returns dict with completed/failed/skipped K-number sets.
+    """
+    progress_path = os.path.join(output_dir, 'download_progress.json')
+    if os.path.exists(progress_path):
+        with open(progress_path, 'r') as f:
+            data = json.load(f)
+        return {
+            'completed': set(data.get('completed', [])),
+            'failed': set(data.get('failed', [])),
+            'skipped': set(data.get('skipped', [])),
+        }
+    return {'completed': set(), 'failed': set(), 'skipped': set()}
+
+
+def save_progress(output_dir, progress):
+    """Save download progress atomically (temp file + rename)."""
+    progress_path = os.path.join(output_dir, 'download_progress.json')
+    tmp_path = progress_path + '.tmp'
+    data = {
+        'completed': sorted(progress['completed']),
+        'failed': sorted(progress['failed']),
+        'skipped': sorted(progress['skipped']),
+        'last_updated': datetime.now().isoformat(),
+    }
+    with open(tmp_path, 'w') as f:
+        json.dump(data, f, indent=2)
+    os.replace(tmp_path, progress_path)
 
 
 def parse_year_list(years_str):
@@ -403,19 +474,8 @@ def process_zip_file(key, data_dir):
     key = key.strip()
     zip_url = zip_dict[key]
 
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive',
-        'Referer': 'https://www.accessdata.fda.gov/',
-        'Upgrade-Insecure-Requests': '1',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'same-site',
-        'Sec-Fetch-User': '?1'
-    }
+    headers = dict(FDA_HEADERS)
+    headers['Referer'] = 'https://www.accessdata.fda.gov/'
 
     extract_path = data_dir
     file_path = os.path.join(extract_path, key + ".txt")
@@ -811,9 +871,7 @@ def main():
     df = df.sort_values("APPLICANT")
 
     # ---- Step 7: Fetch FOI Class data and display product codes ----
-    dl_headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
-    }
+    dl_headers = dict(FDA_HEADERS)
 
     foiclass_url = "https://www.accessdata.fda.gov/premarket/ftparea/foiclass.zip"
     foiclass_file_path = os.path.join(data_dir, "foiclass.txt")

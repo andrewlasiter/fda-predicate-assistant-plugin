@@ -145,7 +145,7 @@ Present the results using the standard FDA Professional CLI format:
   FDA Gap Analysis
   510(k) Data Completeness Report
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.17.0
+  Generated: {date} | v5.18.0
 
 FILTERS
 ────────────────────────────────────────
@@ -206,6 +206,20 @@ NEXT STEPS
   1. Download missing PDFs — `/fda:extract stage1 --product-codes {CODES} --years {YEARS}`
   2. Extract from existing PDFs — `/fda:extract stage2 --project {NAME}`
   3. View full status — `/fda:status`
+
+PIPELINE CHAIN (v5.18.0)
+────────────────────────────────────────
+
+  Chain the gap manifest directly into batchfetch for automated download:
+
+  python3 "$FDA_PLUGIN_ROOT/scripts/batchfetch.py" \
+    --from-manifest {manifest_path} \
+    --download-dir {pdf_dir} \
+    --resume
+
+  The --from-manifest flag reads gap_manifest.csv and downloads only
+  rows with STATUS=need_download. Use --resume to continue interrupted
+  downloads from a checkpoint file.
 
 ────────────────────────────────────────
   This report is AI-generated from public FDA data.

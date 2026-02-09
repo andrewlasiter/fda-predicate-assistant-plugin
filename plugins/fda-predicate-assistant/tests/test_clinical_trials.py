@@ -179,17 +179,17 @@ class TestPluginVersionAndCounts510:
     def test_version_is_5_10_0(self):
         with open(PLUGIN_JSON) as f:
             data = json.load(f)
-        assert data["version"] == "5.17.0"
+        assert data["version"] == "5.18.0"
 
-    def test_command_count_is_37(self):
-        """Verify 37 .md files in commands directory."""
+    def test_command_count_is_40(self):
+        """Verify 40 .md files in commands directory."""
         cmd_files = [f for f in os.listdir(CMDS_DIR) if f.endswith(".md")]
-        assert len(cmd_files) == 38, f"Expected 38 commands, found {len(cmd_files)}: {sorted(cmd_files)}"
+        assert len(cmd_files) == 40, f"Expected 40 commands, found {len(cmd_files)}: {sorted(cmd_files)}"
 
-    def test_description_mentions_37_commands(self):
+    def test_description_mentions_40_commands(self):
         with open(PLUGIN_JSON) as f:
             data = json.load(f)
-        assert "38 commands" in data["description"]
+        assert "40 commands" in data["description"]
 
     def test_skill_md_mentions_clinical_trials(self):
         """ClinicalTrials is documented in SKILL.md resources, not plugin.json description."""

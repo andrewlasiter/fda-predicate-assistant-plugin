@@ -226,65 +226,71 @@ See the **Workflow Guide** section above for the full 5-stage workflow. Here's t
 - `/fda:trials --device TERM` — ClinicalTrials.gov device study search
 - `/fda:warnings --query TERM` — FDA warning letters and enforcement
 
-## Available Commands (38)
+## Available Commands (40)
 
-### Core Pipeline
+### Stage 1: Setup
 | Command | Purpose |
 |---------|---------|
-| `/fda:pipeline` | Run the full 7-step pipeline autonomously |
+| `/fda:configure` | Set up API keys, data paths, and preferences |
+| `/fda:status` | Check what data you have and what's available |
+| `/fda:start` | Interactive onboarding wizard — detects data, recommends workflow |
+
+### Stage 2: Data Collection
+| Command | Purpose |
+|---------|---------|
 | `/fda:extract` | Download 510(k) PDFs and extract predicate relationships |
-| `/fda:review` | Score, flag, and accept/reject extracted predicates |
+| `/fda:validate` | Validate device numbers against FDA databases |
+| `/fda:research` | Full submission research — predicates, testing, competitive landscape |
 | `/fda:safety` | MAUDE adverse events and recall history |
 | `/fda:guidance` | Look up FDA guidance documents and extract requirements |
-| `/fda:presub` | Generate a Pre-Submission meeting package |
-| `/fda:submission-outline` | Generate 510(k) submission outline with gap analysis |
-| `/fda:compare-se` | Generate Substantial Equivalence comparison tables |
-
-### Research and Analysis
-| Command | Purpose |
-|---------|---------|
-| `/fda:research` | Full submission research — predicates, testing, competitive landscape |
-| `/fda:validate` | Validate device numbers against FDA databases |
-| `/fda:analyze` | Statistics and patterns across extraction results |
-| `/fda:summarize` | Compare sections across 510(k) summary PDFs |
-| `/fda:ask` | Natural language Q&A about FDA regulatory topics |
 | `/fda:literature` | PubMed/WebSearch literature review with gap analysis |
-| `/fda:lineage` | Predicate citation chain tracer across generations |
-| `/fda:standards` | FDA Recognized Consensus Standards lookup by product code, number, or keyword |
+| `/fda:warnings` | FDA warning letters and enforcement intelligence with risk scoring |
 | `/fda:inspections` | FDA Data Dashboard API — inspections, citations, compliance actions, import refusals |
 | `/fda:trials` | ClinicalTrials.gov device study search via AREA syntax |
-| `/fda:warnings` | FDA warning letters and enforcement intelligence with risk scoring |
-
-### Planning and Decision Support
-| Command | Purpose |
-|---------|---------|
-| `/fda:pathway` | Recommend optimal regulatory pathway with scoring |
-| `/fda:test-plan` | Risk-based testing plan with gap analysis |
-| `/fda:pccp` | Predetermined Change Control Plan for AI/ML devices |
-| `/fda:monitor` | Watch FDA databases for new clearances, recalls, events |
-| `/fda:draft` | Generate regulatory prose for submission sections |
-| `/fda:calc` | Regulatory calculators — shelf life (ASTM F1980), sample size, sterilization dose |
-| `/fda:propose` | Manually propose predicate and reference devices with validation and confidence scoring |
-| `/fda:pre-check` | FDA review simulation — RTA screening, deficiency prediction, readiness score |
-
-### Data Maintenance
-| Command | Purpose |
-|---------|---------|
-| `/fda:gap-analysis` | 3-way PMN/CSV/PDF cross-reference to find missing data |
-| `/fda:data-pipeline` | Data maintenance pipeline — analyze, download, extract, merge |
+| `/fda:standards` | FDA Recognized Consensus Standards lookup by product code, number, or keyword |
 | `/fda:udi` | UDI/GUDID device lookup via openFDA + AccessGUDID v3 |
 
-### Import, Export, and Assembly
+### Stage 3: Analysis
 | Command | Purpose |
 |---------|---------|
-| `/fda:import` | Import eSTAR data from PDF or XML into project data |
-| `/fda:export` | Export project data as eSTAR XML or zip package |
-| `/fda:assemble` | Assemble eSTAR-structured submission package from project data |
+| `/fda:analyze` | Statistics and patterns across extraction results |
+| `/fda:review` | Score, flag, and accept/reject extracted predicates |
+| `/fda:compare-se` | Generate Substantial Equivalence comparison tables |
+| `/fda:lineage` | Predicate citation chain tracer across generations |
+| `/fda:pathway` | Recommend optimal regulatory pathway with scoring |
+| `/fda:propose` | Manually propose predicate and reference devices with validation and confidence scoring |
+| `/fda:test-plan` | Risk-based testing plan with gap analysis |
+| `/fda:pccp` | Predetermined Change Control Plan for AI/ML devices |
+
+### Stage 4: Drafting
+| Command | Purpose |
+|---------|---------|
+| `/fda:draft` | Generate regulatory prose for submission sections |
+| `/fda:presub` | Generate a Pre-Submission meeting package |
+| `/fda:submission-outline` | Generate 510(k) submission outline with gap analysis |
 | `/fda:traceability` | Requirements Traceability Matrix (guidance → risks → tests → evidence) |
 | `/fda:consistency` | Cross-document consistency validation across project files |
 | `/fda:portfolio` | Cross-project dashboard — shared predicates, common guidance |
-| `/fda:configure` | Set up API keys, data paths, and preferences |
-| `/fda:status` | Check what data you have and what's available |
+
+### Stage 5: Assembly
+| Command | Purpose |
+|---------|---------|
+| `/fda:assemble` | Assemble eSTAR-structured submission package from project data |
+| `/fda:export` | Export project data as eSTAR XML or zip package |
+| `/fda:import` | Import eSTAR data from PDF or XML into project data |
+| `/fda:pre-check` | FDA review simulation — RTA screening, deficiency prediction, readiness score |
+| `/fda:dashboard` | Project status dashboard — readiness score, section progress, next steps |
+
+### Utility
+| Command | Purpose |
+|---------|---------|
+| `/fda:ask` | Natural language Q&A about FDA regulatory topics |
+| `/fda:calc` | Regulatory calculators — shelf life (ASTM F1980), sample size, sterilization dose |
+| `/fda:data-pipeline` | Data maintenance pipeline — analyze, download, extract, merge |
+| `/fda:gap-analysis` | 3-way PMN/CSV/PDF cross-reference to find missing data |
+| `/fda:monitor` | Watch FDA databases for new clearances, recalls, events |
+| `/fda:pipeline` | Run the full 7-step pipeline autonomously |
+| `/fda:summarize` | Compare sections across 510(k) summary PDFs |
 
 ## Agents (7)
 
@@ -348,7 +354,7 @@ Autonomous agents handle complex multi-step workflows. Launch them with the Task
 
 Each step builds on previous data but degrades gracefully if run independently.
 
-## Resources (40 references)
+## Resources (41 references)
 
 For detailed reference information, see:
 - `references/accessgudid-api.md` - AccessGUDID v3 API reference for UDI/device history lookups
@@ -390,6 +396,7 @@ For detailed reference information, see:
 - `references/standards-tracking.md` - FDA recognized consensus standards tracking (with version numbers)
 - `references/submission-structure.md` - 510(k) submission structure and Pre-Sub format
 - `references/test-plan-framework.md` - ISO 14971 risk categories and device-type test lists (10+ device types)
+- `references/readiness-score-formula.md` - Submission Readiness Index (SRI) canonical 0-100 scoring formula
 - `references/udi-requirements.md` - UDI labeling requirements and compliance reference
 
 ## Disclaimers (always include when providing regulatory guidance)

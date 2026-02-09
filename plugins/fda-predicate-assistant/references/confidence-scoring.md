@@ -222,6 +222,16 @@ With extended components: **0 to 120 points** (100 base + 20 bonus)
 
 Thresholds should be applied to the base 100-point score. Bonus points are used for tiebreaking and ranking differentiation.
 
+## Justification Narrative
+
+The `/fda:review` command generates a human-readable justification narrative for each predicate. See the Justification Narrative Algorithm in `commands/review.md` for the canonical generation rules. The narrative is stored in `review.json` as `justification_narrative` and consists of:
+
+1. **Overall assessment** sentence based on score tier
+2. **Top contributing factors** sentence based on highest-scoring components
+3. **Risk flag caveat** sentence (optional, only when flags present)
+
+This narrative provides regulatory professionals with a concise, standardized rationale for each predicate decision.
+
 ## Score Disambiguation
 
 This plugin uses two distinct scoring systems. They measure different things and should never be confused:

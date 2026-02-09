@@ -306,7 +306,7 @@ Then display the normal status report:
   FDA Pipeline Status
   Data inventory and connectivity check
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.17.0
+  Generated: {date} | v5.18.0
 
 PLUGIN SCRIPTS
 ────────────────────────────────────────
@@ -330,6 +330,9 @@ PROJECTS
   |---------|---------|---------|--------|
   | KGN_2020-2025 | 247 records, 195 PDFs | 180 devices | ✓ Complete |
   | DXY_2023 | 52 records, 48 PDFs | not run | ○ Partial |
+
+  Stage Guide:
+  1-Setup → 2-Collection → 3-Analysis → 4-Drafting → 5-Assembly
 
 SOURCE DATA
 ────────────────────────────────────────
