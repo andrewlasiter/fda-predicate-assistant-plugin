@@ -123,7 +123,7 @@ if not api_key:
 product_code = "PRODUCTCODE"  # Replace
 
 if api_enabled:
-    def fda_query(endpoint, search, limit=10, count_field=None):
+    def fda_query(endpoint, search, limit=25, count_field=None):
         params = {"search": search, "limit": str(limit)}
         if count_field:
             params["count"] = count_field
@@ -143,6 +143,8 @@ if api_enabled:
 
     # Classification lookup
     result = fda_query("classification", f'product_code:"{product_code}"')
+    total = result.get("meta", {}).get("results", {}).get("total", 0)
+    print(f"CLASSIFICATION_MATCHES:{total}")
     if result.get("results"):
         r = result["results"][0]
         print(f"DEVICE_NAME:{r.get('device_name', 'N/A')}")
@@ -166,6 +168,8 @@ else:
     print("API_FALLBACK:true")
 PYEOF
 ```
+
+**Deliberation:** If `CLASSIFICATION_MATCHES` > 1, list all returned records and select the one whose `device_name` and `definition` best match the user's device description. If no device description is available, use the first result but note the ambiguity.
 
 ### 2B: Flat-File Fallback
 
@@ -243,7 +247,7 @@ if not api_enabled:
 
 product_code = "PRODUCTCODE"  # Replace
 
-def fda_query(endpoint, search, limit=10, count_field=None):
+def fda_query(endpoint, search, limit=25, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -286,9 +290,11 @@ else:
 
 # Active recalls
 time.sleep(0.5)
-active = fda_query("recall", f'product_code:"{product_code}"+AND+recall_status:"Ongoing"', limit=5)
+active = fda_query("recall", f'product_code:"{product_code}"+AND+recall_status:"Ongoing"', limit=25)
 if active.get("results"):
+    active_total = active.get("meta", {}).get("results", {}).get("total", 0)
     print(f"\nACTIVE_RECALLS:{len(active['results'])}")
+    print(f"SHOWING:{len(active['results'])}_OF:{active_total}")
     for r in active["results"]:
         print(f"ACTIVE:{r.get('recalling_firm','N/A')}|{r.get('recall_status','N/A')}|{r.get('reason_for_recall','N/A')[:100]}")
 else:
@@ -1337,7 +1343,7 @@ if not api_enabled:
 
 product_code = "PRODUCTCODE"  # Replace
 
-def fda_query(endpoint, search, limit=10, count_field=None):
+def fda_query(endpoint, search, limit=25, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -1356,9 +1362,11 @@ def fda_query(endpoint, search, limit=10, count_field=None):
         return {"error": str(e)}
 
 # PMA count and recent approvals
-pma_result = fda_query("pma", f'product_code:"{product_code}"', limit=20)
+pma_result = fda_query("pma", f'product_code:"{product_code}"', limit=50)
 total = pma_result.get("meta", {}).get("results", {}).get("total", 0)
+returned = len(pma_result.get("results", []))
 print(f"PMA_TOTAL:{total}")
+print(f"SHOWING:{returned}_OF:{total}")
 
 if pma_result.get("results"):
     for r in pma_result["results"][:10]:
@@ -1424,7 +1432,7 @@ if not api_enabled:
 
 product_code = "PRODUCTCODE"  # Replace
 
-def fda_query(endpoint, search, limit=10, count_field=None):
+def fda_query(endpoint, search, limit=25, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -1503,7 +1511,7 @@ if not api_enabled:
 
 product_code = "PRODUCTCODE"  # Replace
 
-def fda_query(endpoint, search, limit=10, count_field=None):
+def fda_query(endpoint, search, limit=25, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -1673,7 +1681,7 @@ product_code = "PRODUCTCODE"  # Replace
 # AI/ML-associated product codes for cross-referencing
 AIML_CODES = ["QAS", "QIH", "QMT", "QJU", "QKQ", "QPN", "QRZ", "DXL", "DPS", "MYN", "OTB"]
 
-def fda_query(endpoint, search, limit=10, count_field=None):
+def fda_query(endpoint, search, limit=25, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -1699,7 +1707,7 @@ print(f"IS_AIML_CODE:{is_aiml}")
 print("=== AI/ML DEVICE SEARCH ===")
 ai_keywords = ["artificial intelligence", "machine learning", "algorithm", "deep learning", "neural network", "computer aided", "computer assisted", "CAD", "automated detection"]
 for kw in ai_keywords[:3]:  # Limit API calls
-    result = fda_query("510k", f'product_code:"{product_code}"+AND+device_name:"{kw}"', limit=5)
+    result = fda_query("510k", f'product_code:"{product_code}"+AND+device_name:"{kw}"', limit=10)
     total = result.get("meta", {}).get("results", {}).get("total", 0)
     if total > 0:
         print(f"AI_KEYWORD:{kw}:{total}")
@@ -1719,7 +1727,7 @@ if is_aiml:
 
 # PCCP-authorized devices in this product code
 print("\n=== PCCP CHECK ===")
-pccp_result = fda_query("510k", f'product_code:"{product_code}"+AND+device_name:"predetermined change"', limit=5)
+pccp_result = fda_query("510k", f'product_code:"{product_code}"+AND+device_name:"predetermined change"', limit=10)
 pccp_total = pccp_result.get("meta", {}).get("results", {}).get("total", 0)
 print(f"PCCP_DEVICES:{pccp_total}")
 PYEOF

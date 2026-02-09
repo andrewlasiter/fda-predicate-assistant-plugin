@@ -87,7 +87,7 @@ elif search_type == "fei":
 else:
     query = f'recalling_firm:"{search_term}"'
 
-params = {"search": query, "limit": "25", "sort": "report_date:desc"}
+params = {"search": query, "limit": "50", "sort": "report_date:desc"}
 if api_key:
     params["api_key"] = api_key
 
@@ -97,7 +97,9 @@ try:
     with urllib.request.urlopen(req, timeout=15) as resp:
         data = json.loads(resp.read())
         total = data.get("meta", {}).get("results", {}).get("total", 0)
+        returned = len(data.get("results", []))
         print(f"TOTAL_RECALLS:{total}")
+        print(f"SHOWING:{returned}_OF:{total}")
         for r in data.get("results", []):
             print(f"RECALL:{r.get('recall_number','N/A')}|{r.get('classification','N/A')}|{r.get('recalling_firm','N/A')}|{r.get('product_description','N/A')[:80]}|{r.get('recall_initiation_date','N/A')}|{r.get('reason_for_recall','N/A')[:100]}|{r.get('status','N/A')}|{r.get('voluntary_mandated','N/A')}")
 except urllib.error.HTTPError as e:

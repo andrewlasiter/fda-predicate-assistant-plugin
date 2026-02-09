@@ -109,7 +109,9 @@ try:
     with urllib.request.urlopen(req, timeout=15) as resp:
         data = json.loads(resp.read())
         total = data.get("meta", {}).get("results", {}).get("total", 0)
+        returned = len(data.get("results", []))
         print(f"TOTAL:{total}")
+        print(f"SHOWING:{returned}_OF:{total}")
         for r in data.get("results", []):
             print(f"=== UDI RECORD ===")
             print(f"COMPANY:{r.get('company_name', 'N/A')}")

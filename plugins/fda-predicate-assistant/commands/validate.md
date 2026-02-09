@@ -334,7 +334,7 @@ if not api_enabled:
 knumber = "KNUMBER"          # Replace with actual K-number
 product_code = "PRODUCTCODE" # Replace with product code from Step 2
 
-def fda_query(endpoint, search, limit=5, count_field=None):
+def fda_query(endpoint, search, limit=10, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -368,6 +368,9 @@ else:
 # 2. Recall check for this specific K-number
 print("--- RECALLS ---")
 recalls = fda_query("recall", f'k_numbers:"{knumber}"', limit=10)
+recall_total = recalls.get("meta", {}).get("results", {}).get("total", 0)
+recall_returned = len(recalls.get("results", []))
+print(f"SHOWING:{recall_returned}_OF:{recall_total}")
 if recalls.get("results"):
     print(f"RECALL_COUNT:{len(recalls['results'])}")
     for r in recalls["results"]:

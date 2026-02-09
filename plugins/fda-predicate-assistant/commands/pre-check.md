@@ -156,7 +156,7 @@ if os.path.exists(settings_path):
 product_code = "PRODUCTCODE"  # Replace
 
 if api_enabled:
-    params = {"search": f'product_code:"{product_code}"', "limit": "1"}
+    params = {"search": f'product_code:"{product_code}"', "limit": "5"}
     if api_key:
         params["api_key"] = api_key
     url = f"https://api.fda.gov/device/classification.json?{urllib.parse.urlencode(params)}"
@@ -164,6 +164,8 @@ if api_enabled:
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read())
+            total = data.get("meta", {}).get("results", {}).get("total", 0)
+            print(f"CLASSIFICATION_MATCHES:{total}")
             if data.get("results"):
                 r = data["results"][0]
                 print(f"DEVICE_NAME:{r.get('device_name', 'N/A')}")

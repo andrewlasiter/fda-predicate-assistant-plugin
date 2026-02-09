@@ -323,7 +323,7 @@ devices = [
     {"knumber": "K123456", "product_code": "KGN", "applicant": "COMPANY"},
 ]
 
-def fda_query(endpoint, search, limit=5, count_field=None):
+def fda_query(endpoint, search, limit=10, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -351,6 +351,9 @@ recall_by_pc = {}
 if unique_pcs:
     recall_search = "+OR+".join(f'product_code:"{pc}"' for pc in unique_pcs)
     recalls = fda_query("recall", recall_search, limit=50)
+    recall_total = recalls.get("meta", {}).get("results", {}).get("total", 0)
+    recall_returned = len(recalls.get("results", []))
+    print(f"SHOWING:{recall_returned}_OF:{recall_total}")
     for r in recalls.get("results", []):
         rpc = r.get("product_code", "")
         if rpc not in recall_by_pc:
@@ -415,7 +418,7 @@ if os.path.exists(settings_path):
 product_codes_to_check = ["PC1", "PC2"]  # Replace with unique product codes
 if product_codes_to_check:
     enforcement_search = "+OR+".join(f'product_code:"{pc}"' for pc in product_codes_to_check)
-    params = {"search": enforcement_search, "limit": "10"}
+    params = {"search": enforcement_search, "limit": "25"}
     if api_key:
         params["api_key"] = api_key
     params["search"] = params["search"].replace("+", " ")
@@ -425,7 +428,9 @@ if product_codes_to_check:
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read())
             total = data.get('meta', {}).get('results', {}).get('total', 0)
+            returned = len(data.get('results', []))
             print(f"ENFORCEMENT_TOTAL:{total}")
+            print(f"SHOWING:{min(returned, 5)}_OF:{total}")
             for r in data.get('results', [])[:5]:
                 print(f"ENFORCEMENT:{r.get('product_code', '?')}|{r.get('classification', '?')}|{r.get('status', '?')}|{r.get('reason_for_recall', 'N/A')[:80]}")
     except urllib.error.HTTPError as e:
@@ -437,6 +442,8 @@ if product_codes_to_check:
         print(f"ENFORCEMENT_ERROR:{e}")
 PYEOF
 ```
+
+**Deliberation:** If `SHOWING:X_OF:Y` where Y > X, note to the user that additional enforcement results exist beyond the returned batch and offer to fetch more if the initial results don't contain the expected data.
 
 If enforcement action found with `classification: "Class I"` or `status: "Ongoing"`: Flag `ENFORCEMENT_ACTION`.
 If any predicate's clearance has been revoked or withdrawn (check enforcement `reason_for_recall` for "withdrawal" or "revocation" language): Flag `WITHDRAWN`. A withdrawn predicate is **NOT legally marketed** and cannot serve as a valid predicate device.

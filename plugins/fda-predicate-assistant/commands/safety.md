@@ -91,7 +91,7 @@ if os.path.exists(settings_path):
             api_key = m.group(1)
 
 product_code = "PRODUCTCODE"  # Replace
-params = {"search": f'product_code:"{product_code}"', "limit": "1"}
+params = {"search": f'product_code:"{product_code}"', "limit": "5"}
 if api_key:
     params["api_key"] = api_key
 url = f"https://api.fda.gov/device/classification.json?{urllib.parse.urlencode(params)}"
@@ -99,6 +99,8 @@ req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugi
 try:
     with urllib.request.urlopen(req, timeout=15) as resp:
         data = json.loads(resp.read())
+        total = data.get("meta", {}).get("results", {}).get("total", 0)
+        print(f"CLASSIFICATION_MATCHES:{total}")
         if data.get("results"):
             r = data["results"][0]
             print(f"DEVICE_NAME:{r.get('device_name', 'N/A')}")
@@ -107,6 +109,9 @@ try:
             print(f"PANEL:{r.get('medical_specialty_description', r.get('review_panel', 'N/A'))}")
 except Exception as e:
     print(f"ERROR:{e}")
+
+# Deliberation: If CLASSIFICATION_MATCHES > 1, log all matches and select
+# the one with the highest total clearance count (most commonly cleared variant).
 
 # Also count total clearances for context
 params2 = {"search": f'product_code:"{product_code}"', "limit": "1"}
@@ -145,7 +150,7 @@ if os.path.exists(settings_path):
 regulation_number = "REGULATION"  # From Step 1
 product_code = "PRODUCTCODE"  # Replace
 
-def fda_query(endpoint, search, limit=10, count_field=None):
+def fda_query(endpoint, search, limit=25, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -235,7 +240,7 @@ if os.path.exists(settings_path):
 
 product_code = "PRODUCTCODE"  # Replace
 
-def fda_query(endpoint, search, limit=10, count_field=None):
+def fda_query(endpoint, search, limit=25, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -325,7 +330,7 @@ product_code = "PRODUCTCODE"  # Replace
 
 params = {
     "search": f'device.device_report_product_code:"{product_code}"+AND+date_received:[20230101+TO+20261231]',
-    "limit": "25",  # Default sample size; use --sample-size flag to override (max 100)
+    "limit": "50",  # Default sample size; use --sample-size flag to override (max 100)
     "sort": "date_received:desc"  # Most recent events first
 }
 if api_key:
@@ -336,6 +341,9 @@ req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugi
 try:
     with urllib.request.urlopen(req, timeout=30) as resp:
         data = json.loads(resp.read())
+        narrative_total = data.get("meta", {}).get("results", {}).get("total", 0)
+        returned = len(data.get("results", []))
+        print(f"SHOWING:{returned}_OF:{narrative_total}")
         if data.get("results"):
             for i, event in enumerate(data["results"]):
                 event_type = event.get("event_type", "Unknown")
@@ -387,7 +395,7 @@ if os.path.exists(settings_path):
 
 product_code = "PRODUCTCODE"  # Replace
 
-def fda_query(endpoint, search, limit=10, count_field=None, sort=None):
+def fda_query(endpoint, search, limit=25, count_field=None, sort=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -421,7 +429,10 @@ else:
 # Recent recalls with details — sorted by most recent termination date
 time.sleep(0.5)
 print("\n=== RECENT RECALLS ===")
-recent = fda_query("recall", f'product_code:"{product_code}"', limit=20, sort="event_date_terminated:desc")
+recent = fda_query("recall", f'product_code:"{product_code}"', limit=50, sort="event_date_terminated:desc")
+recent_total = recent.get("meta", {}).get("results", {}).get("total", 0)
+returned = len(recent.get("results", []))
+print(f"SHOWING:{returned}_OF:{recent_total}")
 if recent.get("results"):
     for r in recent["results"]:
         event_num = r.get("res_event_number", "N/A")
@@ -481,7 +492,7 @@ if os.path.exists(settings_path):
 
 knumber = "KNUMBER"  # Replace
 
-def fda_query(endpoint, search, limit=10):
+def fda_query(endpoint, search, limit=25):
     params = {"search": search, "limit": str(limit)}
     if api_key:
         params["api_key"] = api_key

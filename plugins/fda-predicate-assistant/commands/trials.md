@@ -60,10 +60,12 @@ If `--product-code` is provided, first look up the device type name from openFDA
 python3 << 'PYEOF'
 import urllib.request, urllib.parse, json
 code = "PRODUCT_CODE"  # Replace with actual
-url = f"https://api.fda.gov/device/classification.json?search=product_code:{code}&limit=1"
+url = f"https://api.fda.gov/device/classification.json?search=product_code:{code}&limit=5"
 try:
     with urllib.request.urlopen(url, timeout=10) as resp:
         data = json.loads(resp.read())
+        total = data.get("meta", {}).get("results", {}).get("total", 0)
+        print(f"CLASSIFICATION_MATCHES:{total}")
         for r in data.get("results", []):
             print(f"DEVICE_NAME:{r.get('device_name', '')}")
             print(f"DEFINITION:{r.get('definition', '')[:200]}")
@@ -127,7 +129,9 @@ try:
         data = json.loads(resp.read())
 
     total = data.get("totalCount", 0)
+    returned = len(data.get("studies", []))
     print(f"TOTAL:{total}")
+    print(f"SHOWING:{returned}_OF:{total}")
 
     for study in data.get("studies", []):
         proto = study.get("protocolSection", {})
