@@ -1,5 +1,44 @@
 # Changelog
 
+## [5.18.0] - 2026-02-09
+
+### Added — Sprint 5 Short-Term Items (15-30)
+
+**New Commands:**
+- `/fda:start` — Interactive onboarding wizard: guides new users through first project setup, product code identification, and personalized workflow recommendation
+- `/fda:dashboard` — Project status dashboard: Submission Readiness Index (SRI) scoring, section completion tracking, and next-action suggestions
+
+**Command & Agent Enhancements:**
+- 5-stage command grouping in SKILL.md (40 commands, 41 references): Setup → Data Collection → Analysis → Drafting → Assembly + Utility
+- `references/readiness-score-formula.md` — Canonical SRI formula (6-component weighted score, 5 tiers)
+- `scripts/fda_http.py` — Shared FDA HTTP utility with retry, caching, and rate limiting for all API calls
+- `--section-aware` and `--enrich` flags on predicate_extractor.py for weighted SE extraction and openFDA augmentation
+- `--from-manifest` and `--resume` flags on batchfetch.py for pipeline chaining and interrupted download recovery
+- IVD Reviewer in review-simulator agent (CLIA classification, CLSI EP series, analytical/clinical validation)
+- AccessGUDID intelligence step in research-intelligence agent (11 steps, up from 10)
+- Safety-literature cross-reference correlation in research-intelligence synthesis
+- Justification narrative algorithm in `/fda:review` for predicate accept/reject rationale
+- 11-check consistency expansion in submission-writer agent (up from 8 checks)
+- Gap-analysis → batchfetch `--from-manifest` pipeline chain
+
+### Tests
+- 205 new tests across 4 new test files (test_v518_features, test_batchfetch, test_presub, test_sri_scoring)
+- UDI API test fix (wrong field name `products.product_code` → `product_codes.code`)
+- Total: 1,998 (1,997 pass, 1 skip)
+
+## [5.17.0] - 2026-02-09
+
+### Fixed — Sprint 5 Remediation (14 immediate items from 8-agent review)
+- Incremental merge fix: true row merging with column repadding (was overwriting existing rows)
+- 3 new reviewer templates in review-simulator: Reprocessing, Packaging, Materials
+- Check 11 eSTAR section map alignment (section numbering now matches estar-structure.md)
+- Merge column header guidance: canonical column order documented for CSV output
+- `references/section-numbering-crossref.md` — Section numbering cross-reference between eSTAR, draft, and export
+
+### Tests
+- 59 new tests (version assertions, merge logic, reviewer templates, section mapping)
+- Total: 1,793 (1,791 pass, 2 skip)
+
 ## [5.16.0] - 2026-02-09
 
 ### Added — Sprint 4 Remediation (42 items from 8-agent review)

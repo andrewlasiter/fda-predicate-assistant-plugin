@@ -14,6 +14,9 @@ Starting with only a product code and device description, build a complete submi
 ### Steps
 
 ```
+Step 0: Onboarding (first time only)
+/fda:start
+
 Step 1: Research the landscape
 /fda:research OVE --competitor-deep
 
@@ -49,7 +52,10 @@ Step 8: Validate consistency
 Step 9: Assemble eSTAR package
 /fda:assemble --project my-device
 
-Step 10: Export for submission
+Step 10: Check project readiness
+/fda:dashboard --project my-device
+
+Step 11: Export for submission
 /fda:export --project my-device --format xml
 ```
 
@@ -162,8 +168,10 @@ It will execute Steps 1-6 autonomously.
 
 ## Tips for All Workflows
 
-1. **Start with `/fda:research`** — It gives you the landscape before diving into extraction
-2. **Use `--project NAME` consistently** — All commands build on the same project data
-3. **Run `/fda:consistency` before export** — Catches contradictions early
-4. **Fill `[TODO:]` items before submission** — These mark company-specific data only you can provide
-5. **Always have regulatory team review** — AI drafts are a starting point, not a finished submission
+1. **New users: run `/fda:start` first** — The onboarding wizard guides you through setup and recommends a personalized workflow
+2. **Start with `/fda:research`** — It gives you the landscape before diving into extraction
+3. **Use `--project NAME` consistently** — All commands build on the same project data
+4. **Run `/fda:consistency` before export** — Catches contradictions early
+5. **Use `/fda:dashboard --project NAME` for progress tracking** — See your Submission Readiness Index and what's left to do
+6. **Fill `[TODO:]` items before submission** — These mark company-specific data only you can provide
+7. **Always have regulatory team review** — AI drafts are a starting point, not a finished submission

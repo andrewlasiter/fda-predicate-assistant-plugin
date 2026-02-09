@@ -157,6 +157,38 @@ Per-device-type examples showing common command usage patterns.
 
 ---
 
+## In Vitro Diagnostic (IVD) — Product Code JJX
+
+```bash
+# Research the IVD landscape
+/fda:research JJX --competitor-deep
+
+# Extract predicates from recent clearances
+/fda:extract both --product-code JJX --years 2020-2025 --project ivd-assay
+
+# Review predicates
+/fda:review --project ivd-assay
+
+# Guidance analysis (expect: IVD guidance, analytical validation, clinical validation)
+/fda:guidance JJX --save --project ivd-assay
+
+# Pre-check triggers the IVD reviewer (CLIA, CLSI EP series, analytical/clinical validation)
+/fda:pre-check --project ivd-assay
+
+# Draft device description
+/fda:draft device-description --project ivd-assay --device-description "Automated immunoassay for quantitative measurement of cardiac troponin I in human serum and plasma"
+```
+
+**Key considerations for IVD devices:**
+- CLIA classification determines testing complexity (waived, moderate, high)
+- CLSI EP series: EP05 (precision), EP06 (linearity), EP07 (interference), EP09 (method comparison), EP17 (LoB/LoD/LoQ)
+- Analytical validation: accuracy, precision, linearity, reportable range, interfering substances
+- Clinical validation: method comparison with predicate, reference standard, or clinical truth
+- Reference standards traceability (NIST, WHO, manufacturer-specific calibrators)
+- IVD-specific eSTAR template (IVD v6) vs. non-IVD template (nIVD v6)
+
+---
+
 ## Tips by Device Complexity
 
 ### Simple devices (wound dressings, bandages, tongue depressors)
