@@ -118,18 +118,20 @@ class TestExtractBatching:
 
 
 class TestSafetyBatching:
-    """safety.md should use OR batch for peer events and count_field for year trends."""
+    """safety.md should use fda_data_store for API access and batch operations."""
 
-    def test_peer_benchmark_uses_or_or_count(self):
+    def test_peer_benchmark_uses_data_store_or_batch(self):
         content = _read(SAFETY_PATH)
-        # Should use either OR query or count_field for peer benchmarking
-        assert ("+OR+" in content or
+        # v5.19.0+ migrated to fda_data_store.py for API access
+        assert ("fda_data_store" in content or "+OR+" in content or
                 'count_field="device.device_report_product_code.exact"' in content)
 
-    def test_events_by_year_uses_count_field(self):
+    def test_events_by_year_uses_data_store_or_count(self):
         content = _read(SAFETY_PATH)
-        assert 'count_field="date_received"' in content, \
-            "safety.md should use count_field for year trend (not year-by-year loop)"
+        # v5.19.0+ uses fda_data_store.py which handles count queries internally
+        assert ('count_field="date_received"' in content or
+                "fda_data_store" in content), \
+            "safety.md should use fda_data_store or count_field for year trend"
 
     def test_no_year_range_loop(self):
         """Year-by-year loop should be replaced with single count query."""
@@ -149,15 +151,18 @@ class TestSafetyBatching:
 
 
 class TestResearchBatching:
-    """research.md should use OR batch for predicate lookups."""
+    """research.md should use fda_data_store or OR batch for predicate lookups."""
 
-    def test_research_has_or_batch(self):
+    def test_research_has_data_store_or_batch(self):
         content = _read(RESEARCH_PATH)
-        assert "+OR+" in content, "research.md should use OR batch queries"
+        # v5.19.0+ migrated to fda_data_store.py for API access
+        assert ("fda_data_store" in content or "+OR+" in content), \
+            "research.md should use fda_data_store or OR batch queries"
 
-    def test_research_batch_search_pattern(self):
+    def test_research_batch_or_data_store_pattern(self):
         content = _read(RESEARCH_PATH)
-        assert "batch_search" in content
+        assert ("batch_search" in content or "fda_data_store" in content), \
+            "research.md should use fda_data_store or batch_search pattern"
 
 
 class TestValidateSort:
@@ -206,22 +211,24 @@ class TestLineageBatching:
 
 
 class TestReviewBatching:
-    """review.md should use batch OR queries."""
+    """review.md should use fda_data_store or batch OR queries."""
 
-    def test_review_product_code_batch(self):
+    def test_review_product_code_data_store_or_batch(self):
         content = _read(REVIEW_PATH)
-        assert "Batch lookup" in content or "batch_search" in content, \
-            "review.md Step 3C should batch product code lookups"
+        assert ("fda_data_store" in content or "Batch lookup" in content or
+                "batch_search" in content), \
+            "review.md should use fda_data_store or batch product code lookups"
 
-    def test_review_safety_batch(self):
+    def test_review_safety_data_store_or_batch(self):
         content = _read(REVIEW_PATH)
-        assert "Batch safety check" in content or "Batch recall check" in content, \
-            "review.md Step 3E should batch safety checks"
+        assert ("fda_data_store" in content or "Batch safety check" in content or
+                "Batch recall check" in content), \
+            "review.md should use fda_data_store or batch safety checks"
 
-    def test_review_fda_query_has_count_field(self):
+    def test_review_fda_query_has_data_store_or_count(self):
         content = _read(REVIEW_PATH)
-        assert "count_field" in content, \
-            "review.md fda_query should support count_field parameter"
+        assert ("fda_data_store" in content or "count_field" in content), \
+            "review.md should use fda_data_store or count_field parameter"
 
 
 class TestCompareSEBatching:
