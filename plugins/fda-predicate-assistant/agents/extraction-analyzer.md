@@ -54,10 +54,9 @@ Search for extraction output files:
 ### Step 2: Parse and Analyze output.csv
 
 The CSV has this structure:
-- Column 1: 510(k) Number (the submission being analyzed)
-- Column 2: Product Code
-- Column 3: Document Type (Statement/Summary)
-- Columns 4+: Predicate 1, Predicate 2, ... Predicate 100
+- Column 1: `510(k)` — the submission K-number being analyzed
+- Column 2: `Product Code` — FDA product code
+- Columns 3+: `Predicate 1`, `Predicate 2`, ... then `Reference Device 1`, `Reference Device 2`, ...
 
 Calculate:
 - Total submissions processed
@@ -154,7 +153,7 @@ If review.json exists or `--full-auto` is active, perform automatic predicate tr
 2. For each candidate predicate:
    - Score using the confidence scoring algorithm (see `references/confidence-scoring.md`)
    - Auto-accept predicates scoring 80+ (Strong)
-   - Auto-reject predicates scoring below 20 (Weak)
+   - Auto-reject predicates scoring below 20 (Reject)
    - Flag predicates 20-79 for manual review
 3. Write triage results to `review_auto.json`
 4. Report triage summary with accepted/rejected/flagged counts

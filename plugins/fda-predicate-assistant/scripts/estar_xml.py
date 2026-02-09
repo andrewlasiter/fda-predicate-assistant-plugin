@@ -634,6 +634,20 @@ def _build_estar_xml(project_data, template_type):
         lines.append(f"        <Description>{_xml_escape(clin_text)}</Description>")
     lines.append("      </Clinical>")
 
+    # Standards / Declaration of Conformity
+    doc_text = drafts.get("doc", "")
+    lines.append("      <Standards>")
+    if doc_text:
+        lines.append(f"        <DeclarationOfConformity>{_xml_escape(doc_text)}</DeclarationOfConformity>")
+    lines.append("      </Standards>")
+
+    # Human Factors
+    hf_text = drafts.get("human-factors", "")
+    if hf_text:
+        lines.append("      <HumanFactors>")
+        lines.append(f"        <Description>{_xml_escape(hf_text)}</Description>")
+        lines.append("      </HumanFactors>")
+
     lines.append("    </form1>")
     lines.append("  </xfa:data>")
     lines.append("</xfa:datasets>")

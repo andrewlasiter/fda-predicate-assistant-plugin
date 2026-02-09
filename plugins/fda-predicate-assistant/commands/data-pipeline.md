@@ -83,30 +83,44 @@ cat ~/.claude/fda-predicate-assistant.local.md 2>/dev/null
 The pipeline expects this directory structure:
 
 ```
-/mnt/c/510k/Python/
-├── PredicateExtraction/       ← Scripts, PMN files, manifests
-│   ├── gap_analysis.py
-│   ├── gap_downloader.py
-│   ├── Test69a_final_ocr_smart_v2.py
-│   ├── merge_outputs.py
-│   ├── pipeline.py            ← Orchestrator
-│   ├── pmn96cur.txt           ← FDA PMN database
-│   ├── gap_manifest.csv       ← Gap analysis output
-│   └── download_progress.json ← Download resume state
-└── download/510k/             ← PDF corpus + baseline CSV
-    ├── 510k_output.csv        ← Baseline extraction results
-    ├── 510k_output_updated.csv← Merged results
-    └── {YEAR}/                ← PDFs organized by year
-        └── {Applicant}/{ProductCode}/{Type}/{K-number}.pdf
+{repo_dir}/                    ← Scripts, PMN files, manifests
+├── gap_analysis.py
+├── gap_downloader.py
+├── Test69a_final_ocr_smart_v2.py
+├── merge_outputs.py
+├── pipeline.py                ← Orchestrator
+├── pmn96cur.txt               ← FDA PMN database
+├── gap_manifest.csv           ← Gap analysis output
+└── download_progress.json     ← Download resume state
+{pdf_dir}/                     ← PDF corpus + baseline CSV
+├── 510k_output.csv            ← Baseline extraction results
+├── 510k_output_updated.csv    ← Merged results
+└── {YEAR}/                    ← PDFs organized by year
+    └── {Applicant}/{ProductCode}/{Type}/{K-number}.pdf
 ```
+
+Paths are resolved from settings (`~/.claude/fda-predicate-assistant.local.md`):
+- `repo_dir` — from `extraction_dir` setting (default: `~/fda-510k-data/extraction`)
+- `pdf_dir` — from `pdf_dir` setting (default: `~/fda-510k-data/pdfs`)
 
 Auto-detect paths:
 
 ```bash
 python3 -c "
-import os
-repo = '/mnt/c/510k/Python/PredicateExtraction'
-dl = '/mnt/c/510k/Python/download/510k'
+import os, re
+
+# Resolve paths from settings
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+repo = os.path.expanduser('~/fda-510k-data/extraction')
+dl = os.path.expanduser('~/fda-510k-data/pdfs')
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        content = f.read()
+    m = re.search(r'extraction_dir:\s*(.+)', content)
+    if m: repo = os.path.expanduser(m.group(1).strip())
+    m = re.search(r'pdf_dir:\s*(.+)', content)
+    if m: dl = os.path.expanduser(m.group(1).strip())
+
 checks = {
     'PIPELINE_SCRIPT': os.path.join(repo, 'pipeline.py'),
     'GAP_ANALYSIS': os.path.join(repo, 'gap_analysis.py'),
@@ -134,7 +148,7 @@ If `pipeline.py` is found, use it as the orchestrator. If not, fall back to runn
 If `pipeline.py` exists at the detected path, use it directly:
 
 ```bash
-REPO_DIR="/mnt/c/510k/Python/PredicateExtraction"
+REPO_DIR="$REPO_DIR"  # Resolved from settings above
 python3 "$REPO_DIR/pipeline.py" {subcommand} {flags}
 ```
 

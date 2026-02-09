@@ -106,7 +106,7 @@ python3 -c "
 import os, glob
 search_paths = [
     os.path.expanduser('~/fda-510k-data'),
-    '/mnt/c/510k/Python/PredicateExtraction',
+    os.path.expanduser('~/fda-510k-data/extraction'),
     os.getcwd(),
 ]
 for base in search_paths:

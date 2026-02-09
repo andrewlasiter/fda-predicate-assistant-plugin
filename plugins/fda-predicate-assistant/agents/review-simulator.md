@@ -181,6 +181,28 @@ Reference `references/rta-checklist.md` — evaluate each item as PASS/FAIL:
 - Particular standards identified?
 - Score: standards addressed / standards required
 
+**Human Factors** (if applicable):
+- Use environment described?
+- User profile(s) identified?
+- Critical tasks identified with use-error risk analysis?
+- Formative evaluation conducted?
+- Summative (validation) study with minimum 15 participants per user group?
+- IEC 62366-1 referenced?
+- Score: HF documentation items / required items
+
+**Clinical** (if applicable):
+- Clinical evidence strategy stated? (testing only, literature, or study)
+- Literature review conducted with documented search strategy?
+- Adverse event analysis (MAUDE) included?
+- Risk-benefit analysis provided?
+- Score: clinical evidence items / required items
+
+**MRI Safety** (if applicable):
+- MR Conditional or MR Safe labeling claim?
+- ASTM F2052, F2213, F2119, F2182 testing referenced?
+- MR Conditional labeling per ASTM F2503?
+- Score: MRI tests completed / tests required
+
 ### Phase 5: Cross-Reference and Synthesis
 
 1. **Identify conflicting findings** — Where one reviewer's finding affects another's assessment

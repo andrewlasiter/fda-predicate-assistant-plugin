@@ -1,5 +1,133 @@
 # Changelog
 
+## [5.15.0] - 2026-02-08
+
+### Changed — Guidance Matching Accuracy Overhaul
+- 3-tier guidance trigger system: API flags (Tier 1) → word-boundary keywords (Tier 2) → classification heuristics (Tier 3)
+- AccessGUDID sterilization, MRI safety, and latex queries (Step 1.5 in guidance.md)
+- Negation-aware `kw_match()` — skips matches preceded by "not", "non-", "without"
+- 6 new cross-cutting guidance categories: 3D printing, animal-derived, home use, pediatric, latex, electrical
+- Expanded keyword lists — eliminated all 2-3 character ambiguous keywords ("ai" → "artificial intelligence", "rf" → "rf wireless", etc.)
+- Word-boundary regex replaces substring matching in guidance.md and research.md
+
+### Changed — Sprint 1 Agent Fixes
+- AskUserQuestion added to all 7 agents' tool lists
+- Scoring rubric aligned to `confidence-scoring.md` across review-simulator and extraction-analyzer
+- RTA checklist expanded from 7 to 16 items (8 administrative + 8 content completeness)
+- submission-writer expanded from 16 to 18 draft sections
+- Draft file output: `draft_*.md` flat files in project root (removed `drafts/` subdirectory convention)
+- data-pipeline-manager paths made configurable via settings
+- presub-planner command map added for Pre-Sub → pipeline integration
+- All version strings updated to v5.15.0
+
+### Fixed — Sprint 2 (7-Agent Self-Review Remediation)
+- `export.md` ZIP section map: added 4 missing draftable sections (predicate-justification, testing-rationale, doc, human-factors)
+- `draft-templates.md` title corrected from "16" to "18" sections; added full templates for device-description, se-discussion, performance-summary, predicate-justification, testing-rationale
+- `predicate_extractor.py` error_log.txt now writes to output directory instead of CWD
+- `extraction-analyzer.md` CSV column description corrected (no Document Type column; includes Reference Device columns)
+- `extraction-analyzer.md` score label fixed: below-20 threshold labeled "Reject" (was "Weak")
+- `references/` directory synced with `skills/fda-510k-knowledge/references/` (34 missing files copied)
+- `estar_xml.py` XML generation expanded to 18 sections (added Standards/DoC, Human Factors)
+- `review-simulator.md` added specialist templates for Human Factors, Clinical, MRI Safety
+- `safety.md` added WebSearch to allowed-tools
+- `data-pipeline.md` and `gap-analysis.md` hardcoded WSL paths replaced with settings-based resolution
+- `CHANGELOG.md` added entries for versions 5.8.0 through 5.15.0 (was missing 8 versions)
+
+### Added — Testing
+- 107 new accuracy tests in `test_guidance_accuracy.py`: false positive resistance (20), false negative resistance (20), API flag priority (10), device scenarios (15), keyword matching (42)
+- 1,526 total tests (1,488 offline + 38 API)
+
+## [5.14.0] - 2026-02-08
+
+### Changed — Full Functional Audit & Remediation
+- allowed-tools fixes: AskUserQuestion added to review, compare-se; Write added to safety, validate, summarize, analyze, consistency
+- SKILL.md updated: 38 commands, 40 references, 7 agents, workflow guide
+- Agent cold-start prerequisites documented (what data must exist before agent runs)
+- submission-writer/submission-assembler deduplication (clear separation of drafting vs assembly roles)
+- review-simulator scoring rubric aligned to confidence-scoring.md
+- Cybersecurity USB keyword fix (false positive on "USB" in non-cybersecurity context)
+
+### Added — Testing
+- 105 new functional tests in `test_functional_e2e.py`
+- 1,419 total tests (1,363 offline + 56 API)
+
+## [5.13.0] - 2026-02-08
+
+### Added — E2E Testing & Agent Architecture
+- 3 new agents: research-intelligence, submission-assembler, data-pipeline-manager
+- research-intelligence: orchestrates `/fda:research`, `/fda:safety`, `/fda:guidance`, `/fda:literature` for comprehensive regulatory intelligence reports
+- submission-assembler: orchestrates `/fda:draft`, `/fda:consistency`, `/fda:assemble` for complete submission package assembly
+- data-pipeline-manager: orchestrates `/fda:gap-analysis`, `/fda:data-pipeline`, `/fda:extract` for data corpus maintenance
+
+### Added — Testing
+- 360+ new tests: command coverage, agent structural validation, E2E workflow tests, API consistency tests
+- `test_agents.py` — 7 agent structural tests (frontmatter, tools, naming, content)
+- `test_e2e_workflows.py` — End-to-end pipeline workflow tests
+- 1,314 total tests (1,258 offline + 56 API)
+
+## [5.12.0] - 2026-02-08
+
+### Added — FDA Warning Letters & Enforcement
+- `/fda:warnings` — Search FDA warning letters by company, product code, or keyword with GMP violation analysis, risk scoring, and QMSR transition guidance
+- Warning letter search via FDA Compliance Actions API
+- GMP violation pattern analysis with regulatory trend detection
+- Risk scoring framework for warning letter findings
+- QMSR transition impact assessment for each finding
+
+### Added — Testing
+- `test_warnings.py` — 45 new tests for warning letter search, risk scoring, QMSR mapping
+- 954 total tests
+
+## [5.11.0] - 2026-02-08
+
+### Added — Curated CDRH Guidance Index
+- `references/fda-guidance-index.md` — Curated regulation-to-guidance mapping for 10+ device categories
+- Covers: cardiovascular, orthopedic, neurological, IVD, ophthalmic, dental, general hospital, SaMD, combination products, home use
+- FY2026 guidance agenda priorities
+- Cross-cutting guidance documents with applicability criteria
+
+### Added — Testing
+- 909 total tests
+
+## [5.10.0] - 2026-02-08
+
+### Added — ClinicalTrials.gov API v2
+- `/fda:trials` — Search device clinical studies via ClinicalTrials.gov v2 API with AREA syntax
+- Study search by device name, product code, sponsor, or NCT number
+- Study parsing: phase, status, enrollment, endpoints, results availability
+- `references/clinicaltrials-api.md` — ClinicalTrials.gov v2 API reference
+
+### Added — Testing
+- `test_clinical_trials.py` — 38 new tests for study search, AREA syntax, parsing
+- 880 total tests
+
+## [5.9.0] - 2026-02-08
+
+### Added — AccessGUDID v3 API
+- Enhanced `/fda:udi` — AccessGUDID v3 API with device history, SNOMED CT codes, UDI barcode parsing, implantable device list
+- Device history tracking across GUDID versions
+- SNOMED CT clinical terminology mapping
+- UDI-DI and UDI-PI barcode parsing
+- `references/accessgudid-api.md` — AccessGUDID v3 API reference
+
+### Added — Testing
+- `test_accessgudid.py` — 42 new tests for GUDID lookup, history, SNOMED, barcode parsing
+- 842 total tests
+
+## [5.8.0] - 2026-02-08
+
+### Added — FDA Data Dashboard API
+- `/fda:inspections` — Query FDA Data Dashboard for inspections, citations, compliance actions, and import refusals
+- Inspection history search by firm, product code, or date range
+- Citation and 483 observation analysis
+- Compliance action tracking (warning letters, consent decrees, injunctions)
+- Import refusal analysis with violation patterns
+- `references/fda-dashboard-api.md` — Data Dashboard API reference
+
+### Added — Testing
+- `test_inspections.py` — 48 new tests for inspections, citations, compliance actions
+- 800 total tests
+
 ## [5.7.0] - 2026-02-08
 
 ### Added — Data Maintenance Pipeline

@@ -188,6 +188,10 @@ section_map = {
     "draft_emc-electrical.md": "14_EMC/emc_electrical.md",
     "draft_performance-summary.md": "15_PerformanceTesting/performance_testing.md",
     "draft_clinical.md": "16_Clinical/clinical_evidence.md",
+    "draft_predicate-justification.md": "07_SEComparison/predicate_justification.md",
+    "draft_testing-rationale.md": "15_PerformanceTesting/testing_rationale.md",
+    "draft_doc.md": "08_Standards/declaration_of_conformity.md",
+    "draft_human-factors.md": "17_HumanFactors/human_factors.md",
     "test_plan.md": "15_PerformanceTesting/test_plan.md",
     "literature.md": "16_Clinical/literature_review.md",
 }

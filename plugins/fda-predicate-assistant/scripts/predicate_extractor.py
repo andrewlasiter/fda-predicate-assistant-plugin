@@ -231,7 +231,7 @@ def correct_pnumber_format(pnumber, known_numbers):
     return None
 
 
-def extract_text_from_pdf(file_path):
+def extract_text_from_pdf(file_path, output_dir=None):
     try:
         doc = fitz.open(file_path)
         text = ""
@@ -246,7 +246,8 @@ def extract_text_from_pdf(file_path):
             return text
         except Exception as e:
             print(f"Error processing file with pdfplumber: {file_path}. Skipping this file. Error: {e}")
-            with open("error_log.txt", "a", encoding='utf-8') as log_file:
+            error_log_path = os.path.join(output_dir, "error_log.txt") if output_dir else "error_log.txt"
+            with open(error_log_path, "a", encoding='utf-8') as log_file:
                 log_file.write(f"{file_path}\n")
             return ""
 
@@ -459,7 +460,7 @@ def main():
             pdf_data = load_large_json(pdf_data_file)
             print(f"Using PDF data from file: {pdf_data_file}")
         elif args.no_cache or not os.path.exists(pdf_data_file):
-            pdf_data = {pdf_file: extract_text_from_pdf(pdf_file) for pdf_file in tqdm(pdf_files, desc="Extracting text from PDF files")}
+            pdf_data = {pdf_file: extract_text_from_pdf(pdf_file, output_dir) for pdf_file in tqdm(pdf_files, desc="Extracting text from PDF files")}
             save_to_json(pdf_data, pdf_data_file)
         else:
             # --use-cache not specified and file exists: default to using cache
@@ -474,7 +475,7 @@ def main():
                 pdf_data = load_large_json(pdf_data_file)
                 print(f"Using PDF data from file: {pdf_data_file}")
             else:
-                pdf_data = {pdf_file: extract_text_from_pdf(pdf_file) for pdf_file in tqdm(pdf_files, desc="Extracting text from PDF files")}
+                pdf_data = {pdf_file: extract_text_from_pdf(pdf_file, output_dir) for pdf_file in tqdm(pdf_files, desc="Extracting text from PDF files")}
                 save_to_json(pdf_data, pdf_data_file)
         else:
             use_pdf_data = messagebox.askyesno("PDF Data File Not Found", "Would you like to locate the PDF data file?")
@@ -483,7 +484,7 @@ def main():
                 pdf_data = load_large_json(pdf_data_file)
                 print(f"Using PDF data from file: {pdf_data_file}")
             else:
-                pdf_data = {pdf_file: extract_text_from_pdf(pdf_file) for pdf_file in tqdm(pdf_files, desc="Extracting text from PDF files")}
+                pdf_data = {pdf_file: extract_text_from_pdf(pdf_file, output_dir) for pdf_file in tqdm(pdf_files, desc="Extracting text from PDF files")}
                 save_to_json(pdf_data, pdf_data_file)
         root.destroy()
 

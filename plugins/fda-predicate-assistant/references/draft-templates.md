@@ -1,4 +1,4 @@
-# Draft Templates — All 16 eSTAR Sections
+# Draft Templates — All 18 Submission Sections
 
 Prose templates for generating 510(k) submission section drafts. Each section includes `[TODO:]` placeholders for company-specific information.
 
@@ -79,11 +79,102 @@ Based on the comparison of the subject device to the predicate device(s), {appli
 
 ## Section 06: Device Description
 
-See existing `device-description` section in draft.md.
+```markdown
+## Device Description
+
+### 6.1 Device Overview
+{If device_description_text available:}
+{device_description_text}
+[Source: import_data.json or --device-description]
+
+{If not:}
+[TODO: Company-specific — Provide a complete physical description of the device including:
+- General device overview and intended purpose
+- Principle of operation
+- Key design features and innovations]
+
+### 6.2 Components and Accessories
+[TODO: Company-specific — List all components, accessories, and ancillary devices:
+- Main device unit
+- Disposable/reusable components
+- Required accessories
+- Optional accessories]
+
+### 6.3 Materials of Construction
+[TODO: Company-specific — List all materials, especially patient-contacting:
+- Patient-contacting materials (link to biocompatibility in Section 12)
+- Non-contacting structural materials
+- Coatings, adhesives, or surface treatments]
+
+### 6.4 Principle of Operation
+{If principle_of_operation available:}
+{principle_of_operation}
+[Source: import_data.json]
+
+{If not:}
+[TODO: Company-specific — Describe how the device works:
+- Sensing/therapeutic mechanism
+- Energy source (if applicable)
+- Software control (if applicable)]
+
+### 6.5 Illustrations
+[TODO: Company-specific — Include:
+- Device photographs (multiple angles)
+- Annotated diagrams
+- Cross-sectional views (if relevant)
+- Packaging images]
+```
 
 ## Section 07: SE Discussion
 
-See existing `se-discussion` section in draft.md.
+```markdown
+## Substantial Equivalence Discussion
+
+### 7.1 Predicate Selection
+{If predicates available from review.json:}
+The primary predicate device is {predicate_k_number} ({predicate_device_name}, {predicate_applicant}, cleared {predicate_date}).
+[Source: review.json]
+
+{If not:}
+[TODO: Company-specific — Identify predicate device(s) with K-number, device name, applicant, and clearance date]
+
+### 7.2 Intended Use Comparison
+{If indications_for_use available:}
+| Aspect | Subject Device | Predicate Device |
+|--------|---------------|-----------------|
+| Intended use | {subject_ifu} | {predicate_ifu} |
+| Target population | {subject_pop} | {predicate_pop} |
+| Clinical indication | {subject_indication} | {predicate_indication} |
+| Use environment | {subject_env} | {predicate_env} |
+
+[Source: import_data.json, predicate PDF]
+
+{If not:}
+[TODO: Company-specific — Side-by-side comparison of intended use statements]
+
+### 7.3 Technological Characteristics Comparison
+{Auto-populate from se_comparison.md if available:}
+{se_comparison_table}
+[Source: se_comparison.md]
+
+{If not:}
+[TODO: Company-specific — Compare technological characteristics:
+- Physical dimensions and form factor
+- Materials of construction
+- Energy source and power
+- Software/firmware
+- Delivery mechanism
+- Performance specifications]
+
+### 7.4 Discussion of Differences
+[TODO: Company-specific — For each identified difference:
+- Describe the difference
+- Explain why it does not raise new questions of safety and effectiveness
+- Reference testing that addresses the difference (link to Section 15)]
+
+### 7.5 Conclusion
+Based on the above comparison, {applicant_name} believes that the subject device has the same intended use and similar technological characteristics as the predicate device. Identified differences do not raise new questions of safety and effectiveness, as demonstrated by the performance testing described in Section 15.
+```
 
 ## Section 09: Labeling
 
@@ -350,9 +441,141 @@ The subject device does not meet the definition of a "cyber device" under Sectio
 [TODO: Company-specific — Attach or reference Declaration of Conformity to applicable standards]
 ```
 
+## Predicate Justification
+
+```markdown
+## Predicate Justification
+
+### Selection Rationale
+{If predicates available from review.json:}
+{For each predicate:}
+
+#### {k_number} — {device_name} ({applicant}, cleared {date})
+
+**Why this predicate was selected:**
+{Auto-generate from review.json rationale and confidence score}
+[Source: review.json]
+
+**Key similarities:**
+- Same intended use: {ifu_comparison}
+- Same product code: {product_code}
+- Same technological characteristics: {tech_summary}
+
+**Clearance history:** {decision_type} — Class {class}
+**Confidence score:** {score}/100 — {label}
+
+{If not:}
+[TODO: Company-specific — For each proposed predicate device:
+1. Explain why this device was selected as a predicate
+2. Describe the regulatory history and clearance basis
+3. Detail the similarities in intended use
+4. Detail the similarities in technological characteristics
+5. Address any known differences]
+
+### Alternative Predicates Considered
+[TODO: Company-specific — List other devices evaluated and why they were not selected as the primary predicate]
+
+### Predicate Chain Summary
+{If lineage data available:}
+{chain_visualization}
+[Source: lineage analysis]
+
+{If not:}
+[TODO: Company-specific — Describe the predicate's own clearance history and predicate chain to demonstrate regulatory lineage]
+```
+
+## Testing Rationale
+
+```markdown
+## Testing Rationale
+
+### Testing Strategy Overview
+{If test_plan.md available:}
+The testing strategy for the subject device addresses differences identified in the substantial equivalence comparison and requirements from applicable guidance documents.
+[Source: test_plan.md]
+
+{If not:}
+[TODO: Company-specific — Describe the overall testing strategy and how it supports the SE determination]
+
+### Mapping of Differences to Tests
+{If se_comparison.md and test_plan.md available:}
+
+| # | Identified Difference | Applicable Standard | Proposed Test | Rationale |
+|---|----------------------|--------------------|--------------|-----------|
+{For each difference in SE comparison:}
+| {n} | {difference} | {standard} | {test} | {why this test addresses the difference} |
+
+[Source: se_comparison.md, test_plan.md]
+
+{If not:}
+[TODO: Company-specific — For each technological difference identified in the SE comparison:
+1. Reference the specific difference
+2. Identify the applicable standard or guidance requirement
+3. Describe the proposed test method
+4. Explain why this test is sufficient to demonstrate equivalence]
+
+### Guidance-Driven Requirements
+{If guidance_cache available:}
+The following tests are required by applicable FDA guidance documents:
+
+| Guidance Document | Requirement | Test Method | Status |
+|-------------------|-------------|-------------|--------|
+{For each guidance requirement:}
+| {guidance_title} | {requirement} | {method} | {Planned/Complete} |
+
+[Source: guidance_cache]
+
+{If not:}
+[TODO: Run `/fda:guidance` to identify applicable guidance requirements, then map to testing]
+
+### Predicate Precedent
+{If predicate testing data available:}
+The predicate device(s) demonstrated the following testing precedent:
+{predicate_testing_summary}
+[Source: predicate PDF analysis]
+
+{If not:}
+[TODO: Company-specific — Describe testing performed by predicate device(s) to establish precedent]
+```
+
 ## Section 15: Performance Testing
 
-See existing `performance-summary` section in draft.md.
+```markdown
+## Performance Testing Summary
+
+### 15.1 Test Overview
+{If performance testing data available:}
+Performance testing was conducted to demonstrate that the subject device performs as intended and to address identified technological differences from the predicate device.
+
+{If test_plan.md available:}
+{Summary of test plan}
+[Source: test_plan.md]
+
+{If not:}
+[TODO: Company-specific — Summarize performance testing program:
+- Objectives
+- Test articles and sample sizes
+- Test conditions]
+
+### 15.2 Bench Testing
+[TODO: Company-specific — For each bench test:
+- Test method and standard
+- Sample size and acceptance criteria
+- Results summary
+- Pass/fail determination]
+
+### 15.3 Comparison to Predicate Performance
+[TODO: Company-specific — Compare subject device performance to predicate:
+- Predicate testing precedent from 510(k) summary
+- Subject device test results vs predicate
+- Demonstration of equivalent or superior performance]
+
+### 15.4 Performance Testing Conclusions
+[TODO: Company-specific — Summarize overall performance testing conclusions:
+- All acceptance criteria met
+- Device performs as intended
+- Performance equivalent to predicate]
+```
 
 ## Section 16: Clinical
 
