@@ -42,8 +42,10 @@ From `$ARGUMENTS`, extract:
 - `--save` — Save results to project folder
 - `--project NAME` — Target project for --save
 - `--infer` — Auto-detect product code from project data
+- `--index` — Scan `standards_dir` and build `standards_index.json` inventory
+- `--compare` — Cross-reference local standards inventory against device requirements (requires `--product-code`)
 
-At least one of `--product-code`, `--standard`, or `--search` is required (unless `--check-currency` with `--project`).
+At least one of `--product-code`, `--standard`, or `--search` is required (unless `--check-currency` with `--project`, or `--index`).
 
 ## Step 1: Load Built-In Standards Reference
 
@@ -190,6 +192,91 @@ PYEOF
 WebSearch: "{standard_number}" new edition {YYYY} superseded
 ```
 
+## Step 4: Local Standards Inventory (--index)
+
+If `--index` is specified:
+
+1. Read `standards_dir` from `~/.claude/fda-predicate-assistant.local.md`
+2. If not set, report error: "No standards_dir configured. Run `/fda:configure --set standards_dir /path/to/Standards/`"
+3. Scan the directory recursively for PDF files
+4. Parse filenames for standard identifiers using these patterns:
+   - ISO: `ISO[\s_-]?\d{4,5}(-\d+)?`
+   - IEC: `IEC[\s_-]?\d{4,5}(-\d+)?`
+   - ASTM: `ASTM[\s_-]?[A-Z]\d{1,5}`
+   - AAMI: `AAMI[\s_-]?[A-Z]+\d*`
+   - ANSI: `ANSI[\s_-]?[A-Z]+[\s_-]?\d+`
+5. For each matched PDF, also read the first page to confirm the standard number and extract the year/edition
+6. Build `standards_index.json` in the configured `standards_dir`:
+
+```json
+{
+  "generated": "2026-02-09T...",
+  "standards_dir": "/path/to/Standards",
+  "standards": [
+    {
+      "standard_id": "ISO 10993-1",
+      "edition_year": "2018",
+      "full_title": "ISO 10993-1:2018 — Biological evaluation of medical devices — Part 1",
+      "file_path": "Biocompatability/ISO 10993-1 2018.pdf",
+      "file_size_kb": 1234,
+      "category": "biocompatibility"
+    }
+  ],
+  "summary": {
+    "total_files": 22,
+    "categories": {"biocompatibility": 22, "sterilization": 0}
+  }
+}
+```
+
+7. Cross-reference against `references/standards-tracking.md` to flag superseded editions
+8. Output in the standard FDA Professional CLI format:
+
+```
+LOCAL STANDARDS INVENTORY
+────────────────────────────────────────
+
+  Scanned: {path}
+  Standards found: {N} across {N} categories
+
+  | Standard | Edition | Status | File |
+  |----------|---------|--------|------|
+  | ISO 10993-1 | 2018 | ⚠ SUPERSEDED (2025 available) | Biocompatability/ISO 10993-1 2018.pdf |
+  | ISO 10993-5 | 2009 | ✓ Current | Biocompatability/ISO 10993-5 2009.pdf |
+  ...
+
+  Superseded editions: {N}
+  Missing for device type: {list}
+
+  Saved: {path}/standards_index.json
+```
+
+## Step 5: Local Standards Comparison (--compare)
+
+If `--compare` is specified (requires `--product-code` and `standards_index.json` to exist):
+
+1. Load `standards_index.json` from `standards_dir`
+2. Determine required standards for the product code (from Step 2B lookup table)
+3. Cross-reference: which required standards have local copies? Which are missing?
+4. Output a Standards Evidence Matrix:
+
+```
+STANDARDS EVIDENCE MATRIX
+────────────────────────────────────────
+
+  Product Code: {CODE} — {device_name}
+
+  | Required Standard | Local Copy? | Edition | Current? |
+  |-------------------|-------------|---------|----------|
+  | ISO 10993-1 | ✓ Available | 2018 | ⚠ Superseded |
+  | ISO 10993-5 | ✓ Available | 2009 | ✓ Current |
+  | IEC 60601-1 | ✗ Not found | — | — |
+  ...
+
+  Coverage: {N}/{total} required standards available locally ({pct}%)
+  Action items: {N} standards need acquisition
+```
+
 ## Output Format
 
 Present results using the standard FDA Professional CLI format:
@@ -198,7 +285,7 @@ Present results using the standard FDA Professional CLI format:
   FDA Recognized Consensus Standards
   {context — product code or search query}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Source: FDA RCSD + Plugin Reference | v5.16.0
+  Generated: {date} | Source: FDA RCSD + Plugin Reference | v5.17.0
 
 APPLICABLE STANDARDS
 ────────────────────────────────────────

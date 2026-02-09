@@ -19,14 +19,16 @@ You are an expert FDA regulatory intelligence analyst. Your role is to produce a
 ## Progress Reporting
 
 Output a checkpoint after each major step to keep the user informed:
-- `"[1/8] Classifying device..."` → `"[1/8] Classification: {code} Class {class}"`
-- `"[2/8] Searching clearance landscape..."` → `"[2/8] Found {N} clearances, {N} recent"`
-- `"[3/8] Analyzing safety (MAUDE/recalls)..."` → `"[3/8] MAUDE: {N} events, Recalls: {N}"`
-- `"[4/8] Reviewing guidance documents..."` → `"[4/8] Found {N} applicable guidance"`
-- `"[5/8] Searching inspection history..."` → `"[5/8] Inspections: {N} found"`
-- `"[6/8] Checking warning letters..."` → `"[6/8] Warning letters: {N} found"`
-- `"[7/8] Searching clinical trials..."` → `"[7/8] ClinicalTrials.gov: {N} studies"`
-- `"[8/8] Generating intelligence report..."` → `"[8/8] Report complete — {N} sections"`
+- `"[1/10] Classifying device..."` → `"[1/10] Classification: {code} Class {class}"`
+- `"[2/10] Searching clearance landscape..."` → `"[2/10] Found {N} clearances, {N} recent"`
+- `"[3/10] Analyzing safety (MAUDE/recalls)..."` → `"[3/10] MAUDE: {N} events, Recalls: {N}"`
+- `"[4/10] Reviewing guidance documents..."` → `"[4/10] Found {N} applicable guidance"`
+- `"[5/10] Searching published literature..."` → `"[5/10] PubMed: {N} articles found"`
+- `"[6/10] Checking warning letters..."` → `"[6/10] Warning letters: {N} found"`
+- `"[7/10] Searching inspection history..."` → `"[7/10] Inspections: {N} found"`
+- `"[8/10] Searching clinical trials..."` → `"[8/10] ClinicalTrials.gov: {N} studies"`
+- `"[9/10] Synthesizing intelligence report..."` → `"[9/10] Report: {N} sections assembled"`
+- `"[10/10] Saving to project..."` → `"[10/10] Saved to {project_dir}/ ({N} files)"`
 
 ## Prerequisites
 
@@ -128,7 +130,7 @@ Combine all findings into a structured report:
   FDA Regulatory Intelligence Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.16.0
+  Generated: {date} | v5.17.0
 
 EXECUTIVE SUMMARY
 ────────────────────────────────────────

@@ -58,6 +58,7 @@ Settings are stored in: `~/.claude/fda-predicate-assistant.local.md`
 | `webhook_url` | `null` | Default webhook URL for monitor alert POST delivery |
 | `alert_severity_threshold` | `info` | Minimum severity for alert delivery: info, warning, critical |
 | `alert_frequency` | `immediate` | Alert delivery timing: immediate (every check), daily (max 1/day), weekly |
+| `standards_dir` | `null` | Directory containing local copies of standards PDFs (ISO, IEC, ASTM). Set to enable local standards integration. |
 
 ## Commands
 
@@ -172,7 +173,7 @@ endpoints = [
 print("  FDA API Connectivity Test")
 print("  openFDA Device Endpoints")
 print("━" * 56)
-print(f"  Generated: {__import__('datetime').date.today()} | v5.16.0")
+print(f"  Generated: {__import__('datetime').date.today()} | v5.17.0")
 print()
 print("API CONFIGURATION")
 print("─" * 40)
@@ -258,6 +259,7 @@ auto_review: false
 webhook_url: null
 alert_severity_threshold: info
 alert_frequency: immediate
+standards_dir: null
 ---
 
 # FDA Predicate Assistant Settings
@@ -304,6 +306,10 @@ This file stores your preferences for the FDA 510(k) pipeline.
 - **webhook_url**: Default webhook URL for POST delivery (webhook services or custom endpoints)
 - **alert_severity_threshold**: Minimum severity to deliver: info (all), warning, critical
 - **alert_frequency**: Delivery timing: immediate, daily, weekly
+
+## Local Standards
+
+- **standards_dir**: Path to a directory containing standards PDFs (ISO, IEC, ASTM, AAMI, ANSI). When set, enables `/fda:standards --index` to build a local standards inventory and `/fda:standards --compare` to cross-reference against device requirements.
 ```
 
 ### Manage Exclusion List

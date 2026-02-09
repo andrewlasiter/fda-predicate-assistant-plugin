@@ -103,6 +103,11 @@ Assess:
 - Does the intended use match the predicate's IFU?
 - Are technological differences adequately addressed?
 - Would you recommend SE, NSE, or AI request?
+- **Predicate legal status:** Is each accepted predicate still legally marketed?
+  - Check for WITHDRAWN status (device removed from market)
+  - Check for ENFORCEMENT_ACTION status (FDA enforcement, recall, consent decree)
+  - If any predicate has WITHDRAWN or ENFORCEMENT_ACTION status, flag as **CRITICAL deficiency** — cannot use a non-legally-marketed device as a predicate
+  - Reference: review.json `legal_status` field (populated by Sprint 4 `/fda:review`)
 
 #### Team Lead Evaluation
 
@@ -118,7 +123,7 @@ Verify all required eSTAR sections have content. These sections are ALWAYS requi
 | Section | eSTAR # | Required? | Check File |
 |---------|---------|-----------|------------|
 | Cover Letter | 01 | Always | `draft_cover-letter.md` |
-| Cover Sheet (3514) | 02 | Always | Referenced in cover letter |
+| Cover Sheet (3514) | 02 | Always | `cover_sheet.md` or referenced in cover letter — verify Form FDA 3514 fields are complete |
 | 510(k) Summary | 03 | Always | `draft_510k-summary.md` |
 | Truthful & Accuracy | 04 | Always | `draft_truthful-accuracy.md` |
 | Financial Certification | 05 | If clinical data | `draft_financial-certification.md` |
@@ -170,6 +175,9 @@ For each specialist identified in Phase 3, evaluate their specific domain:
 - **Human Factors**: IEC 62366-1, usability testing
 - **Clinical**: Study design, endpoints, statistics
 - **MRI Safety**: ASTM testing, MR Conditional labeling
+- **Reprocessing**: Reusable device cleaning/disinfection validation, AAMI TIR30, simulated-use
+- **Packaging**: Sterile barrier system validation, ISO 11607, ASTM F1980 aging
+- **Materials**: Novel material characterization, ISO 10993-18 E&L, 3D-printing parameters
 
 ### Scoring Rubric
 
@@ -220,6 +228,8 @@ Reference `references/rta-checklist.md` — evaluate each item as PASS/FAIL:
 - IEC 62304 software safety classification stated? (Level A/B/C)
 - Software description of architecture present?
 - Cybersecurity documentation per Section 524B? (reference `references/cybersecurity-framework.md`)
+  - **CRITICAL severity** for any device with network connectivity, wireless, USB, Bluetooth, or cloud features — missing Section 524B documentation is an RTA failure per FDA guidance "Cybersecurity in Medical Devices: Quality System Considerations and Content of Premarket Submissions" (2023)
+  - Verify: SBOM present, threat model documented, security architecture, patch/update mechanism, interoperability considerations
 - Score: documentation items present / items required
 
 **Sterilization** (if applicable):
@@ -257,6 +267,38 @@ Reference `references/rta-checklist.md` — evaluate each item as PASS/FAIL:
 - MR Conditional labeling per ASTM F2503?
 - Score: MRI tests completed / tests required
 
+**Reprocessing** (if reusable device):
+- Cleaning validation per FDA reprocessing guidance?
+- Simulated-use soil testing (worst-case organic load)?
+- Disinfection or sterilization validation between uses?
+- Drying validation (if device has lumens or channels)?
+- Compatibility with common cleaning/disinfection agents?
+- User instructions for reprocessing clear and complete?
+- Reference: AAMI TIR30, AAMI TIR12, AAMI ST91 for flexible endoscopes
+- Score: reprocessing validation elements / required elements
+
+**Packaging** (if sterile barrier or shelf life claim):
+- Sterile barrier system (SBS) design documented?
+- Package integrity testing per ASTM F2095 (bubble leak), ASTM F1929 (dye penetration), or ASTM F2096 (internal pressurization)?
+- Accelerated aging per ASTM F1980 (Q10 = 2.0)?
+- Real-time aging study initiated or complete?
+- Distribution simulation per ASTM D4169 or ISTA protocol?
+- Package seal strength per ASTM F88?
+- Sterile barrier compliance with ISO 11607-1 (packaging) and ISO 11607-2 (validation)?
+- Score: packaging validation items / required items
+
+**Materials** (if novel material, new alloy, or 3D-printed):
+- Material characterization per ISO 10993-18 (extractables and leachables)?
+- Chemical composition documented with analytical data (ICP-MS, GC-MS, LC-MS)?
+- Manufacturing process qualified (3D-printing: build parameters, post-processing, heat treatment)?
+- Mechanical properties tested (tensile, fatigue, hardness) per ASTM standards?
+- Degradation products characterized (if absorbable/biodegradable)?
+- Material equivalence to predicate demonstrated (if claiming biocompatibility by predicate)?
+- Lot-to-lot variability assessed?
+- Reference: ISO 10993-13 (polymers), ISO 10993-14 (ceramics), ISO 10993-15 (metals/alloys)
+- For 3D-printed devices: ASTM F3122 (AM process), ASTM F2924/F3001/F3056 (specific metal alloy specs)
+- Score: material characterization items / required items
+
 ### Phase 5: Cross-Reference and Synthesis
 
 1. **Identify conflicting findings** — Where one reviewer's finding affects another's assessment
@@ -272,7 +314,7 @@ Write a comprehensive report with:
 # FDA Review Simulation Report
 ## {Project Name} — {Device Name} ({Product Code})
 
-**Generated:** {date} | FDA Predicate Assistant v5.16.0
+**Generated:** {date} | FDA Predicate Assistant v5.17.0
 **Simulation depth:** Full autonomous review
 **Project completeness:** {N}% of expected files present
 

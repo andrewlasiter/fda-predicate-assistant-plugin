@@ -424,7 +424,7 @@ if not any(t[0] == "Reprocessing" for t in triggers):
                         "cleaning validation", "disinfection"]):
         triggers.append(("Reprocessing", "Reprocessing Medical Devices in Health Care Settings", "kw_reusable"))
 
-# ── New categories (v5.16.0) ──
+# ── New categories (v5.17.0) ──
 
 # 3D Printing / Additive Manufacturing
 if kw_match(desc, ["3d print", "3d-printed", "3d printed",
@@ -564,7 +564,7 @@ Use the standard FDA Professional CLI format (see `references/output-formatting.
   FDA Guidance Analysis
   {PRODUCT_CODE} — {DEVICE_NAME}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Class: {class} | 21 CFR {regulation} | v5.16.0
+  Generated: {date} | Class: {class} | 21 CFR {regulation} | v5.17.0
 
 DEVICE CLASSIFICATION
 ────────────────────────────────────────

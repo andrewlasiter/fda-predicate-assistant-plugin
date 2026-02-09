@@ -121,7 +121,7 @@ Generate a final readiness report:
   FDA Submission Writer Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Project: {name} | v5.16.0
+  Generated: {date} | Project: {name} | v5.17.0
 
 DRAFTING SUMMARY
 ────────────────────────────────────────

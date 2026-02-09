@@ -132,7 +132,7 @@ class TestCSVColumnConsistency:
         script_path = os.path.join(SCRIPTS_DIR, 'predicate_extractor.py')
         with open(script_path) as f:
             content = f.read()
-        assert "expected_cols" in content, "Missing CSV column normalization code"
+        assert "expected_cols" in content or "total_cols" in content, "Missing CSV column normalization code"
 
     def test_source_pads_short_rows(self):
         """Source code must pad short rows with empty strings."""

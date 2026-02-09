@@ -192,6 +192,33 @@ If import_data.json exists, check that project files align with imported eSTAR d
 **WARN**: Project data has been modified since import (expected if user updated).
 **FAIL**: Product code in import_data.json differs from project data with no documented change.
 
+### Check 11: eSTAR Section Map Alignment (HIGH)
+Verify that every draft file maps to a section in the export section_map. Expected mappings (must match `export.md` section_map):
+
+- `draft_cover-letter.md` → `01_CoverLetter/`
+- `cover_sheet.md` → `02_CoverSheet/`
+- `draft_510k-summary.md` → `03_510kSummary/`
+- `draft_truthful-accuracy.md` → `04_TruthfulAccuracy/`
+- `draft_financial-certification.md` → `05_FinancialCert/`
+- `draft_device-description.md` → `06_DeviceDescription/`
+- `draft_se-discussion.md` → `07_SEComparison/`
+- `draft_doc.md` → `08_Standards/`
+- `draft_labeling.md` → `09_Labeling/`
+- `draft_sterilization.md` → `10_Sterilization/`
+- `draft_shelf-life.md` → `11_ShelfLife/`
+- `draft_biocompatibility.md` → `12_Biocompatibility/`
+- `draft_software.md` → `13_Software/`
+- `draft_emc-electrical.md` → `14_EMC/`
+- `draft_performance-summary.md` → `15_PerformanceTesting/`
+- `draft_clinical.md` → `16_Clinical/`
+- `draft_human-factors.md` → `17_HumanFactors/`
+
+**PASS**: All draft files have corresponding section_map entries.
+**WARN**: Unmapped draft files found (may be supplementary content).
+**FAIL**: Required draft file has no section_map entry (would be excluded from export).
+
+Flag any draft file that has no corresponding section_map entry.
+
 ## Step 4: Generate Report
 
 Present the report using the standard FDA Professional CLI format (see `references/output-formatting.md`):
@@ -200,21 +227,24 @@ Present the report using the standard FDA Professional CLI format (see `referenc
   FDA Consistency Validation Report
   Project: {project_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Files: {count} | v5.16.0
+  Generated: {date} | Files: {count} | v5.17.0
 
 RESULTS SUMMARY
 ────────────────────────────────────────
 
-  | Check              | Status | Details      |
-  |--------------------|--------|--------------|
-  | Product Code       | ✓      | {details}    |
-  | Predicate List     | ✗      | {details}    |
-  | Device Description | ⚠      | {details}    |
-  | Intended Use       | ✓      | {details}    |
-  | Pathway            | ✓      | {details}    |
-  | Standards Coverage | ⚠      | {details}    |
-  | Dates/Freshness    | ○      | {details}    |
-  | Placeholder Scan   | ✓      | {details}    |
+  | #  | Check               | Status | Details      |
+  |----|---------------------|--------|--------------|
+  | 1  | Product Code        | ✓      | {details}    |
+  | 2  | Predicate List      | ✗      | {details}    |
+  | 3  | Device Description  | ⚠      | {details}    |
+  | 4  | Intended Use        | ✓      | {details}    |
+  | 5  | Pathway             | ✓      | {details}    |
+  | 6  | Standards Coverage  | ⚠      | {details}    |
+  | 7  | Dates/Freshness     | ○      | {details}    |
+  | 8  | Placeholder Scan    | ✓      | {details}    |
+  | 9  | Cross-Section Draft | ✓      | {details}    |
+  | 10 | eSTAR Import Align  | ○      | {details}    |
+  | 11 | Section Map Align   | ✓      | {details}    |
 
   Status: ✓ pass, ✗ fail, ⚠ warning, ○ not checked
 

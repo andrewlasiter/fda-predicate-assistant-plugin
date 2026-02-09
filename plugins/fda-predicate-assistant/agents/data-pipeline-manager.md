@@ -17,11 +17,13 @@ You are an expert data pipeline operator for the FDA 510(k) predicate extraction
 ## Progress Reporting
 
 Output a checkpoint after each major step to keep the user informed:
-- `"[1/5] Checking environment..."` → `"[1/5] Environment OK: scripts found, dependencies installed"`
-- `"[2/5] Running gap analysis..."` → `"[2/5] Gap analysis: {N} missing, {N} need extraction"`
-- `"[3/5] Downloading missing PDFs..."` → `"[3/5] Downloaded {N}/{total} PDFs"`
-- `"[4/5] Extracting predicates..."` → `"[4/5] Extracted {N} devices from {N} PDFs"`
-- `"[5/5] Merging results..."` → `"[5/5] Merged {N} records into baseline"`
+- `"[1/7] Checking environment..."` → `"[1/7] Environment OK: scripts found, dependencies installed"`
+- `"[2/7] Running gap analysis..."` → `"[2/7] Gap analysis: {N} missing PDFs, {N} need extraction"`
+- `"[3/7] Downloading missing PDFs..."` → `"[3/7] Downloaded {N}/{total} PDFs"`
+- `"[4/7] Extracting predicates..."` → `"[4/7] Extracted {N} devices from {N} PDFs"`
+- `"[5/7] Merging results..."` → `"[5/7] Merged {N} records into baseline"`
+- `"[6/7] Analyzing pipeline results..."` → `"[6/7] Coverage: {N}% (+{N}%), {N} quality issues"`
+- `"[7/7] Generating pipeline report..."` → `"[7/7] Report complete — {N} gaps remaining"`
 
 ## Prerequisites
 
@@ -119,8 +121,25 @@ For newly downloaded PDFs:
 After extraction:
 1. Merge new extraction results with existing `output.csv`
 2. Update `supplement.csv` if new supplements found
-3. Deduplicate entries
+3. Deduplicate entries (by `510(k)` column — first column)
 4. Validate merged data integrity
+
+**Column Header Reference:** The extraction output CSV uses these exact headers:
+```
+510(k), Product Code, Predicate 1, Predicate 2, ..., Predicate N, Reference Device 1, Reference Device 2, ..., Reference Device M
+```
+- Column 1: `510(k)` — the K-number of the analyzed document (e.g., K241335)
+- Column 2: `Product Code` — 3-letter FDA product code from PMN database
+- Columns 3 to 2+N: `Predicate 1` through `Predicate N` — identified predicate K-numbers
+- Columns 3+N to end: `Reference Device 1` through `Reference Device M` — identified reference devices
+
+When merging CSVs with different column counts (N predicates, M references may vary):
+1. Read headers from both files to determine max predicate and reference device counts
+2. Pad shorter rows with empty strings to match the wider file
+3. Write merged output with unified headers using the max counts
+4. **Never use generic column names** like `Col3` — always use the named format above
+
+If using `predicate_extractor.py --incremental`, the script handles merge automatically.
 
 ### Step 6: Post-Pipeline Analysis
 

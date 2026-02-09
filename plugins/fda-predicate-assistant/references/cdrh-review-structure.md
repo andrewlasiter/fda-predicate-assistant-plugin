@@ -146,7 +146,9 @@ def determine_review_team(device_info, classification_data):
         team.append("Human Factors")
 
     # Reprocessing
-    if device_info.get("reusable") or "reusab" in desc_lower:
+    reprocess_keywords = ["reusab", "reprocess", "endoscop", "bronchoscop",
+                          "duodenoscop", "arthroscop", "laparoscop"]
+    if device_info.get("reusable") or any(kw in desc_lower for kw in reprocess_keywords):
         team.append("Reprocessing")
 
     # MRI Safety
@@ -154,6 +156,21 @@ def determine_review_team(device_info, classification_data):
         "metallic" in desc_lower or "metal" in desc_lower or
         "implant" in desc_lower):
         team.append("MRI Safety")
+
+    # Materials
+    materials_keywords = ["3d print", "additive manufactur", "novel material",
+                          "novel alloy", "novel polymer", "nanostructur",
+                          "titanium alloy", "peek", "nitinol", "cobalt chrome"]
+    if any(kw in desc_lower for kw in materials_keywords):
+        team.append("Materials")
+
+    # Packaging
+    if (device_info.get("provided_sterile") or
+        device_info.get("shelf_life") or
+        "sterile barrier" in desc_lower or
+        "shelf life" in desc_lower or
+        "package integrit" in desc_lower):
+        team.append("Packaging")
 
     return team
 ```
@@ -269,6 +286,95 @@ Per SOPP 8217 and FDA's Refuse to Accept Policy for 510(k)s (2019 guidance):
 
 **MR Conditional Labeling:**
 > The device is labeled as "MR Conditional" but the testing is incomplete. Please provide: (1) magnetically induced displacement force testing per ASTM F2052; (2) magnetically induced torque testing per ASTM F2213; (3) RF heating testing per ASTM F2182; (4) artifact assessment per ASTM F2119. Specify the MR conditions under which testing was performed (static field strength, spatial gradient, RF field, SAR).
+
+### Reprocessing Reviewer (if reusable device)
+
+**Trigger:** Device labeled as reusable, requires cleaning/disinfection/sterilization between uses
+
+**Regulatory basis:** FDA Reprocessing Guidance, 21 CFR 820.30(g), AAMI TIR12, AAMI TIR30, AAMI ST79
+
+**Assessment criteria:**
+- Reprocessing instructions present and adequate?
+  - Cleaning agents specified (enzymatic, non-enzymatic)?
+  - Minimum effective concentration and contact time?
+  - Rinse requirements (water quality, volume)?
+  - Disinfection/sterilization method if required between uses?
+- Worst-case soil testing performed (AAMI TIR30)?
+  - Artificial test soil composition appropriate for device use?
+  - Visual and quantitative endpoints (protein, hemoglobin, endotoxin)?
+- Simulated-use testing with clinically relevant protocols?
+- Validation of cleaning for complex device geometries (lumens, hinges, crevices)?
+- Number of reprocessing cycles validated (minimum equals device lifetime)?
+- Bioburden and endotoxin limits after reprocessing?
+
+**Deficiency template:**
+> The submission does not include adequate reprocessing validation data for this reusable device. Per FDA guidance on reprocessing, validation must demonstrate that the recommended cleaning and disinfection/sterilization instructions can reliably render the device safe for reuse. Specifically, [missing element] has not been addressed.
+
+**Score:** reprocessing items addressed / reprocessing items required
+
+### Packaging Reviewer (if sterile device)
+
+**Trigger:** Device labeled sterile, shipped in sterile packaging
+
+**Regulatory basis:** ISO 11607-1 (packaging materials), ISO 11607-2 (validation), ASTM F88 (seal strength), ASTM F2095 (bubble leak), ASTM D4169 (distribution simulation)
+
+**Assessment criteria:**
+- Package design qualification complete?
+  - Materials compatibility with sterilization method?
+  - Microbial barrier properties verified?
+  - Seal integrity validated (ASTM F88 seal strength, ASTM F2095 or equivalent)?
+- Stability/aging testing performed?
+  - Accelerated aging per ASTM F1980 with appropriate Q10?
+  - Real-time aging data available or in progress?
+  - Package integrity maintained through shelf life?
+- Distribution simulation testing (ASTM D4169)?
+  - Assurance level appropriate for distribution environment?
+  - Package integrity maintained after simulated transport?
+- Sterile barrier system (SBS) validated per ISO 11607-2?
+- Labeling on packaging adequate?
+  - Sterility claim on label?
+  - Lot/batch identification?
+  - Expiration date (if shelf life limited)?
+  - UDI on package (21 CFR 801.20)?
+
+**Deficiency template:**
+> The submission does not include adequate packaging validation data for this sterile device. Per ISO 11607-1/-2, the sterile barrier system must be validated to maintain sterility through the labeled shelf life and distribution conditions. Specifically, [missing element] has not been addressed.
+
+**Score:** packaging items addressed / packaging items required
+
+### Materials Reviewer (if novel materials)
+
+**Trigger:** Device uses materials not previously cleared in same contact type/duration, 3D-printed materials, novel polymers, novel metal alloys, or nanostructured materials
+
+**Regulatory basis:** FDA guidance "Use of International Standard ISO 10993-1," 21 CFR 820.50 (purchasing controls), ISO 10993-18 (chemical characterization)
+
+**Assessment criteria:**
+- Complete material characterization per ISO 10993-18?
+  - All patient-contacting materials identified by chemical name/grade?
+  - Additives, colorants, processing aids documented?
+  - Material specifications with acceptance criteria?
+- Extractable and leachable (E&L) studies adequate?
+  - Extraction conditions appropriate (ISO 10993-12)?
+  - Analytical methods validated (GC-MS, LC-MS, ICP-MS)?
+  - Toxicological risk assessment of identified leachables (ISO 10993-17)?
+  - Threshold of Toxicological Concern (TTC) applied where appropriate?
+- For 3D-printed/additive manufactured materials:
+  - Process parameters documented (energy density, layer thickness, build orientation)?
+  - Post-processing steps (heat treatment, machining, surface finishing) characterized?
+  - Inter-build and intra-build consistency demonstrated?
+  - Mechanical properties verified per device-specific standards?
+- For novel alloys/polymers:
+  - Composition and microstructure characterized?
+  - Corrosion/degradation behavior assessed?
+  - Wear debris characterization (if load-bearing application)?
+- Material traceability and supplier qualification?
+  - Raw material specifications and certificates of analysis?
+  - Incoming material testing procedures?
+
+**Deficiency template:**
+> The submission describes the use of [material/process] which has not been previously cleared for this contact type and duration. Per FDA guidance and ISO 10993-18, a complete chemical characterization of the material is required, including extractable and leachable analysis with toxicological risk assessment. Specifically, [missing element] has not been addressed.
+
+**Score:** materials items addressed / materials items required
 
 ## 5. SE Decision Framework — Reviewer's Perspective
 

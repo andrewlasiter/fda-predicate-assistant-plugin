@@ -232,12 +232,13 @@ updated = os.path.join(pdf_dir, "510k_output_updated.csv")
 year_csvs = sorted(glob.glob(os.path.join(pdf_dir, "*/output.csv")))
 print(f"Found {len(year_csvs)} per-year CSVs to merge")
 
-# Read baseline
+# Read baseline — preserve the original header if present
 rows = {}
+source_header = None
 if os.path.exists(baseline):
     with open(baseline, 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
-        header = next(reader, None)
+        source_header = next(reader, None)
         for row in reader:
             if row:
                 rows[row[0]] = row
@@ -246,7 +247,10 @@ if os.path.exists(baseline):
 for ycsv in year_csvs:
     with open(ycsv, 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
-        next(reader, None)  # skip header
+        yheader = next(reader, None)
+        # Use the widest header we encounter as the source header
+        if yheader and (source_header is None or len(yheader) > len(source_header)):
+            source_header = yheader
         for row in reader:
             if row:
                 rows[row[0]] = row
@@ -254,9 +258,39 @@ for ycsv in year_csvs:
 # Write merged output
 if rows:
     max_cols = max(len(r) for r in rows.values())
+
+    # Build the correct header.
+    # predicate_extractor.py outputs:
+    #   510(k), Product Code, Predicate 1, Predicate 2, ..., Reference Device 1, ...
+    if source_header and len(source_header) >= max_cols:
+        header = source_header[:max_cols]
+    elif source_header and len(source_header) >= 2:
+        # Extend the source header to cover all columns
+        header = list(source_header)
+        # Count how many Predicate and Reference Device columns exist
+        n_pred = sum(1 for h in source_header if h.startswith('Predicate '))
+        n_ref = sum(1 for h in source_header if h.startswith('Reference Device '))
+        extra_needed = max_cols - len(header)
+        # Extend Reference Device columns first (most common growth)
+        for i in range(extra_needed):
+            header.append(f'Reference Device {n_ref + i + 1}')
+    else:
+        # No source header available — reconstruct from scratch.
+        # Scan merged data to find the boundary between predicates and
+        # reference devices.  predicate_extractor.py puts all Predicate
+        # columns first (starting at col 2), then Reference Device columns.
+        # Without type info we estimate: use half the remaining cols for
+        # each category, matching the most common extraction profile.
+        remaining = max_cols - 2
+        n_pred = max(remaining // 2, 1)
+        n_ref = remaining - n_pred
+        header = ['510(k)', 'Product Code'] \
+            + [f'Predicate {i+1}' for i in range(n_pred)] \
+            + [f'Reference Device {i+1}' for i in range(n_ref)]
+
     with open(updated, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        writer.writerow(['510(k)', 'Product Code'] + [f'Col{i}' for i in range(3, max_cols + 1)])
+        writer.writerow(header)
         for k_num in sorted(rows.keys()):
             row = rows[k_num]
             row.extend([''] * (max_cols - len(row)))
@@ -277,7 +311,7 @@ Present results using the standard FDA Professional CLI format:
   FDA Data Pipeline Status
   510(k) Corpus Overview
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.16.0
+  Generated: {date} | v5.17.0
 
 BASELINE
 ────────────────────────────────────────

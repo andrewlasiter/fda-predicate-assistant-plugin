@@ -118,7 +118,7 @@ PYEOF
 ```
   ASTM F1980 Accelerated Aging Calculator
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.16.0
+  Generated: {date} | v5.17.0
 
 INPUT PARAMETERS
 ────────────────────────────────────────
@@ -260,7 +260,7 @@ PYEOF
 ```
   Statistical Sample Size Calculator
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | v5.16.0
+  Generated: {date} | v5.17.0
 
 DESIGN
 ────────────────────────────────────────

@@ -210,6 +210,12 @@ with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
             zf.write(src_path, dst_name)
             included += 1
 
+    # Add eSTAR index
+    index_path = os.path.join(pdir, 'eSTAR_index.md')
+    if os.path.exists(index_path):
+        zf.write(index_path, 'eSTAR_index.md')
+        included += 1
+
     # Add XML data file
     xml_path = os.path.join(pdir, f'estar_export_nIVD.xml')
     if os.path.exists(xml_path):
@@ -304,7 +310,7 @@ Present using standard FDA Professional CLI format:
   FDA eSTAR Export Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Project: {name} | v5.16.0
+  Generated: {date} | Project: {name} | v5.17.0
 
 EXPORT SUMMARY
 ────────────────────────────────────────

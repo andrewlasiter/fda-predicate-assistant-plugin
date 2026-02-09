@@ -209,6 +209,8 @@ Available date range keys:
                         help='Force interactive mode (prompts for all filters)')
     parser.add_argument('--no-download', action='store_true',
                         help='Skip PDF download step (only filter and save CSV)')
+    parser.add_argument('--delay', type=float, default=30.0,
+                        help='Delay between downloads in seconds (default: 30)')
     return parser.parse_args()
 
 
@@ -939,6 +941,7 @@ def main():
         failed_downloads = defaultdict(int)
         successful_downloads = defaultdict(int)
         skipped_files = []
+        download_delay = args.delay  # Capture for use in nested function
 
         def download_and_process_pdf(row, max_retries=3):
             url = row.URL
@@ -1014,15 +1017,15 @@ def main():
 
         def download_with_delay(row_and_count):
             row, count = row_and_count
-            time.sleep(30)
+            time.sleep(download_delay)
 
             try:
                 result = download_and_process_pdf(row)
 
                 if "Successfully" in result:
-                    delay = 30
+                    delay = download_delay
                 else:
-                    delay = min(300, 30 * (2 ** failed_downloads[row.DATERECEIVED.year]))
+                    delay = min(300, download_delay * (2 ** failed_downloads[row.DATERECEIVED.year]))
                     failed_downloads[row.DATERECEIVED.year] += 1
 
                 time.sleep(delay)

@@ -357,7 +357,7 @@ def parse_text(text, filename, csv_data, known_knumbers, known_pma_numbers):
     if filename[:-4] in unique_matches:
         unique_matches.remove(filename[:-4])
 
-    types = ['Predicate' if csv_data.get(match) == csv_data.get(filename[:-4]) else 'Reference Device' for match in unique_matches]
+    types = ['Predicate' if csv_data.get(match) is not None and csv_data.get(match) == csv_data.get(filename[:-4]) else 'Reference Device' for match in unique_matches]
     product_codes = [csv_data.get(match, '') for match in unique_matches]
     data = list(zip(unique_matches, types, product_codes))
 
@@ -371,7 +371,7 @@ def parse_text(text, filename, csv_data, known_knumbers, known_pma_numbers):
 
 
 def safe_process_file(args):
-    file_path, csv_data, max_predicates, max_reference_devices, pdf_files, pdf_data, known_knumbers, known_pma_numbers = args
+    file_path, csv_data, pdf_files, pdf_data, known_knumbers, known_pma_numbers = args
     filename = os.path.basename(file_path)
     text = extract_text_from_pdf(file_path)
     data, supplement_matches = parse_text(text, filename, csv_data, known_knumbers, known_pma_numbers)
@@ -380,9 +380,8 @@ def safe_process_file(args):
         if search_knumber_in_pdf(filename[:-4], pdf_file, pdf_data):
             unique_matches.append(os.path.basename(pdf_file)[:-4])
     predicates = [identifier for identifier, type, product_code in data if type == 'Predicate']
-    reference_devices = [(identifier, product_code) for identifier, type, product_code in data if type == 'Reference Device' and product_code != csv_data.get(filename[:-4])]
-    row = [filename[:-4], csv_data.get(filename[:-4], '')] + predicates + [''] * (max_predicates - len(predicates)) + [identifier for identifier, product_code in reference_devices] + [''] * (max_reference_devices - len(reference_devices))
-    return row, len(predicates), len(reference_devices), supplement_matches
+    reference_devices = [identifier for identifier, type, product_code in data if type == 'Reference Device' and product_code != csv_data.get(filename[:-4])]
+    return filename[:-4], csv_data.get(filename[:-4], ''), predicates, reference_devices, supplement_matches
 
 
 def search_knumber_in_pdf(knumber, pdf_file, pdf_data):
@@ -392,17 +391,17 @@ def search_knumber_in_pdf(knumber, pdf_file, pdf_data):
     return False
 
 
-def process_batches(pdf_files, batch_size, csv_data, max_predicates, max_reference_devices, pdf_data, known_knumbers, known_pma_numbers, workers=4):
+def process_batches(pdf_files, batch_size, csv_data, pdf_data, known_knumbers, known_pma_numbers, workers=4):
     results = []
     supplement_data = []
     for i in tqdm(range(0, len(pdf_files), batch_size), desc="Processing batches"):
         batch_files = pdf_files[i:i + batch_size]
         with Pool(workers) as pool:
-            batch_results = pool.map(safe_process_file, [(file, csv_data, max_predicates, max_reference_devices, pdf_files, pdf_data, known_knumbers, known_pma_numbers) for file in batch_files])
+            batch_results = pool.map(safe_process_file, [(file, csv_data, pdf_files, pdf_data, known_knumbers, known_pma_numbers) for file in batch_files])
             batch_results = [result for result in batch_results if result is not None]
             results.extend(batch_results)
             for res in batch_results:
-                supplement_data.extend(res[3])
+                supplement_data.extend(res[4])
     return results, supplement_data
 
 
@@ -451,6 +450,8 @@ Examples:
                         help='Number of parallel processing workers (default: 4)')
     parser.add_argument('--headless', action='store_true',
                         help='Enforce non-interactive mode (exit with error if GUI would be needed)')
+    parser.add_argument('--incremental', action='store_true',
+                        help='Skip PDFs already present in existing output.csv')
     return parser.parse_args()
 
 
@@ -502,6 +503,28 @@ def main():
     if len(pdf_files) == 0:
         print("No PDF files found in the selected directory. Exiting.")
         sys.exit(1)
+
+    # Incremental mode: skip PDFs already in existing output.csv and merge results back
+    existing_rows = []
+    if args.incremental:
+        inc_output_dir = args.output_dir if args.output_dir else directory
+        inc_output_file = os.path.join(inc_output_dir, 'output.csv')
+        if os.path.exists(inc_output_file):
+            processed = set()
+            with open(inc_output_file, 'r', encoding='utf-8') as f:
+                reader = csv.reader(f)
+                header = next(reader, None)  # skip header
+                for row in reader:
+                    if row:
+                        processed.add(row[0])
+                        existing_rows.append(row)
+            before = len(pdf_files)
+            pdf_files = [p for p in pdf_files if os.path.basename(p)[:-4] not in processed]
+            skipped = before - len(pdf_files)
+            print(f"Incremental mode: skipping {skipped} already-processed PDFs, processing {len(pdf_files)} new PDFs")
+            print(f"Incremental mode: {len(existing_rows)} existing rows will be merged with new results")
+        else:
+            print("Incremental mode: no existing output.csv found, processing all PDFs")
 
     # Determine data directory for FDA database files
     data_dir = args.data_dir if args.data_dir else os.path.dirname(os.path.abspath(__file__))
@@ -566,50 +589,110 @@ def main():
     batch_size = args.batch_size
     workers = args.workers
 
-    results, supplement_data = process_batches(pdf_files, batch_size, csv_data, max_predicates, max_reference_devices, pdf_data, known_knumbers, known_pma_numbers, workers=workers)
+    results, supplement_data = process_batches(pdf_files, batch_size, csv_data, pdf_data, known_knumbers, known_pma_numbers, workers=workers)
 
+    # Two-pass row construction: compute max column widths, then build rows
     for result in results:
-        max_predicates = max(max_predicates, result[1])
-        max_reference_devices = max(max_reference_devices, result[2])
+        max_predicates = max(max_predicates, len(result[2]))
+        max_reference_devices = max(max_reference_devices, len(result[3]))
 
-    # Normalize all rows to consistent column count (M-06)
-    # During batch processing, rows are built with max_predicates=0 / max_reference_devices=0,
-    # so they may have variable width. Re-pad/trim them to the final expected column count.
-    expected_cols = 2 + max_predicates + max_reference_devices  # 510k + Product Code + predicates + references
-    for i, result in enumerate(results):
-        row = result[0]
-        if len(row) < expected_cols:
-            row.extend([''] * (expected_cols - len(row)))
-        elif len(row) > expected_cols:
-            results[i] = (row[:expected_cols],) + result[1:]
+    # In incremental mode, account for existing row widths when computing column counts
+    if args.incremental and existing_rows:
+        for row in existing_rows:
+            # Existing rows: [knumber, product_code, pred1..predN, ref1..refN]
+            # Determine predicate/reference counts from existing header
+            # Each row has 2 fixed columns + predicates + references
+            pass  # Column widths are recomputed below after merging
 
-    filename = get_available_filename(output_dir, 'output.csv')
-    supplement_filename = get_available_filename(output_dir, 'supplement.csv')
+    rows = []
+    for knumber, product_code, predicates, reference_devices, _ in results:
+        row = [knumber, product_code] + predicates + [''] * (max_predicates - len(predicates)) + reference_devices + [''] * (max_reference_devices - len(reference_devices))
+        rows.append(row)
+
+    # Incremental merge: combine existing rows with new rows, recompute column widths
+    if args.incremental and existing_rows:
+        # Parse existing header to determine old column structure
+        old_pred_count = 0
+        old_ref_count = 0
+        if os.path.exists(os.path.join(output_dir, 'output.csv')):
+            with open(os.path.join(output_dir, 'output.csv'), 'r', encoding='utf-8') as f:
+                reader = csv.reader(f)
+                header = next(reader, None)
+                if header:
+                    old_pred_count = sum(1 for h in header if h.startswith('Predicate '))
+                    old_ref_count = sum(1 for h in header if h.startswith('Reference Device '))
+
+        # Recompute max widths across both old and new data
+        max_predicates = max(max_predicates, old_pred_count)
+        max_reference_devices = max(max_reference_devices, old_ref_count)
+
+        # Re-pad new rows to the merged column widths
+        new_rows = []
+        for knumber, product_code, predicates, reference_devices, _ in results:
+            row = [knumber, product_code] + predicates + [''] * (max_predicates - len(predicates)) + reference_devices + [''] * (max_reference_devices - len(reference_devices))
+            new_rows.append(row)
+
+        # Pad existing rows to the merged column widths
+        total_cols = 2 + max_predicates + max_reference_devices
+        padded_existing = []
+        for row in existing_rows:
+            # Existing rows may have fewer columns — pad with empty strings
+            padded = row + [''] * (total_cols - len(row))
+            # Existing rows may also have MORE columns if old had wider structure
+            # In that case, the old predicate/reference data might be misaligned
+            # Reparse: first 2 cols are fixed, next old_pred_count are predicates, rest are references
+            if len(row) >= 2:
+                kn = row[0]
+                pc = row[1]
+                old_preds = row[2:2 + old_pred_count]
+                old_refs = row[2 + old_pred_count:2 + old_pred_count + old_ref_count]
+                padded = [kn, pc] + old_preds + [''] * (max_predicates - len(old_preds)) + old_refs + [''] * (max_reference_devices - len(old_refs))
+            padded_existing.append(padded)
+
+        rows = padded_existing + new_rows
+        # Write back to original output.csv (overwrite)
+        filename = os.path.join(output_dir, 'output.csv')
+        supplement_filename = os.path.join(output_dir, 'supplement.csv')
+        print(f"Incremental mode: merged {len(padded_existing)} existing + {len(new_rows)} new = {len(rows)} total rows")
+    else:
+        filename = get_available_filename(output_dir, 'output.csv')
+        supplement_filename = get_available_filename(output_dir, 'supplement.csv')
 
     with open(filename, 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(['510(k)', 'Product Code'] + [f'Predicate {i+1}' for i in range(max_predicates)] + [f'Reference Device {i+1}' for i in range(max_reference_devices)])
 
-        for row in tqdm(results, desc="Writing data"):
+        for row in tqdm(rows, desc="Writing data"):
             try:
-                writer.writerow(row[0])
+                writer.writerow(row)
             except Exception as e:
-                print(f"Error writing row: {row[0]}")
+                print(f"Error writing row: {row}")
                 print(f"Exception: {e}")
+
+    # For incremental supplement merging, load existing supplements
+    existing_supplements = set()
+    if args.incremental and os.path.exists(supplement_filename):
+        with open(supplement_filename, 'r', encoding='utf-8') as f:
+            reader = csv.reader(f)
+            next(reader, None)  # skip header
+            for row in reader:
+                if row:
+                    existing_supplements.add(row[0])
 
     with open(supplement_filename, 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
         writer.writerow(['Number with Suffix'])
-        for match in supplement_data:
+        all_supplements = list(existing_supplements) + supplement_data
+        for match in dict.fromkeys(all_supplements):  # deduplicate preserving order
             writer.writerow([match])
 
     elapsed = time.time() - start_time
 
     # Structured summary
     total_pdfs = len(pdf_files)
-    total_with_predicates = sum(1 for r in results if r[1] > 0)
-    total_predicates_found = sum(r[1] for r in results)
-    total_reference_devices = sum(r[2] for r in results)
+    total_with_predicates = sum(1 for r in results if len(r[2]) > 0)
+    total_predicates_found = sum(len(r[2]) for r in results)
+    total_reference_devices = sum(len(r[3]) for r in results)
     total_supplements = len(supplement_data)
     error_count = total_pdfs - len(results)
 
@@ -622,6 +705,9 @@ def main():
     print(f"  Total reference devices:   {total_reference_devices}")
     print(f"  Supplement matches:        {total_supplements}")
     print(f"  Errors/skipped:            {error_count}")
+    if args.incremental and existing_rows:
+        print(f"  Previously extracted:      {len(existing_rows)}")
+        print(f"  Total rows in output:      {len(rows)}")
     print(f"  Time elapsed:              {elapsed:.1f}s")
     print(f"  Output:                    {filename}")
     print(f"  Supplements:               {supplement_filename}")

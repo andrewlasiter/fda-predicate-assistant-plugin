@@ -517,7 +517,7 @@ Structure the report using the standard FDA Professional CLI format (see `refere
   FDA Safety Intelligence Report
   {CODE} — {DEVICE NAME}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Class: {CLASS} | Regulation: {REG} | v5.16.0
+  Generated: {date} | Class: {CLASS} | Regulation: {REG} | v5.17.0
 
 DEVICE CONTEXT
 ────────────────────────────────────────

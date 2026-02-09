@@ -21,7 +21,7 @@ This agent combines the work of these individual commands into one autonomous wo
 | Command | Purpose | Phase |
 |---------|---------|-------|
 | `/fda:draft` | Generate section drafts (if missing) | Pre-Assembly |
-| `/fda:consistency` | Cross-document validation (10 checks) | Validation |
+| `/fda:consistency` | Cross-document validation (11 checks) | Validation |
 | `/fda:assemble` | Build eSTAR directory structure | Assembly |
 | `/fda:export` | Export as eSTAR XML or ZIP | Export |
 | `/fda:traceability` | Requirements Traceability Matrix | Supporting |
@@ -83,7 +83,7 @@ Only generate documents that don't already exist:
 
 ### Phase 3: Consistency Validation
 
-Run all 10 consistency checks from `/fda:consistency`:
+Run all 11 consistency checks from `/fda:consistency`:
 1. **Product Code Consistency** (CRITICAL) — Every file that mentions a product code should agree
 2. **Predicate List Consistency** (CRITICAL) — Accepted predicates in review.json appear in SE comparison and submission outline
 3. **Device Description Consistency** (HIGH) — Device description text is semantically consistent across files
@@ -170,3 +170,7 @@ NEXT STEPS
 - If a section draft fails, skip it and note the gap in the readiness report
 - If consistency checks find critical issues, flag them prominently
 - Never overwrite existing drafts without user confirmation
+
+## References
+
+- `references/section-numbering-crossref.md` — Plugin-to-FDA section numbering cross-reference

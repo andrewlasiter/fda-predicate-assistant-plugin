@@ -84,14 +84,21 @@ This agent combines the work of these individual commands into one autonomous wo
    - Most recent clearances with similar intended use
    - Score candidates by relevance (recency, same applicant type, same technology)
 
+4. **Verify predicate legal status** — For each candidate predicate:
+   - Check for WITHDRAWN status (device removed from market)
+   - Check for ENFORCEMENT_ACTION status (FDA enforcement, recall, consent decree)
+   - If a candidate has WITHDRAWN or ENFORCEMENT_ACTION status, **exclude from Pre-Sub predicate justification** and note in the safety intelligence section
+   - Query openFDA recall and enforcement endpoints for the predicate K-numbers
+   - Reference: Sprint 4 added `legal_status` field to review.json — if project has existing review.json, use that data
+
 ### Phase 2: Guidance Analysis
 
-4. **Find applicable guidance** — Search for FDA guidance documents:
+5. **Find applicable guidance** — Search for FDA guidance documents:
    - Product-code-specific guidance
    - Cross-cutting guidance (biocompatibility, sterilization, software, etc.)
    - Recognized consensus standards
 
-5. **Extract requirements** — From each guidance document:
+6. **Extract requirements** — From each guidance document:
    - Required testing categories
    - Recommended standards
    - Specific performance criteria
@@ -99,24 +106,24 @@ This agent combines the work of these individual commands into one autonomous wo
 
 ### Phase 3: Safety Intelligence
 
-6. **MAUDE analysis** — Query openFDA adverse event API:
+7. **MAUDE analysis** — Query openFDA adverse event API:
    - Event counts by type (malfunction, injury, death)
    - Trend over time (last 5 years)
    - Common failure modes
    - Events involving candidate predicates specifically
 
-7. **Recall history** — Query openFDA recall API:
+8. **Recall history** — Query openFDA recall API:
    - Recall counts and classes
    - Common recall reasons
    - Impact on predicate candidates
 
-7.5. **Inspection history** — Using `/fda:inspections` logic, query FDA Data Dashboard:
+8.5. **Inspection history** — Using `/fda:inspections` logic, query FDA Data Dashboard:
    - Recent establishment inspections for predicate manufacturers
    - CAPA patterns, GMP compliance status
    - Flag any manufacturer with recent Warning Letters or consent decrees
    - Relevance: Predicate manufacturers under enforcement may affect SE argument credibility
 
-7.6. **Warning letters & enforcement** — Using `/fda:warnings` logic:
+8.6. **Warning letters & enforcement** — Using `/fda:warnings` logic:
    - Search for warning letters mentioning the product code or predicate applicants
    - GMP violation patterns (QMSR compliance, design controls, corrective actions)
    - Risk scoring for enforcement-related Pre-Sub discussion points
@@ -124,12 +131,12 @@ This agent combines the work of these individual commands into one autonomous wo
 
 ### Phase 4: Literature & Clinical Evidence Review
 
-7.7. **Clinical trials** — Using `/fda:trials` logic, query ClinicalTrials.gov:
+8.7. **Clinical trials** — Using `/fda:trials` logic, query ClinicalTrials.gov:
    - Active and completed device trials for this product code
    - Study designs, endpoints, and sample sizes used by competitors
    - Relevance: Informs whether FDA expects clinical data and what study design precedent exists
 
-8. **PubMed search** — Using `/fda:literature` logic, search for clinical evidence:
+9. **PubMed search** — Using `/fda:literature` logic, search for clinical evidence:
    - Device-type specific studies
    - Comparative effectiveness data
    - Safety data from clinical use
@@ -138,7 +145,7 @@ This agent combines the work of these individual commands into one autonomous wo
 
 ### Phase 5: Pre-Sub Generation
 
-8.5. **Determine Q-Sub type** — Based on gathered data, recommend the appropriate Pre-Submission type:
+9.5. **Determine Q-Sub type** — Based on gathered data, recommend the appropriate Pre-Submission type:
 
    | Q-Sub Type | When to Recommend | Key Characteristics |
    |------------|-------------------|---------------------|
@@ -153,7 +160,7 @@ This agent combines the work of these individual commands into one autonomous wo
    - If no questions, just data update → Q-Sub (Information)
    - If clinical study planned → Pre-IDE
 
-9. **Generate Pre-Sub package** — Using all gathered data:
+10. **Generate Pre-Sub package** — Using all gathered data:
    - Cover letter addressed to appropriate CDRH division
    - Q-Sub type recommendation with rationale
    - Device description section
@@ -161,19 +168,19 @@ This agent combines the work of these individual commands into one autonomous wo
    - Predicate justification with top 2-3 candidates
    - FDA questions (5-7, auto-generated from gaps and concerns)
    - Testing strategy based on guidance requirements
-   - Safety intelligence summary (including inspection/enforcement data from Steps 7.5-7.6)
-   - Clinical trial landscape (from Step 7.7)
+   - Safety intelligence summary (including inspection/enforcement data from Steps 8.5-8.6)
+   - Clinical trial landscape (from Step 8.7)
    - Literature evidence summary
    - Meeting logistics with timeline
 
 ### Phase 6: Quality Check
 
-10. **Consistency validation** — Verify internal consistency:
+11. **Consistency validation** — Verify internal consistency:
     - Product code matches across all sections
     - Predicate K-numbers consistent
     - Standards citations match between testing and guidance sections
 
-11. **Completeness check** — Verify all required Pre-Sub elements:
+12. **Completeness check** — Verify all required Pre-Sub elements:
     - Cover letter present
     - Device description adequate
     - At least 3 FDA questions
@@ -197,7 +204,7 @@ Write all output to `$PROJECTS_DIR/{project_name}/`:
   FDA Pre-Sub Planner Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Generated: {date} | Project: {name} | v5.16.0
+  Generated: {date} | Project: {name} | v5.17.0
 
 PLANNING SUMMARY
 ────────────────────────────────────────

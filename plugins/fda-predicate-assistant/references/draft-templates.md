@@ -326,17 +326,25 @@ Post-aging testing includes:
 - Patient-contacting materials list]
 
 ### 12.2 Biological Evaluation Plan
-Per ISO 10993-1:2025 (or ISO 10993-1:2018 during transition), the following endpoints were evaluated:
+Per ISO 10993-1:2025 Table A.1 (or ISO 10993-1:2018 during transition period ending 2027-11-18), the following biological evaluation endpoints apply based on the device's contact type and duration:
 
-| Endpoint | Required? | Method | Status |
-|----------|-----------|--------|--------|
-| Cytotoxicity | Yes | ISO 10993-5 | [TODO] |
-| Sensitization | Yes | ISO 10993-10 | [TODO] |
-| Irritation | Yes | ISO 10993-23 | [TODO] |
-| Systemic Toxicity | {Conditional} | ISO 10993-11 | [TODO] |
-| Genotoxicity | {Conditional} | ISO 10993-3 | [TODO] |
-| Implantation | {Conditional} | ISO 10993-6 | [TODO] |
-| Hemocompatibility | {Conditional} | ISO 10993-4 | [TODO] |
+| Endpoint | Required? | Method | Standard | Status |
+|----------|-----------|--------|----------|--------|
+| Cytotoxicity | Yes (all contact types) | In vitro | ISO 10993-5 | [TODO] |
+| Sensitization | Yes (all contact types) | In vivo or in vitro (DPRA, KeratinoSens, h-CLAT) | ISO 10993-10 | [TODO] |
+| Irritation or Intracutaneous Reactivity | Yes (all contact types) | In vivo or in vitro (EpiDerm, SkinEthic) | ISO 10993-23 | [TODO] |
+| Material-Mediated Pyrogenicity | {Surface/External communicating/Implant} | In vitro (MAT or RPT) | ISO 10993-11 | [TODO] |
+| Acute Systemic Toxicity | {External communicating ≥24h, Implant} | In vivo | ISO 10993-11 | [TODO] |
+| Subacute/Subchronic Systemic Toxicity | {External communicating >30d, Implant >24h} | In vivo | ISO 10993-11 | [TODO] |
+| Chronic Systemic Toxicity | {Implant >30d} | In vivo | ISO 10993-11 | [TODO] |
+| Genotoxicity | {External communicating ≥24h, Implant} | In vitro battery (Ames, MLA/MN, chromosomal aberration) | ISO 10993-3 | [TODO] |
+| Carcinogenicity | {Permanent implant >30d} | In vivo (or risk assessment) | ISO 10993-3 | [TODO] |
+| Reproductive/Developmental Toxicity | {Permanent implant affecting reproductive organs} | In vivo (or risk assessment) | ISO 10993-3 | [TODO] |
+| Implantation | {Implant devices} | In vivo, appropriate site | ISO 10993-6 | [TODO] |
+| Hemocompatibility | {Blood-contacting devices} | Hemolysis, thrombosis, coagulation, complement, hematology | ISO 10993-4 | [TODO] |
+| Degradation | {Absorbable/biodegradable devices} | In vitro and/or in vivo | ISO 10993-13, -14, -15, -16 | [TODO] |
+| Chemical Characterization | Yes (all contact types) | E&L analysis (GC-MS, LC-MS, ICP-MS) | ISO 10993-18 | [TODO] |
+| Toxicological Risk Assessment | Yes (all contact types) | TTC/PDE calculation from E&L data | ISO 10993-17 | [TODO] |
 
 ### 12.3 Biocompatibility Testing Summary
 [TODO: Company-specific — For each test performed:
