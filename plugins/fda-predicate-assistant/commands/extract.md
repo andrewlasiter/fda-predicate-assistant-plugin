@@ -437,7 +437,7 @@ NEXT STEPS
    if product_codes:
        time.sleep(0.5)
        recall_search = "+OR+".join(f'product_code:"{pc}"' for pc in product_codes)
-       rparams = {"search": recall_search, "limit": "25"}
+       rparams = {"search": recall_search, "limit": "100"}
        if api_key:
            rparams["api_key"] = api_key
        rurl = f"https://api.fda.gov/device/recall.json?{urllib.parse.urlencode(rparams)}"

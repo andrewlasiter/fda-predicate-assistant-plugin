@@ -87,7 +87,7 @@ elif search_type == "fei":
 else:
     query = f'recalling_firm:"{search_term}"'
 
-params = {"search": query, "limit": "50", "sort": "report_date:desc"}
+params = {"search": query, "limit": "100", "sort": "report_date:desc"}
 if api_key:
     params["api_key"] = api_key
 

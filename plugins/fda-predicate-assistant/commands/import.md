@@ -134,7 +134,7 @@ with open(import_file) as f:
 # Validate product code
 pc = data.get('classification', {}).get('product_code', '')
 if pc:
-    params = {"search": f'product_code:"{pc}"', "limit": "5"}
+    params = {"search": f'product_code:"{pc}"', "limit": "100"}
     if api_key:
         params["api_key"] = api_key
     url = f"https://api.fda.gov/device/classification.json?{urllib.parse.urlencode(params)}"

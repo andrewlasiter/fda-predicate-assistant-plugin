@@ -123,7 +123,7 @@ if not api_key:
 product_code = "PRODUCTCODE"  # Replace
 
 if api_enabled:
-    def fda_query(endpoint, search, limit=25, count_field=None):
+    def fda_query(endpoint, search, limit=100, count_field=None):
         params = {"search": search, "limit": str(limit)}
         if count_field:
             params["count"] = count_field
@@ -247,7 +247,7 @@ if not api_enabled:
 
 product_code = "PRODUCTCODE"  # Replace
 
-def fda_query(endpoint, search, limit=25, count_field=None):
+def fda_query(endpoint, search, limit=100, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -290,7 +290,7 @@ else:
 
 # Active recalls
 time.sleep(0.5)
-active = fda_query("recall", f'product_code:"{product_code}"+AND+recall_status:"Ongoing"', limit=25)
+active = fda_query("recall", f'product_code:"{product_code}"+AND+recall_status:"Ongoing"', limit=100)
 if active.get("results"):
     active_total = active.get("meta", {}).get("results", {}).get("total", 0)
     print(f"\nACTIVE_RECALLS:{len(active['results'])}")
@@ -1343,7 +1343,7 @@ if not api_enabled:
 
 product_code = "PRODUCTCODE"  # Replace
 
-def fda_query(endpoint, search, limit=25, count_field=None):
+def fda_query(endpoint, search, limit=100, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -1362,7 +1362,7 @@ def fda_query(endpoint, search, limit=25, count_field=None):
         return {"error": str(e)}
 
 # PMA count and recent approvals
-pma_result = fda_query("pma", f'product_code:"{product_code}"', limit=50)
+pma_result = fda_query("pma", f'product_code:"{product_code}"', limit=100)
 total = pma_result.get("meta", {}).get("results", {}).get("total", 0)
 returned = len(pma_result.get("results", []))
 print(f"PMA_TOTAL:{total}")
@@ -1432,7 +1432,7 @@ if not api_enabled:
 
 product_code = "PRODUCTCODE"  # Replace
 
-def fda_query(endpoint, search, limit=25, count_field=None):
+def fda_query(endpoint, search, limit=100, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -1511,7 +1511,7 @@ if not api_enabled:
 
 product_code = "PRODUCTCODE"  # Replace
 
-def fda_query(endpoint, search, limit=25, count_field=None):
+def fda_query(endpoint, search, limit=100, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -1681,7 +1681,7 @@ product_code = "PRODUCTCODE"  # Replace
 # AI/ML-associated product codes for cross-referencing
 AIML_CODES = ["QAS", "QIH", "QMT", "QJU", "QKQ", "QPN", "QRZ", "DXL", "DPS", "MYN", "OTB"]
 
-def fda_query(endpoint, search, limit=25, count_field=None):
+def fda_query(endpoint, search, limit=100, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -1707,7 +1707,7 @@ print(f"IS_AIML_CODE:{is_aiml}")
 print("=== AI/ML DEVICE SEARCH ===")
 ai_keywords = ["artificial intelligence", "machine learning", "algorithm", "deep learning", "neural network", "computer aided", "computer assisted", "CAD", "automated detection"]
 for kw in ai_keywords[:3]:  # Limit API calls
-    result = fda_query("510k", f'product_code:"{product_code}"+AND+device_name:"{kw}"', limit=10)
+    result = fda_query("510k", f'product_code:"{product_code}"+AND+device_name:"{kw}"', limit=100)
     total = result.get("meta", {}).get("results", {}).get("total", 0)
     if total > 0:
         print(f"AI_KEYWORD:{kw}:{total}")
@@ -1727,7 +1727,7 @@ if is_aiml:
 
 # PCCP-authorized devices in this product code
 print("\n=== PCCP CHECK ===")
-pccp_result = fda_query("510k", f'product_code:"{product_code}"+AND+device_name:"predetermined change"', limit=10)
+pccp_result = fda_query("510k", f'product_code:"{product_code}"+AND+device_name:"predetermined change"', limit=100)
 pccp_total = pccp_result.get("meta", {}).get("results", {}).get("total", 0)
 print(f"PCCP_DEVICES:{pccp_total}")
 PYEOF

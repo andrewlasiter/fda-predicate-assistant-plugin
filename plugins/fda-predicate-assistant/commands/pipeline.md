@@ -149,7 +149,7 @@ if os.path.exists(settings_path):
         if m and m.group(1) != 'null':
             api_key = m.group(1)
 
-params = {"search": f'device_name:{search_terms}', "limit": "5"}
+params = {"search": f'device_name:{search_terms}', "limit": "100"}
 if api_key:
     params["api_key"] = api_key
 url = f"https://api.fda.gov/device/classification.json?{urllib.parse.urlencode(params)}"

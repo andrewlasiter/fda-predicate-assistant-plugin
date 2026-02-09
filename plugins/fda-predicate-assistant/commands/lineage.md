@@ -143,7 +143,7 @@ import urllib.request, urllib.parse, json, os, re, time
 # Batch recall check: single OR query for all devices in the chain (1 call instead of N)
 devices_to_check = ["K241335", "K200123", "K180456"]  # Replace
 batch_search = "+OR+".join(f'k_numbers:"{kn}"' for kn in devices_to_check)
-params = {"search": batch_search, "limit": "50"}
+params = {"search": batch_search, "limit": "100"}
 if api_key:
     params["api_key"] = api_key
 # Fix URL encoding: replace + with space before urlencode
@@ -303,7 +303,7 @@ if os.path.exists(settings_path):
             api_key = m.group(1)
 
 pma_number = "P870024"  # Replace with actual P-number found in lineage
-params = {"search": f'pma_number:"{pma_number}"', "limit": "50"}
+params = {"search": f'pma_number:"{pma_number}"', "limit": "100"}
 if api_key:
     params["api_key"] = api_key
 

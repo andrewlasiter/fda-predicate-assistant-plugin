@@ -208,7 +208,7 @@ if not search_parts:
     exit(0)
 
 search = "+AND+".join(search_parts)
-params = {"search": search, "limit": "3"}
+params = {"search": search, "limit": "100"}
 if api_key:
     params["api_key"] = api_key
 

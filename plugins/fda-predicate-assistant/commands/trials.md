@@ -60,7 +60,7 @@ If `--product-code` is provided, first look up the device type name from openFDA
 python3 << 'PYEOF'
 import urllib.request, urllib.parse, json
 code = "PRODUCT_CODE"  # Replace with actual
-url = f"https://api.fda.gov/device/classification.json?search=product_code:{code}&limit=5"
+url = f"https://api.fda.gov/device/classification.json?search=product_code:{code}&limit=100"
 try:
     with urllib.request.urlopen(url, timeout=10) as resp:
         data = json.loads(resp.read())

@@ -207,7 +207,7 @@ if os.path.exists(settings_path):
 # Batch recall check for all proposed devices (1 call instead of N)
 all_knumbers_recall = ["K123456", "K234567"]  # Replace with all device numbers
 batch_recall_search = "+OR+".join(f'k_number:"{kn}"' for kn in all_knumbers_recall)
-params = {"search": batch_recall_search, "limit": "25"}
+params = {"search": batch_recall_search, "limit": "100"}
 if api_key:
     params["api_key"] = api_key
 # Fix URL encoding: replace + with space before urlencode
@@ -256,7 +256,7 @@ if os.path.exists(settings_path):
 product_codes_enforce = ["PC1", "PC2"]  # Replace with unique product codes
 if product_codes_enforce:
     enforce_search = "+OR+".join(f'product_code:"{pc}"' for pc in product_codes_enforce)
-    params = {"search": enforce_search, "limit": "10"}
+    params = {"search": enforce_search, "limit": "100"}
     if api_key:
         params["api_key"] = api_key
     params["search"] = params["search"].replace("+", " ")

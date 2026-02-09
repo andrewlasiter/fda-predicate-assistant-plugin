@@ -91,7 +91,7 @@ if os.path.exists(settings_path):
             api_key = m.group(1)
 
 product_code = "PRODUCTCODE"  # Replace
-params = {"search": f'product_code:"{product_code}"', "limit": "5"}
+params = {"search": f'product_code:"{product_code}"', "limit": "100"}
 if api_key:
     params["api_key"] = api_key
 url = f"https://api.fda.gov/device/classification.json?{urllib.parse.urlencode(params)}"
@@ -150,7 +150,7 @@ if os.path.exists(settings_path):
 regulation_number = "REGULATION"  # From Step 1
 product_code = "PRODUCTCODE"  # Replace
 
-def fda_query(endpoint, search, limit=25, count_field=None):
+def fda_query(endpoint, search, limit=100, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -170,7 +170,7 @@ def fda_query(endpoint, search, limit=25, count_field=None):
 
 # Find peer product codes under the same regulation number
 print("=== PEER DEVICE CODES ===")
-peer_result = fda_query("classification", f'regulation_number:"{regulation_number}"', limit=25)
+peer_result = fda_query("classification", f'regulation_number:"{regulation_number}"', limit=100)
 peer_codes = []
 if "results" in peer_result:
     for r in peer_result["results"]:
@@ -240,7 +240,7 @@ if os.path.exists(settings_path):
 
 product_code = "PRODUCTCODE"  # Replace
 
-def fda_query(endpoint, search, limit=25, count_field=None):
+def fda_query(endpoint, search, limit=100, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -330,7 +330,7 @@ product_code = "PRODUCTCODE"  # Replace
 
 params = {
     "search": f'device.device_report_product_code:"{product_code}"+AND+date_received:[20230101+TO+20261231]',
-    "limit": "50",  # Default sample size; use --sample-size flag to override (max 100)
+    "limit": "100",  # Max API limit; use --sample-size flag to reduce if needed
     "sort": "date_received:desc"  # Most recent events first
 }
 if api_key:
@@ -395,7 +395,7 @@ if os.path.exists(settings_path):
 
 product_code = "PRODUCTCODE"  # Replace
 
-def fda_query(endpoint, search, limit=25, count_field=None, sort=None):
+def fda_query(endpoint, search, limit=100, count_field=None, sort=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -429,7 +429,7 @@ else:
 # Recent recalls with details — sorted by most recent termination date
 time.sleep(0.5)
 print("\n=== RECENT RECALLS ===")
-recent = fda_query("recall", f'product_code:"{product_code}"', limit=50, sort="event_date_terminated:desc")
+recent = fda_query("recall", f'product_code:"{product_code}"', limit=100, sort="event_date_terminated:desc")
 recent_total = recent.get("meta", {}).get("results", {}).get("total", 0)
 returned = len(recent.get("results", []))
 print(f"SHOWING:{returned}_OF:{recent_total}")
@@ -492,7 +492,7 @@ if os.path.exists(settings_path):
 
 knumber = "KNUMBER"  # Replace
 
-def fda_query(endpoint, search, limit=25):
+def fda_query(endpoint, search, limit=100):
     params = {"search": search, "limit": str(limit)}
     if api_key:
         params["api_key"] = api_key
@@ -510,7 +510,7 @@ def fda_query(endpoint, search, limit=25):
 
 # Recalls for this specific K-number
 print("=== DEVICE-SPECIFIC RECALLS ===")
-recalls = fda_query("recall", f'k_numbers:"{knumber}"', limit=10)
+recalls = fda_query("recall", f'k_numbers:"{knumber}"')
 if recalls.get("results"):
     print(f"DEVICE_RECALLS:{len(recalls['results'])}")
     for r in recalls["results"]:

@@ -323,7 +323,7 @@ devices = [
     {"knumber": "K123456", "product_code": "KGN", "applicant": "COMPANY"},
 ]
 
-def fda_query(endpoint, search, limit=10, count_field=None):
+def fda_query(endpoint, search, limit=100, count_field=None):
     params = {"search": search, "limit": str(limit)}
     if count_field:
         params["count"] = count_field
@@ -350,7 +350,7 @@ unique_pcs = list(set(d["product_code"] for d in devices if d["product_code"]))
 recall_by_pc = {}
 if unique_pcs:
     recall_search = "+OR+".join(f'product_code:"{pc}"' for pc in unique_pcs)
-    recalls = fda_query("recall", recall_search, limit=50)
+    recalls = fda_query("recall", recall_search, limit=100)
     recall_total = recalls.get("meta", {}).get("results", {}).get("total", 0)
     recall_returned = len(recalls.get("results", []))
     print(f"SHOWING:{recall_returned}_OF:{recall_total}")
@@ -418,7 +418,7 @@ if os.path.exists(settings_path):
 product_codes_to_check = ["PC1", "PC2"]  # Replace with unique product codes
 if product_codes_to_check:
     enforcement_search = "+OR+".join(f'product_code:"{pc}"' for pc in product_codes_to_check)
-    params = {"search": enforcement_search, "limit": "25"}
+    params = {"search": enforcement_search, "limit": "100"}
     if api_key:
         params["api_key"] = api_key
     params["search"] = params["search"].replace("+", " ")

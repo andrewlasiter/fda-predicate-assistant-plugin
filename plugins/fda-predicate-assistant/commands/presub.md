@@ -89,7 +89,7 @@ if os.path.exists(settings_path):
 product_code = "PRODUCTCODE"  # Replace
 
 if api_enabled:
-    params = {"search": f'product_code:"{product_code}"', "limit": "5"}
+    params = {"search": f'product_code:"{product_code}"', "limit": "100"}
     if api_key:
         params["api_key"] = api_key
     url = f"https://api.fda.gov/device/classification.json?{urllib.parse.urlencode(params)}"
@@ -435,7 +435,7 @@ if api_enabled:
         print(f"MAUDE_ERROR:{e}")
 
     # Recall check for specific K-number
-    params2 = {"search": f'k_number:"{knumber}"', "limit": "5"}
+    params2 = {"search": f'k_number:"{knumber}"', "limit": "100"}
     if api_key:
         params2["api_key"] = api_key
     url2 = f"https://api.fda.gov/device/recall.json?{urllib.parse.urlencode(params2)}"
@@ -728,7 +728,7 @@ if os.path.exists(settings_path):
             api_key = m.group(1)
 
 product_code = "PRODUCTCODE"  # Replace
-params = {"search": f'product_code:"{product_code}"', "limit": "5", "sort": "event_date_terminated:desc"}
+params = {"search": f'product_code:"{product_code}"', "limit": "100", "sort": "event_date_terminated:desc"}
 if api_key:
     params["api_key"] = api_key
 url = f"https://api.fda.gov/device/recall.json?{urllib.parse.urlencode(params)}"

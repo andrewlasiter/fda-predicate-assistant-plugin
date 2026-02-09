@@ -82,7 +82,7 @@ product_code = "PRODUCT_CODE"  # Replace or None
 di = "DI_NUMBER"               # Replace or None
 company = "COMPANY_NAME"       # Replace or None
 brand = "BRAND_NAME"           # Replace or None
-limit = 10                     # Replace with actual
+limit = 100                    # Replace with actual --limit value if provided
 
 if product_code and product_code != "None":
     search_parts.append(f'product_codes.code:"{product_code}"')
