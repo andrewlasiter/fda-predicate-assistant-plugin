@@ -1,5 +1,44 @@
 # Changelog
 
+## [5.20.0] - 2026-02-09
+
+### Added — Decision Traceability System (Zero-Trust Audit Trail)
+
+**New Command:**
+- `/fda:audit` — View the decision audit trail with filtering by command, action, date, subject; full exclusion rationale display
+
+**New Script:**
+- `scripts/fda_audit_logger.py` — Standalone CLI for structured JSONL decision logging with append, query, summary, and consolidate subcommands
+
+**New Reference:**
+- `references/decision-traceability.md` — Zero-trust decision traceability system documentation
+
+**Schema Extensions (audit-logging.md):**
+- 4 new fields: `alternatives_considered`, `exclusion_records`, `decision_type`, `score_breakdown`
+- ~20 new action types across 10 command categories
+
+**Instrumented Commands (9):**
+- review, pre-check, pathway, safety, consistency, guidance, draft, propose, test-plan
+- Each command logs autonomous decisions with alternatives considered and exclusion rationale
+
+**Instrumented Agents (3):**
+- review-simulator, submission-writer, research-intelligence
+- Each agent logs key decision points during autonomous workflows
+
+### Tests
+- 68 new tests (test_audit_logger.py): validation, query, summary, consolidate, CLI, schema, instrumentation
+- Total: 2,182 pass (2,096 non-API + 86 API, 10 pre-existing API failures)
+
+## [5.19.0] - 2026-02-09
+
+### Added — Persistent Project Data Store
+
+- `scripts/fda_data_store.py` — Wraps fda_api_client.py with data_manifest.json for TTL-based query deduplication and post-compaction recovery
+- `/fda:cache` — Manifest viewer command: show cached FDA data freshness, summaries, clear/refresh
+- 4 commands migrated to data store (research, safety, review, guidance)
+- 116 new tests (test_data_store.py)
+- Total: 2,114 pass
+
 ## [5.18.0] - 2026-02-09
 
 ### Added — Sprint 5 Short-Term Items (15-30)

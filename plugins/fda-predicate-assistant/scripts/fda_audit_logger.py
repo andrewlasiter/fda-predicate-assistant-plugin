@@ -350,7 +350,7 @@ def print_query_results(entries):
             print(f"  Chosen: {decision} — \"{rationale}\"")
 
         for excl in entry.get("exclusion_records", []):
-            subj = excl.get("subject", "?")
+            subj = excl.get("subject") or excl.get("device") or excl.get("pathway") or "?"
             reason = excl.get("reason", "?")[:150]
             print(f"  Excluded: {subj} — \"{reason}\"")
 
