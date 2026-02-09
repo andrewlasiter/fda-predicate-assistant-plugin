@@ -240,10 +240,11 @@ class TestResearchIntelligence:
             assert field not in self.fm, f"Invalid field in frontmatter: {field}"
 
     def test_references_research_commands(self):
-        """Agent should reference the commands it orchestrates."""
-        cmds = ["/fda:research", "/fda:safety", "/fda:guidance", "/fda:literature"]
+        """Agent should reference all 7 commands it orchestrates."""
+        cmds = ["/fda:research", "/fda:safety", "/fda:guidance", "/fda:literature",
+                "/fda:warnings", "/fda:inspections", "/fda:trials"]
         found = sum(1 for c in cmds if c in self.content)
-        assert found >= 3, f"Expected at least 3 command references, found {found}"
+        assert found >= 6, f"Expected at least 6 of 7 command references, found {found}"
 
     def test_has_intelligence_report(self):
         assert "Intelligence Report" in self.content

@@ -102,7 +102,7 @@ The eSTAR (electronic Submission Template and Resource) has a defined section st
 
 ```bash
 ESTAR_DIR="$PROJECTS_DIR/$PROJECT_NAME/estar"
-mkdir -p "$ESTAR_DIR"/{01_cover_letter,02_cover_sheet,03_510k_summary,04_truthful_accuracy,05_financial_certification,06_device_description,07_se_comparison,08_standards_conformity,09_labeling,10_sterilization,11_shelf_life,12_biocompatibility,13_software,14_emc_electrical,15_performance_testing,16_clinical,17_other}
+mkdir -p "$ESTAR_DIR"/{01_CoverLetter,02_CoverSheet,03_510kSummary,04_TruthfulAccuracy,05_FinancialCert,06_DeviceDescription,07_SEComparison,08_Standards,09_Labeling,10_Sterilization,11_ShelfLife,12_Biocompatibility,13_Software,14_EMC,15_PerformanceTesting,16_Clinical,17_HumanFactors,18_Other}
 ```
 
 ## Step 3: Map Data to Sections
@@ -111,23 +111,24 @@ For each eSTAR section, check if project data can populate it:
 
 | Section | eSTAR Folder | Source Data | Auto-populate? |
 |---------|-------------|-------------|----------------|
-| Cover Letter | 01_cover_letter | presub_plan.md (Section 1) | Partial |
-| Cover Sheet | 02_cover_sheet | FDA Form 3514 template | Template |
-| 510(k) Summary | 03_510k_summary | submission_outline.md | Partial |
-| Truthful & Accuracy | 04_truthful_accuracy | Standard template | Template |
-| Financial Cert | 05_financial_certification | Standard template | Template |
-| Device Description | 06_device_description | presub_plan.md (Section 2) | If available |
-| SE Comparison | 07_se_comparison | se_comparison.md | Yes |
-| Standards | 08_standards_conformity | guidance_cache, test_plan.md | Partial |
-| Labeling | 09_labeling | IFU from presub_plan.md | If available |
-| Sterilization | 10_sterilization | test_plan.md | If applicable |
-| Shelf Life | 11_shelf_life | test_plan.md | If applicable |
-| Biocompatibility | 12_biocompatibility | test_plan.md, guidance_cache | Partial |
-| Software | 13_software | N/A | If applicable |
-| EMC/Electrical | 14_emc_electrical | N/A | If applicable |
-| Performance | 15_performance_testing | test_plan.md | Partial |
-| Clinical | 16_clinical | review.json (lit review) | If available |
-| Other | 17_other | Remaining documents | As available |
+| Cover Letter | 01_CoverLetter | presub_plan.md (Section 1) | Partial |
+| Cover Sheet | 02_CoverSheet | FDA Form 3514 template | Template |
+| 510(k) Summary | 03_510kSummary | submission_outline.md | Partial |
+| Truthful & Accuracy | 04_TruthfulAccuracy | Standard template | Template |
+| Financial Cert | 05_FinancialCert | Standard template | Template |
+| Device Description | 06_DeviceDescription | presub_plan.md (Section 2) | If available |
+| SE Comparison | 07_SEComparison | se_comparison.md | Yes |
+| Standards | 08_Standards | guidance_cache, test_plan.md | Partial |
+| Labeling | 09_Labeling | IFU from presub_plan.md | If available |
+| Sterilization | 10_Sterilization | test_plan.md | If applicable |
+| Shelf Life | 11_ShelfLife | test_plan.md | If applicable |
+| Biocompatibility | 12_Biocompatibility | test_plan.md, guidance_cache | Partial |
+| Software | 13_Software | N/A | If applicable |
+| EMC/Electrical | 14_EMC | N/A | If applicable |
+| Performance | 15_PerformanceTesting | test_plan.md | Partial |
+| Clinical | 16_Clinical | review.json (lit review) | If available |
+| Human Factors | 17_HumanFactors | draft_human-factors.md | If applicable |
+| Other | 18_Other | Remaining documents | As available |
 
 ### Import Data Pre-Population
 
@@ -143,11 +144,11 @@ If `import_data.json` exists (from `/fda:import`), use it as a **primary data so
 For each section:
 1. Create a `README.md` in the section folder describing what's needed
 2. If data available, **auto-write content** into the section (not just copy the file):
-   - **Section 06 (Device Description)**: If `--device-description` provided or presub_plan.md exists, write the device description prose into `06_device_description/device_description.md`. Mark as `DRAFT — AI-generated`.
-   - **Section 07 (SE Comparison)**: If se_comparison.md exists, copy it into `07_se_comparison/se_comparison.md`. Mark as `DRAFT — AI-generated`.
-   - **Section 08 (Standards)**: If guidance_cache exists, write a standards conformity declaration listing each standard and its status into `08_standards_conformity/standards_declaration.md`. Mark as `DRAFT — AI-generated`.
-   - **Section 12 (Biocompatibility)**: If test_plan.md or guidance_cache has biocompatibility requirements, write a biocompatibility plan summary into `12_biocompatibility/biocompat_plan.md`. Mark as `TEMPLATE — manual completion`.
-   - **Section 15 (Performance)**: If test_plan.md exists, write the performance testing plan into `15_performance_testing/performance_plan.md`. Mark as `DRAFT — AI-generated`.
+   - **Section 06 (Device Description)**: If `--device-description` provided or presub_plan.md exists, write the device description prose into `06_DeviceDescription/device_description.md`. Mark as `DRAFT — AI-generated`.
+   - **Section 07 (SE Comparison)**: If se_comparison.md exists, copy it into `07_SEComparison/se_comparison.md`. Mark as `DRAFT — AI-generated`.
+   - **Section 08 (Standards)**: If guidance_cache exists, write a standards conformity declaration listing each standard and its status into `08_Standards/standards_declaration.md`. Mark as `DRAFT — AI-generated`.
+   - **Section 12 (Biocompatibility)**: If test_plan.md or guidance_cache has biocompatibility requirements, write a biocompatibility plan summary into `12_Biocompatibility/biocompat_plan.md`. Mark as `TEMPLATE — manual completion`.
+   - **Section 15 (Performance)**: If test_plan.md exists, write the performance testing plan into `15_PerformanceTesting/performance_plan.md`. Mark as `DRAFT — AI-generated`.
 3. If template needed (no data available), generate a starter template
 4. Mark each section clearly as one of:
    - `READY` — Verified by user as submission-appropriate (only set when user explicitly marks a section as verified)
@@ -172,7 +173,7 @@ cyber_trigger = any(kw in desc for kw in [
 ```
 
 If cybersecurity is triggered:
-1. Create `13_software/cybersecurity/` subdirectory
+1. Create `13_Software/cybersecurity/` subdirectory
 2. Generate templates from `references/cybersecurity-framework.md`:
    - `threat_model.md` — Threat model template
    - `sbom_template.md` — SBOM scaffold
@@ -202,6 +203,8 @@ Write `$ESTAR_DIR/eSTAR_index.md`:
 | 02 | Cover Sheet (3514) | TEMPLATE | FDA form | Complete manually |
 | 03 | 510(k) Summary | {status} | {source} | {notes} |
 | ... | ... | ... | ... | ... |
+| 17 | Human Factors | {status} | {source} | {notes} |
+| 18 | Other | {status} | {source} | {notes} |
 
 **Submission Readiness: {N}/{total} sections READY (verified)**
 **Pipeline Coverage: {N}/{total} sections with content (READY + DRAFT)**
@@ -294,7 +297,7 @@ When assembling the eSTAR package, check for artwork files in the project:
 
 1. If `artwork_dir` is set in project's `query.json` or `import_data.json`, scan that directory
 2. Include artwork files (PDF, PNG, SVG, AI, EPS) in the Section 09 (Labeling) directory
-3. Generate an artwork manifest file (`section_09_labeling/artwork_manifest.md`):
+3. Generate an artwork manifest file (`09_Labeling/artwork_manifest.md`):
 
 ```markdown
 ## Label Artwork Files

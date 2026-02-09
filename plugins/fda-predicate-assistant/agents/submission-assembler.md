@@ -75,16 +75,16 @@ Only generate documents that don't already exist:
 ### Phase 3: Consistency Validation
 
 Run all 10 consistency checks from `/fda:consistency`:
-1. Product code matches across all documents
-2. Device name is consistent
-3. Intended use statement matches
-4. Predicate K-numbers are consistent
-5. Standards references are valid
-6. Test results cross-reference correctly
-7. Regulatory citations are accurate
-8. Dates are consistent
-9. Company/applicant name matches
-10. Section cross-references resolve
+1. **Product Code Consistency** (CRITICAL) — Every file that mentions a product code should agree
+2. **Predicate List Consistency** (CRITICAL) — Accepted predicates in review.json appear in SE comparison and submission outline
+3. **Device Description Consistency** (HIGH) — Device description text is semantically consistent across files
+4. **Intended Use Consistency** (CRITICAL) — IFU text is identical across all submission components
+5. **Pathway Consistency** (HIGH) — Submission pathway is the same in all documents
+6. **Standards Consistency** (MEDIUM) — Standards in guidance_cache appear in test_plan and submission_outline
+7. **Dates and Freshness** (LOW) — All files generated from same pipeline run
+8. **Placeholder Scan** (HIGH) — No `[INSERT:]` placeholders remain in final documents
+9. **Cross-Section Draft Consistency** (HIGH) — IFU alignment, K-number references, standard citations, and device description consistency across draft_*.md files
+10. **eSTAR Import Data Alignment** (MEDIUM) — Project files align with imported eSTAR data (if import_data.json exists)
 
 Report findings and auto-fix where `--fix` would apply.
 
