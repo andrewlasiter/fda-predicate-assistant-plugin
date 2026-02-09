@@ -1,6 +1,6 @@
 ---
 description: Search ClinicalTrials.gov for clinical studies involving similar medical devices — find trial designs, endpoints, enrollment, and evidence for 510(k) submissions
-allowed-tools: Bash, Read, Glob, Grep, Write, WebFetch
+allowed-tools: Bash, Read, Glob, Grep, Write, WebFetch, WebSearch
 argument-hint: "<device name or condition> [--sponsor NAME] [--status completed|recruiting|all] [--product-code CODE] [--limit N] [--project NAME] [--save]"
 ---
 

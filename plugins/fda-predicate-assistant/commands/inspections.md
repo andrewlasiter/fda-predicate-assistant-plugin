@@ -1,6 +1,6 @@
 ---
 description: Look up FDA inspection history, CFR citations, compliance actions, and import refusals for device manufacturers
-allowed-tools: Bash, Read, Glob, Grep, Write, WebFetch
+allowed-tools: Bash, Read, Glob, Grep, Write, WebFetch, WebSearch
 argument-hint: "<company name or FEI number> [--citations] [--compliance] [--imports] [--product-code CODE] [--years RANGE]"
 ---
 

@@ -116,10 +116,14 @@ Combine all findings into a structured report:
   FDA Regulatory Intelligence Report
   {product_code} — {device_name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Generated: {date} | v5.15.0
 
 EXECUTIVE SUMMARY
 ────────────────────────────────────────
   {2-3 sentence strategic assessment}
+
+  Data sources queried: {N}/7 successful
+  {If any failed: "⚠ Incomplete — {source} unavailable"}
 
 PREDICATE LANDSCAPE
 ────────────────────────────────────────
@@ -156,6 +160,13 @@ ENFORCEMENT INTELLIGENCE
   Common violations: {top CFR citations}
   Manufacturer record: {clean/concerns}
 
+INSPECTION HISTORY
+────────────────────────────────────────
+  Inspections found: {N} (last 5 years)
+  Classifications: NAI: {n}, VAI: {n}, OAI: {n}
+  CFR citations: {top citations}
+  {If manufacturer unknown: "Manufacturer not specified — provide --manufacturer for inspection data"}
+
 CLINICAL TRIALS
 ────────────────────────────────────────
   Active studies: {N}
@@ -176,12 +187,36 @@ STRATEGIC RECOMMENDATIONS
 ────────────────────────────────────────
 ```
 
+### Step 10: Save to Project (if --project specified)
+
+If `--project NAME` was provided:
+1. Write `intelligence_report.md` to `{projects_dir}/{project_name}/`
+2. Write `intelligence_data.json` to `{projects_dir}/{project_name}/` containing structured data:
+   - `product_code`, `device_name`, `generated_date`, `plugin_version`
+   - `predicate_candidates`: array of K-numbers with clearance dates
+   - `safety_signals`: MAUDE counts, recall summary
+   - `guidance_documents`: array of applicable guidance titles
+   - `data_sources_queried`: count of successful/failed sources
+3. These files are consumed by downstream agents (`submission-writer`, `review-simulator`)
+
+If no `--project` specified, output the report to the conversation only.
+
 ## Error Handling
 
 - If any data source is unavailable, note it in the report and proceed with available sources
 - If no product code is provided, attempt to identify it from device description via classification search
 - If the FDA Data Dashboard requires credentials, skip inspection data and note the gap
 - Rate limit API calls: include 1-second delays between openFDA queries
+
+### Minimum Viable Report
+
+At minimum, the **Predicate Landscape** section (Step 2) must succeed for the report to be useful. If the openFDA 510(k) endpoint is completely unavailable, output a warning:
+
+> "Unable to query predicate landscape — the core intelligence source is unavailable. Consider running individual commands (/fda:safety, /fda:guidance, etc.) for single-source data."
+
+If 4 or more of the 7 data sources fail, add a prominent warning to the Executive Summary:
+
+> "⚠ LOW CONFIDENCE — Only {N}/7 data sources were available. This report may be incomplete. Re-run when API access is restored or use individual /fda: commands."
 
 ## Communication Style
 
