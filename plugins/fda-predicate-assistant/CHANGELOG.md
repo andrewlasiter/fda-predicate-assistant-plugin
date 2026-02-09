@@ -38,12 +38,12 @@
 - N/A section handling: `--na` flag with rationale templates for all applicable sections
 - Portfolio timeline planning: Gantt-style view, `--set-target`, FDA review timeline reference
 - PubMed API reference expanded: efetch XML parsing, elink endpoint, publication type evidence levels, filter combinations
-- Literature search caching: `--offline` mode, `--refresh` flag, 7-day cache in project directory
+- Literature search caching: `--refresh` flag, 7-day auto-cache in project directory
 - Readiness score (SRI) calculation: 6-component scoring (RTA/predicate/SE/testing/deficiency/documentation)
 
 ### Tests
 - 193 new tests across 5 sprint test files (4A: 37, 4B: 37, 4C: 32, 4D: 56, 4E: 68, less overlap with existing)
-- Total: 1,681 passing (offline), 56 API tests deselected
+- Total: 1,681 passing (non-API), 56 API tests deselected
 - Sprint 4F deferred to v5.17+
 
 ## [5.15.0] - 2026-02-08
@@ -399,7 +399,7 @@
 - Pipeline step criticality: Steps 1-2 (extract/review) CRITICAL (halt on failure), Steps 3-7 NON-CRITICAL (continue with DEGRADED warning)
 - Pipeline pre-flight validation: writable project dir, valid product code, full-auto requirements, dependency check
 - Pipeline argument threading table: explicit mapping of every arg to downstream steps
-- Guidance offline fallback: reference-based guidance summary from skill reference data when cache unavailable
+- Guidance cache fallback: reference-based guidance summary from skill reference data when API/cache unavailable
 - Safety graceful degradation: structured JSON warning with `safety_data_available: false` when API unavailable
 - Extract stage defaults: 3 explicit cases, `--full-auto` requires `--project`
 - Headless mode in `predicate_extractor.py`: skip manual download messages, one-line error + `sys.exit(2)` on failure

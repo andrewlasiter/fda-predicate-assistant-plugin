@@ -1,8 +1,8 @@
-![Version](https://img.shields.io/badge/version-5.7.0-blue)
+![Version](https://img.shields.io/badge/version-5.16.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Commands](https://img.shields.io/badge/commands-35-orange)
-![Agents](https://img.shields.io/badge/agents-4-purple)
-![Tests](https://img.shields.io/badge/tests-712-brightgreen)
+![Commands](https://img.shields.io/badge/commands-38-orange)
+![Agents](https://img.shields.io/badge/agents-7-purple)
+![Tests](https://img.shields.io/badge/tests-1680-brightgreen)
 ![Claude Code](https://img.shields.io/badge/Claude_Code-plugin-blueviolet)
 ![FDA 510(k)](https://img.shields.io/badge/FDA-510(k)-red)
 
@@ -14,7 +14,7 @@
 
 **Your AI-powered regulatory assistant for FDA 510(k) submissions.**
 
-From predicate research to CDRH Portal submission — 35 commands, 4 autonomous agents, and 712 tests that handle the data work so you can focus on the science and strategy. Search FDA databases, identify predicates, analyze safety histories, look up standards, generate substantial equivalence comparisons, draft all 18 eSTAR sections, simulate FDA review, maintain your extraction corpus, assemble submission-ready packages, and get step-by-step submission guidance, all from within Claude.
+From predicate research to CDRH Portal submission — 38 commands, 7 autonomous agents, and 1,680 tests that handle the data work so you can focus on the science and strategy. Search FDA databases, identify predicates, analyze safety histories, look up standards, generate substantial equivalence comparisons, draft all 18 eSTAR sections, simulate FDA review, maintain your extraction corpus, assemble submission-ready packages, and get step-by-step submission guidance, all from within Claude.
 
 ---
 
@@ -83,7 +83,10 @@ You should see a summary of available FDA data files, script availability, and r
 | `/fda:lineage` | Traces predicate citation chains across generations and flags recalled ancestors |
 | `/fda:safety` | Pulls adverse events (MAUDE) and recall history for any product code or device |
 | `/fda:standards` | Looks up FDA Recognized Consensus Standards by product code, standard number, or keyword |
-| `/fda:udi` | Looks up UDI/GUDID records from openFDA — search by device identifier, product code, company, or brand |
+| `/fda:udi` | Looks up UDI/GUDID records — device history, sterilization, SNOMED CT, UDI barcode parsing |
+| `/fda:inspections` | Searches FDA establishment inspections, citations, compliance actions, and import refusals |
+| `/fda:trials` | Searches ClinicalTrials.gov for device clinical studies with AREA syntax and study parsing |
+| `/fda:warnings` | Searches FDA warning letters and enforcement actions — GMP violations, risk scoring, QMSR transition |
 
 ### Data Extraction & Maintenance
 
@@ -112,9 +115,9 @@ You should see a summary of available FDA data files, script availability, and r
 |---------|-------------|
 | `/fda:submission-outline` | Builds a full 510(k) submission outline with section checklists and gap analysis |
 | `/fda:compare-se` | Generates substantial equivalence comparison tables, auto-populated from FDA data |
-| `/fda:draft` | Writes regulatory prose for 18 submission sections with citations |
+| `/fda:draft` | Writes regulatory prose for 18 submission sections with citations and revision support |
 | `/fda:pccp` | Creates a Predetermined Change Control Plan for AI/ML or iterative devices |
-| `/fda:calc` | Regulatory calculators — shelf life (ASTM F1980), sample size, sterilization dose |
+| `/fda:calc` | Regulatory calculators — shelf life (ASTM F1980), sample size (exact binomial), sterilization dose |
 
 ### Assembly & Validation
 
@@ -125,7 +128,7 @@ You should see a summary of available FDA data files, script availability, and r
 | `/fda:assemble` | Assembles an eSTAR-structured submission package from your project data |
 | `/fda:traceability` | Generates a requirements traceability matrix (guidance → risks → tests → evidence) |
 | `/fda:consistency` | Validates that device descriptions, intended use, and predicates match across all files |
-| `/fda:portfolio` | Cross-project dashboard — shared predicates, common guidance, submission timelines |
+| `/fda:portfolio` | Cross-project dashboard — shared predicates, common guidance, submission timelines with Gantt view |
 
 ### Quality & Pre-Filing
 
@@ -138,7 +141,7 @@ You should see a summary of available FDA data files, script availability, and r
 
 ## Agents
 
-The plugin includes 4 autonomous agents that can run multi-step workflows without manual intervention. Agents are invoked automatically by Claude when relevant, or can be triggered via the Task tool.
+The plugin includes 7 autonomous agents that can run multi-step workflows without manual intervention. Agents are invoked automatically by Claude when relevant, or can be triggered via the Task tool.
 
 | Agent | What it does |
 |-------|-------------|
@@ -146,6 +149,9 @@ The plugin includes 4 autonomous agents that can run multi-step workflows withou
 | `submission-writer` | Drafts all 18 eSTAR sections sequentially, runs consistency checks, assembles the package, and reports a readiness score |
 | `presub-planner` | Researches the regulatory landscape, analyzes guidance, gathers safety intelligence, reviews literature, and generates a complete Pre-Sub package |
 | `review-simulator` | Simulates a multi-perspective FDA review — each reviewer evaluates independently, findings are cross-referenced, and a detailed readiness assessment is generated |
+| `research-intelligence` | Performs deep regulatory research — predicate landscape analysis, competitive intelligence, testing precedent mapping, and IFU comparisons |
+| `submission-assembler` | Validates submission completeness, assembles eSTAR-structured packages, runs cross-file consistency checks, and generates assembly reports |
+| `data-pipeline-manager` | Orchestrates the 4-step data maintenance pipeline — gap analysis, PDF download, predicate extraction, and data merge with progress tracking |
 
 ---
 
@@ -169,19 +175,55 @@ The plugin can run fully unattended — no prompts, no manual steps. This is ide
 
 ---
 
-## openFDA Integration
+## FDA Database Coverage
 
-The plugin connects to all 7 openFDA Device API endpoints for real-time access to clearances, classifications, adverse events, recalls, registrations, UDI data, and COVID-related authorizations.
+The plugin connects to multiple FDA data sources. Here is what is covered and what is not.
+
+### APIs Used
+
+| API | Endpoints / Scope | Plugin Commands |
+|-----|-------------------|-----------------|
+| **openFDA** (api.fda.gov) | `device/510k`, `device/classification`, `device/enforcement`, `device/event`, `device/pma`, `device/recall`, `device/registrationlisting`, `device/udi`, `device/covid19serology` (9 endpoints) | `/fda:validate`, `/fda:safety`, `/fda:research`, `/fda:guidance`, `/fda:monitor`, `/fda:udi`, `/fda:pathway` |
+| **AccessGUDID v3** (accessgudid.nlm.nih.gov) | Device lookup, UDI parsing, SNOMED CT, device history, sterilization data | `/fda:udi`, `/fda:guidance` |
+| **FDA Data Dashboard** (api-datadashboard.fda.gov) | Inspections, citations, compliance actions, import refusals | `/fda:inspections` |
+| **ClinicalTrials.gov v2** (clinicaltrials.gov) | Device clinical study search, AREA syntax | `/fda:trials` |
+| **PubMed E-utilities** (eutils.ncbi.nlm.nih.gov) | Article search (esearch), abstract fetch (efetch), related articles (elink) | `/fda:literature` |
 
 **API features used:** `sort`, `skip` (pagination), `_count` (aggregations), OR-batched multi-value queries, wildcard search, field-specific queries. Responses are cached with 7-day TTL and exponential backoff retry.
-
-It also works offline using cached FDA flat files — no internet required for basic lookups.
 
 **First run:** The plugin detects when no API key is configured and offers guided setup:
 
 ```
 /fda:configure --setup-key
 ```
+
+### FDA Medical Device Databases — Coverage Map
+
+The FDA lists [27 medical device databases](https://www.fda.gov/medical-devices/device-advice-comprehensive-regulatory-assistance/medical-device-databases). The plugin covers the most commonly needed ones:
+
+| FDA Database | Covered? | How |
+|-------------|----------|-----|
+| 510(k) Premarket Notification (PMN) | Yes | openFDA `device/510k` + flat files |
+| Classification (Product Codes) | Yes | openFDA `device/classification` |
+| MAUDE (Adverse Events) | Yes | openFDA `device/event` |
+| Recalls | Yes | openFDA `device/recall` + `device/enforcement` |
+| PMA (Premarket Approval) | Yes | openFDA `device/pma` |
+| Establishment Registration & Listing | Yes | openFDA `device/registrationlisting` |
+| UDI / GUDID | Yes | openFDA `device/udi` + AccessGUDID v3 |
+| Recognized Consensus Standards | Yes | `/fda:standards` (web search) |
+| FDA Guidance Documents | Yes | `/fda:guidance` (curated index + web search) |
+| Inspections & Compliance | Yes | FDA Data Dashboard API |
+| Clinical Trials | Yes | ClinicalTrials.gov v2 API |
+| Warning Letters | Yes | `/fda:warnings` (web search + analysis) |
+| CFR Title 21 | Partial | Referenced in guidance mapping, not directly queried |
+| Devices@FDA | No | Use accessdata.fda.gov directly |
+| De Novo | Partial | Some indexed in openFDA 510k endpoint; no dedicated API |
+| CLIA / CLIA Waived | No | Not applicable to most 510(k) submissions |
+| Mammography Facilities | No | Specialty database |
+| HDE (Humanitarian Device) | No | Low-volume pathway |
+| Post-Approval Studies | No | PMA-specific |
+| 522 Postmarket Surveillance | No | PMA-specific |
+| Radiation-Emitting Products | No | Specialty database |
 
 ---
 

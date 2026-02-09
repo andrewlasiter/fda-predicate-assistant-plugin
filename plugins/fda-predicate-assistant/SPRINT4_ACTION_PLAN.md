@@ -240,7 +240,7 @@ The presub-planner agent predates v5.8-5.12 commands and doesn't orchestrate:
 ### H-11: No Offline/Cached Mode for Literature Search
 **Found by**: User Agent (RA Professional)
 **Files**: `commands/literature.md`
-**Fix**: Cache previous search results in project directory; offer `--offline` mode
+**Fix**: Cache previous search results in project directory; auto-use cache when fresh, `--refresh` to force re-query
 
 ### H-12: Inconsistent QMSR References Across Commands
 **Found by**: User Agent (RA Professional)
@@ -364,7 +364,7 @@ The presub-planner agent predates v5.8-5.12 commands and doesn't orchestrate:
 - Portfolio timeline (Gantt-style, --set-target, FDA timeline reference)
 - Readiness score tests (17 tests: SRI components + scoring scenarios)
 - PubMed reference expansion (efetch XML, elink, publication types, filter combos)
-- Literature caching (--offline, --refresh, 7-day cache)
+- Literature caching (--refresh, 7-day auto-cache)
 - 68 new tests, all passing
 - 6 files modified + 1 new test file
 

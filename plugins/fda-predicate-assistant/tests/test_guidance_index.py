@@ -285,8 +285,9 @@ class TestGuidanceCommandUsesIndex:
     def test_still_has_web_search_fallback(self):
         assert "WebSearch" in self.content
 
-    def test_still_has_offline_mode(self):
-        assert "--offline" in self.content
+    def test_no_offline_flag(self):
+        """--offline flag should not exist (plugin requires internet)."""
+        assert "--offline" not in self.content
 
 
 # -- SKILL.md Updates ------------------------------------------------
@@ -312,10 +313,10 @@ class TestSKILLMDGuidanceIndex:
 class TestPluginVersionAndCounts511:
     """Test plugin.json reflects v5.11.0."""
 
-    def test_version_is_5_15_0(self):
+    def test_version_is_5_16_0(self):
         with open(PLUGIN_JSON) as f:
             data = json.load(f)
-        assert data["version"] == "5.15.0"
+        assert data["version"] == "5.16.0"
 
     def test_skill_md_mentions_guidance_index(self):
         """Guidance index is documented in SKILL.md resources, not plugin.json description."""

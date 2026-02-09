@@ -1,7 +1,7 @@
 ---
 description: Look up FDA guidance documents for a device type — extract requirements, map to testing needs, and compare against predicate precedent
 allowed-tools: Bash, Read, Glob, Grep, Write, WebFetch, WebSearch
-argument-hint: "<product-code> [--regulation NUMBER] [--save] [--offline] [--infer]"
+argument-hint: "<product-code> [--regulation NUMBER] [--save] [--infer]"
 ---
 
 # FDA Guidance Document Lookup
@@ -43,8 +43,7 @@ From `$ARGUMENTS`, extract:
 - `--regulation NUMBER` — Override regulation number lookup (e.g., `878.4018`)
 - `--device-description TEXT` — User's device description (triggers additional cross-cutting guidance)
 - `--project NAME` — Associate with a project folder for caching
-- `--save` — Cache guidance data locally for offline reuse
-- `--offline` — Use only cached guidance data (no web searches)
+- `--save` — Cache guidance data locally for reuse
 - `--depth quick|standard|deep` — Level of analysis (default: standard)
 - `--infer` — Auto-detect product code from project data instead of requiring explicit input
 
@@ -60,9 +59,9 @@ If no product code provided:
 
 ## Step 1: Get Device Classification
 
-### If `--offline` mode
+### Cache Fallback
 
-Check for cached classification data:
+If the openFDA API is unreachable or returns an error, check for cached classification data:
 
 ```bash
 python3 << 'PYEOF'
@@ -111,7 +110,7 @@ print("CACHED:false")
 PYEOF
 ```
 
-If `--offline` and no cache found, **fall back to skill reference data**:
+If no cache found, **fall back to skill reference data**:
 
 1. Read the `references/guidance-lookup.md` skill reference file (via `$FDA_PLUGIN_ROOT/skills/fda-510k-knowledge/references/guidance-lookup.md`)
 2. Match the product code family/panel to generic cross-cutting guidance recommendations from the reference tables
@@ -126,7 +125,7 @@ Last reference update: [date from reference file header or "unknown"]
 4. Include all applicable cross-cutting guidance from the reference tables (biocompatibility, sterilization, etc.) based on device class and known characteristics
 5. Mark all entries as `[Reference-based]` instead of having specific guidance document URLs
 
-This ensures `--offline` mode always produces useful output, even without a prior `--save` cache. Only fail with an error if the reference file itself is missing (plugin installation issue).
+This ensures the cache fallback always produces useful output, even without a prior `--save` cache. Only fail with an error if the reference file itself is missing (plugin installation issue).
 
 ### Online: Query openFDA Classification API
 
@@ -185,7 +184,7 @@ Store the classification data — you'll need `device_name`, `device_class`, `re
 
 ## Step 1.5: Query AccessGUDID for Device Characteristics
 
-**Skip for `--offline` mode or if the product code is not found.**
+**Skip if the product code is not found or if using cache fallback.**
 
 Query AccessGUDID for authoritative device characteristics (sterilization method, single-use status, MRI safety, latex). These API flags take priority over keyword guessing in Step 3.
 
@@ -223,7 +222,7 @@ Store the GUDID results — `gudid_is_sterile`, `gudid_sterilization_methods`, `
 
 ## Step 2: Search for Device-Specific Guidance
 
-**Skip for `--offline` mode (use cache) or `--depth quick`.**
+**Skip for `--depth quick` or if using cache fallback.**
 
 ### 2A: Bundled Guidance Index Lookup (Primary)
 
@@ -668,7 +667,7 @@ Write `standards_list.json` with the applicable standards.
 Report to the user:
 ```
 Guidance data cached to: ~/fda-510k-data/projects/{PROJECT_NAME}/guidance_cache/
-Use --offline to access cached data without web searches.
+Cached data will be used automatically on subsequent runs.
 ```
 
 If no `--project` was specified, ask the user if they want to save to a specific project or to a global cache at `~/fda-510k-data/guidance_cache/{PRODUCT_CODE}/`.

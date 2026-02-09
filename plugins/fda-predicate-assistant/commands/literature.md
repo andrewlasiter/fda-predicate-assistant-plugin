@@ -45,7 +45,6 @@ From `$ARGUMENTS`, extract:
 - `--infer` — Auto-detect product code from project data
 - `--focus CATEGORY` — Focus on specific evidence category (clinical, bench, biocompat, adverse)
 - `--output FILE` — Write results to file
-- `--offline` — Use cached results only; do not make any API calls or web searches
 - `--refresh` — Force re-query all sources, ignoring cached results
 
 ## Step 1: Build Search Strategy
@@ -272,12 +271,6 @@ When `--project` is specified, cache search results to `{projects_dir}/{project_
 2. If cache exists and is less than 7 days old, use cached results and skip API calls
 3. If cache is stale or missing, run full search and update cache
 4. Report: `"Using cached results from {date} ({N} articles). Use --refresh to re-query."`
-
-**`--offline` mode:**
-1. Load `literature_cache.json` from project directory
-2. If cache exists: use cached results, report cache age
-3. If cache missing: output `"No cached literature results found for this project. Run /fda:literature --project {name} with internet access first to build the cache."`
-4. Never make API calls or web searches in offline mode
 
 **`--refresh` mode:**
 1. Ignore any existing cache

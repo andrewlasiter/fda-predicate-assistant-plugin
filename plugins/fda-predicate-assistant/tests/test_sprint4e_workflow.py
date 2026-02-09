@@ -368,19 +368,15 @@ class TestPubMedAPIReference:
         assert pubmed_skill_content == pubmed_mirror_content
 
 
-# ===== H-11: Offline/Cached Mode for Literature =====
+# ===== H-11: Cached Mode for Literature =====
 
-class TestLiteratureOfflineMode:
-    """literature.md must support --offline and caching."""
+class TestLiteratureCacheMode:
+    """literature.md must support caching and --refresh."""
 
     @pytest.fixture
     def literature_content(self):
         with open(os.path.join(COMMANDS_DIR, 'literature.md')) as f:
             return f.read()
-
-    def test_offline_flag_defined(self, literature_content):
-        """Must accept --offline flag."""
-        assert "--offline" in literature_content
 
     def test_refresh_flag_defined(self, literature_content):
         """Must accept --refresh flag."""
@@ -400,10 +396,6 @@ class TestLiteratureOfflineMode:
         """Must check cache age (7 days)."""
         assert "7 days" in literature_content
 
-    def test_offline_missing_cache_message(self, literature_content):
-        """Must have message for missing cache in offline mode."""
-        assert "No cached literature results" in literature_content
-
     def test_refresh_mode_description(self, literature_content):
         """Must describe refresh mode behavior."""
         assert "Ignore any existing cache" in literature_content or "Force re-query" in literature_content
@@ -411,3 +403,7 @@ class TestLiteratureOfflineMode:
     def test_cache_write_after_search(self, literature_content):
         """Must write cache after search completes."""
         assert "CACHE_WRITTEN" in literature_content
+
+    def test_no_offline_flag(self, literature_content):
+        """--offline flag should not exist (plugin requires internet)."""
+        assert "--offline" not in literature_content

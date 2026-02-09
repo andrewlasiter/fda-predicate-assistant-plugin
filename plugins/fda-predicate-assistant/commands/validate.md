@@ -1,7 +1,7 @@
 ---
 description: Validate FDA device numbers against official databases and all available pipeline data — supports K/P/DEN/N-numbers and interactive search mode
 allowed-tools: Bash, Read, Grep, Glob, Write
-argument-hint: "<number> [number2] [--project NAME] [--offline] [--search QUERY --product-code CODE --year RANGE --applicant NAME --limit N --sort FIELD]"
+argument-hint: "<number> [number2] [--project NAME] [--search QUERY --product-code CODE --year RANGE --applicant NAME --limit N --sort FIELD]"
 ---
 
 # FDA Device Number Validation (Enriched)
@@ -52,11 +52,11 @@ Parse all device numbers from `$ARGUMENTS`. Handle comma-separated, space-separa
 
 ### Step 2: Primary Validation — openFDA API (then flat-file fallback)
 
-**Try the openFDA API first** for the richest, most current data. Fall back to flat files if the API is disabled, unreachable, or `--offline` is specified.
+**Try the openFDA API first** for the richest, most current data. Fall back to flat files automatically if the API is disabled or unreachable.
 
 #### 2A: openFDA API Validation (Primary)
 
-Check if `--offline` was specified or if API is disabled. If not, query the API using the template from `references/openfda-api.md`:
+Query the API using the template from `references/openfda-api.md`:
 
 ```bash
 python3 << 'PYEOF'
@@ -197,7 +197,7 @@ Note: N-numbers are legacy Pre-Amendments devices. They are not in openFDA and m
 
 Report: Found/Not Found + full database record if found.
 
-**Note the data source in the report**: `(source: openFDA API)` or `(source: flat files — offline fallback)`.
+**Note the data source in the report**: `(source: openFDA API)` or `(source: flat files — API fallback)`.
 
 ### Step 3: Enrichment — 510kBF Metadata
 
