@@ -334,7 +334,7 @@ def extract_text_from_pdf(file_path, output_dir=None):
         print(f"Error processing file with fitz: {file_path}. Error: {e}")
         try:
             with pdfplumber.open(file_path) as pdf:
-                text = '\n'.join(page.extract_text() for page in pdf.pages)
+                text = '\n'.join(page.extract_text() or '' for page in pdf.pages)
             return text
         except Exception as e:
             print(f"Error processing file with pdfplumber: {file_path}. Skipping this file. Error: {e}")
