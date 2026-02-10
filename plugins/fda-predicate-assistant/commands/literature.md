@@ -144,7 +144,7 @@ def esearch(query, retmax=20):
     if ncbi_key:
         params["api_key"] = ncbi_key
     url = f"{base_url}/esearch.fcgi?{urllib.parse.urlencode(params)}"
-    req = urllib.request.Request(url, headers={"User-Agent": "FDA-Plugin/4.1"})
+    req = urllib.request.Request(url, headers={"User-Agent": "FDA-Plugin/5.21.0"})
     with urllib.request.urlopen(req, timeout=15) as resp:
         data = json.loads(resp.read())
     return data.get("esearchresult", {})
@@ -162,7 +162,7 @@ def efetch(pmids):
     if ncbi_key:
         params["api_key"] = ncbi_key
     url = f"{base_url}/efetch.fcgi?{urllib.parse.urlencode(params)}"
-    req = urllib.request.Request(url, headers={"User-Agent": "FDA-Plugin/4.1"})
+    req = urllib.request.Request(url, headers={"User-Agent": "FDA-Plugin/5.21.0"})
     with urllib.request.urlopen(req, timeout=30) as resp:
         return ET.parse(resp)
 

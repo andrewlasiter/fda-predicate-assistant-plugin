@@ -259,7 +259,7 @@ params = {"search": f'product_code:"{product_code}"', "limit": "100"}
 if api_key:
     params["api_key"] = api_key
 url = f"{base}/510k.json?{urllib.parse.urlencode(params)}"
-headers = {"User-Agent": "Mozilla/5.0 (FDA-Plugin/4.9.0)"}
+headers = {"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.21.0)"}
 
 total_clearances = 0
 recent_clearances = 0

@@ -93,7 +93,7 @@ if api_enabled:
     if api_key:
         params["api_key"] = api_key
     url = f"https://api.fda.gov/device/classification.json?{urllib.parse.urlencode(params)}"
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.21.0)"})
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read())
@@ -425,7 +425,7 @@ if api_enabled:
     if api_key:
         params["api_key"] = api_key
     url = f"https://api.fda.gov/device/event.json?{urllib.parse.urlencode(params)}"
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.2.0)"})
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.21.0)"})
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read())
@@ -439,7 +439,7 @@ if api_enabled:
     if api_key:
         params2["api_key"] = api_key
     url2 = f"https://api.fda.gov/device/recall.json?{urllib.parse.urlencode(params2)}"
-    req2 = urllib.request.Request(url2, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.2.0)"})
+    req2 = urllib.request.Request(url2, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.21.0)"})
     try:
         with urllib.request.urlopen(req2, timeout=15) as resp2:
             data2 = json.loads(resp2.read())
@@ -685,7 +685,7 @@ params = {"search": f'device.device_report_product_code:"{product_code}"', "coun
 if api_key:
     params["api_key"] = api_key
 url = f"https://api.fda.gov/device/event.json?{urllib.parse.urlencode(params)}"
-req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.21.0)"})
 try:
     with urllib.request.urlopen(req, timeout=15) as resp:
         data = json.loads(resp.read())
@@ -732,7 +732,7 @@ params = {"search": f'product_code:"{product_code}"', "limit": "100", "sort": "e
 if api_key:
     params["api_key"] = api_key
 url = f"https://api.fda.gov/device/recall.json?{urllib.parse.urlencode(params)}"
-req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.21.0)"})
 try:
     with urllib.request.urlopen(req, timeout=15) as resp:
         data = json.loads(resp.read())

@@ -416,7 +416,7 @@ NEXT STEPS
    if api_key:
        params["api_key"] = api_key
    url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
-   req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+   req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.21.0)"})
 
    k_to_info = {}
    product_codes = set()
@@ -441,7 +441,7 @@ NEXT STEPS
        if api_key:
            rparams["api_key"] = api_key
        rurl = f"https://api.fda.gov/device/recall.json?{urllib.parse.urlencode(rparams)}"
-       rreq = urllib.request.Request(rurl, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+       rreq = urllib.request.Request(rurl, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.21.0)"})
        recall_firms = {}
        try:
            with urllib.request.urlopen(rreq, timeout=15) as rresp:

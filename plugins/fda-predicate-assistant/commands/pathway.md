@@ -85,7 +85,7 @@ if api_key:
 
 # Count total clearances
 url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
-req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.21.0)"})
 try:
     with urllib.request.urlopen(req, timeout=15) as resp:
         data = json.loads(resp.read())
@@ -98,7 +98,7 @@ except Exception as e:
 time.sleep(0.5)
 params["search"] = f'product_code:"{product_code}"+AND+decision_date:[20210101+TO+29991231]'
 url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
-req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/1.0)"})
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.21.0)"})
 try:
     with urllib.request.urlopen(req, timeout=15) as resp:
         data = json.loads(resp.read())
@@ -240,7 +240,7 @@ if api_key:
 
 # Count PMA approvals
 url = f"https://api.fda.gov/device/pma.json?{urllib.parse.urlencode(params)}"
-req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/4.7.0)"})
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.21.0)"})
 try:
     with urllib.request.urlopen(req, timeout=15) as resp:
         data = json.loads(resp.read())
@@ -304,7 +304,7 @@ if api_key:
     params["api_key"] = api_key
 
 url = f"https://api.fda.gov/device/510k.json?{urllib.parse.urlencode(params)}"
-req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/4.7.0)"})
+req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.21.0)"})
 
 try:
     with urllib.request.urlopen(req, timeout=15) as resp:

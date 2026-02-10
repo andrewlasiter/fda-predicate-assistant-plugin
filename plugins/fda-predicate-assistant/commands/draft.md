@@ -213,7 +213,7 @@ if api_key:
     params["api_key"] = api_key
 
 url = f"https://api.fda.gov/device/udi.json?{urllib.parse.urlencode(params)}"
-headers = {"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.1.0)"}
+headers = {"User-Agent": "Mozilla/5.0 (FDA-Plugin/5.21.0)"}
 
 try:
     req = urllib.request.Request(url, headers=headers)
