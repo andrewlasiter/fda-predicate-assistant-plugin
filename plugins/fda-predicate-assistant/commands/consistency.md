@@ -223,6 +223,106 @@ Verify that every draft file maps to a section in the export section_map. Expect
 
 Flag any draft file that has no corresponding section_map entry.
 
+### Check 12: Technical Specification Cross-Reference (HIGH)
+
+Parse specific technical values from multiple project files and verify they are consistent:
+
+**Files to cross-reference:**
+- `drafts/draft_device-description.md` → materials, dimensions, gauges, configurations
+- `se_comparison.md` → subject device column values (dimensions, materials, sterilization method)
+- `device_profile.json` → any stated specs (if exists)
+- `import_data.json` → imported device data (if exists)
+
+**Extraction patterns (apply to each file):**
+```python
+import re
+
+def extract_specs(text):
+    specs = {}
+    # Gauge values: "23G", "25 gauge", etc.
+    gauges = set(re.findall(r'\b(\d+)\s*[Gg](?:auge)?\b', text))
+    if gauges:
+        specs['gauges'] = sorted(gauges)
+
+    # Dimensions: "4.5 mm", "120 cm", "7 Fr", etc.
+    dims = re.findall(r'(\d+(?:\.\d+)?)\s*(mm|cm|Fr|french|gauge|inches?|in)\b', text, re.I)
+    if dims:
+        specs['dimensions'] = [(v, u.lower()) for v, u in dims]
+
+    # Materials: known material names
+    material_patterns = [
+        'PTFE', 'FEP', 'PEEK', 'stainless steel', 'titanium', 'nitinol',
+        'silicone', 'polyurethane', 'polycarbonate', 'polyethylene',
+        'nylon', 'polypropylene', 'cobalt.?chromium', 'tungsten',
+        'nickel', 'latex', 'PVC', 'HDPE', 'UHMWPE', 'ceramic',
+        'hydroxyapatite', 'acrylic', 'epoxy',
+    ]
+    found_materials = set()
+    for mat in material_patterns:
+        if re.search(mat, text, re.I):
+            found_materials.add(mat.upper() if len(mat) <= 4 else mat.title())
+    if found_materials:
+        specs['materials'] = sorted(found_materials)
+
+    # Sterilization method
+    steril_match = re.search(r'(ethylene oxide|EO|E\.?O\.?|gamma|electron beam|e-beam|radiation|steam|autoclave)\s*steriliz', text, re.I)
+    if steril_match:
+        specs['sterilization'] = steril_match.group(1).strip()
+
+    return specs
+```
+
+**Cross-reference logic:**
+1. Extract specs from each file independently
+2. For each spec type (gauges, materials, sterilization), compare across all files that mention it
+3. Flag contradictions — e.g., device description says "23G/25G" but SE comparison says "19G/22G/25G"
+
+**PASS**: Same specs appear consistently across all files that mention them.
+**WARN**: Minor formatting differences (e.g., "EO" vs "ethylene oxide") — semantically equivalent.
+**FAIL**: Contradictory values found. Report each contradiction:
+  - "Gauge mismatch: draft_device-description.md says {X}, se_comparison.md says {Y}"
+  - "Material mismatch: draft_device-description.md lists {X}, se_comparison.md lists {Y}"
+  - "Sterilization mismatch: draft_sterilization.md says {X}, se_comparison.md says {Y}"
+
+### Check 13: Standards ↔ Declaration of Conformity Alignment (MEDIUM)
+
+Compare standards listed in `standards_lookup.json` (from `/fda:standards`) against the Declaration of Conformity in `drafts/draft_doc.md`.
+
+**Steps:**
+1. Load `$PROJECTS_DIR/$PROJECT_NAME/standards_lookup.json` — extract all standard numbers (ISO, IEC, ASTM, ANSI references)
+2. Load `$PROJECTS_DIR/$PROJECT_NAME/drafts/draft_doc.md` — extract all standard numbers cited in the DoC table
+3. Compare: every required standard from the lookup should appear in the DoC
+
+```python
+import re
+
+def extract_standards(text):
+    """Extract standard references like ISO 10993-1, IEC 60601-1-2, ASTM F2129"""
+    patterns = [
+        r'ISO\s*\d{4,5}(?:-\d+)*(?::\d{4})?',
+        r'IEC\s*\d{4,5}(?:-\d+)*(?::\d{4})?',
+        r'ASTM\s*[A-Z]\d+(?:-\d+)*(?::\d{4})?',
+        r'ANSI\s*[A-Z]?\d+(?:\.\d+)*(?::\d{4})?',
+        r'EN\s*\d{4,5}(?:-\d+)*(?::\d{4})?',
+        r'21\s*CFR\s*\d+(?:\.\d+)*',
+    ]
+    found = set()
+    for p in patterns:
+        for m in re.finditer(p, text, re.I):
+            # Normalize: strip year suffix for comparison
+            std = re.sub(r':\d{4}$', '', m.group(0))
+            std = re.sub(r'\s+', ' ', std)
+            found.add(std.upper())
+    return found
+```
+
+**PASS**: Every standard from standards_lookup.json appears in the DoC (draft_doc.md).
+**WARN**: DoC lists standards not in standards_lookup.json (may be intentionally added — acceptable).
+**FAIL**: Standards in lookup missing from DoC — list which ones. Example: "ISO 11135 (EO sterilization) is in standards_lookup.json but not declared in draft_doc.md"
+
+If `standards_lookup.json` does not exist, report: `"○ Not checked — no standards_lookup.json found. Run /fda:standards to generate."`
+If `drafts/draft_doc.md` does not exist, report: `"○ Not checked — no draft_doc.md found. Run /fda:draft doc to generate."`
+
 ## Step 4: Generate Report
 
 Present the report using the standard FDA Professional CLI format (see `references/output-formatting.md`):
@@ -249,6 +349,8 @@ RESULTS SUMMARY
   | 9  | Cross-Section Draft | ✓      | {details}    |
   | 10 | eSTAR Import Align  | ○      | {details}    |
   | 11 | Section Map Align   | ✓      | {details}    |
+  | 12 | Spec Cross-Ref      | ✗      | {details}    |
+  | 13 | Standards ↔ DoC     | ⚠      | {details}    |
 
   Status: ✓ pass, ✗ fail, ⚠ warning, ○ not checked
 
@@ -296,7 +398,7 @@ After all consistency checks are complete, log each result using `fda_audit_logg
 
 ### Log each check result
 
-For each of the 11 checks, log the result:
+For each of the 13 checks, log the result:
 
 ```bash
 # For passed checks:

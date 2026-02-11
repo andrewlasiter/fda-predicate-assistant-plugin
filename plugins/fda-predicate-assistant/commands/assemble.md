@@ -117,9 +117,9 @@ For each eSTAR section, check if project data can populate it:
 | Section | eSTAR Folder | Source Data | Auto-populate? |
 |---------|-------------|-------------|----------------|
 | Cover Letter | 01_CoverLetter | presub_plan.md (Section 1) | Partial |
-| Cover Sheet | 02_CoverSheet | FDA Form 3514 template | Template |
+| Cover Sheet (3514) | 02_CoverSheet | FDA Form 3514 — auto-populated from project data | Partial |
 | 510(k) Summary | 03_510kSummary | submission_outline.md | Partial |
-| Truthful & Accuracy | 04_TruthfulAccuracy | Standard template | Template |
+| Truthful & Accuracy | 04_TruthfulAccuracy | Standard template + signature block | Template |
 | Financial Cert | 05_FinancialCert | Standard template | Template |
 | Device Description | 06_DeviceDescription | presub_plan.md (Section 2) | If available |
 | SE Comparison | 07_SEComparison | se_comparison.md | Yes |
@@ -145,6 +145,69 @@ If `import_data.json` exists (from `/fda:import`), use it as a **primary data so
 - **Section 09 (Labeling)**: Use `import_data.sections.ifu_text` or `import_data.indications_for_use`
 
 `import_data.json` takes **lower priority** than project-specific files (`se_comparison.md`, `draft_*.md`) when both exist.
+
+### Section 02 — FDA Form 3514 (Cover Sheet) Generation
+
+Generate an FDA Form 3514 template pre-populated from project data. Write to `02_CoverSheet/fda_form_3514.md`:
+
+```markdown
+# FDA Form 3514 — CDRH Premarket Review Submission Cover Sheet
+
+## Section A: Applicant Information
+- **Applicant (Legal Name):** {from import_data.json applicant.company_name or device_profile.json, else [TODO: Company Legal Name]}
+- **Address:** {from import_data.json applicant.address, else [TODO: Street Address, City, State, ZIP]}
+- **Contact Person:** {from import_data.json applicant.contact_name, else [TODO: Regulatory Contact Name]}
+- **Phone:** {from import_data.json applicant.phone, else [TODO: Phone Number]}
+- **Email:** {from import_data.json applicant.email, else [TODO: Email Address]}
+- **Establishment Registration Number:** [TODO: Company-specific — FEI Number]
+
+## Section B: Device Information
+- **Device Trade/Proprietary Name:** {from device_profile.json trade_name or import_data.json, else [TODO: Device Trade Name]}
+- **Common/Usual Name:** {from openFDA classification device_name for product code}
+- **Product Code:** {detected product_code}
+- **Device Class:** {from openFDA classification — I, II, or III}
+- **Regulation Number:** 21 CFR {from openFDA classification regulation_number}
+- **Is this a combination product?** [TODO: Yes/No]
+
+## Section C: Submission Information
+- **Submission Type:** 510(k) Premarket Notification
+- **510(k) Type:** {from --pathway argument: Traditional / Special / Abbreviated}
+- **Is a predicate device identified?** Yes
+- **Predicate Device 510(k) Number(s):** {from review.json accepted predicates — list all K-numbers}
+- **Predicate Device Name(s):** {from review.json or openFDA — list device names}
+
+## Section D: Certification
+- **Clinical data included?** {If draft_clinical.md exists and is not N/A: "Yes" else "No — bench testing only"}
+- **If clinical data: Financial Certification/Disclosure (21 CFR Part 54)?** {If clinical: "[TODO: Attached — Form 3454/3455]" else "N/A"}
+
+---
+*This form template is auto-generated from project data. Verify all fields before submission.*
+*Generated: {date} | Project: {project_name}*
+```
+
+### Section 04 — Truthful & Accuracy Statement with Signature Block
+
+When generating the Truthful & Accuracy section, include a proper signature block. Write to `04_TruthfulAccuracy/truthful_accuracy.md` (or use existing `draft_truthful-accuracy.md` if available):
+
+If `draft_truthful-accuracy.md` exists in the drafts directory, copy it to `04_TruthfulAccuracy/`. If it does NOT contain a signature block, append the following:
+
+```markdown
+---
+
+## Certification
+
+I certify that, in my capacity as {[TODO: Title]} of {[TODO: Company Legal Name]}, I believe to the best of my knowledge, that all data and information submitted in and with this premarket notification are truthful and accurate and that no material fact has been omitted.
+
+**Signature:** _________________________________ **Date:** ___________
+
+**Printed Name:** [TODO: Authorized Representative]
+
+**Title:** [TODO: Title]
+
+**Company:** [TODO: Company Legal Name]
+```
+
+If no `draft_truthful-accuracy.md` exists, generate the full standard template per 21 CFR 807.87(l) with the signature block included.
 
 For each section:
 1. Create a `README.md` in the section folder describing what's needed

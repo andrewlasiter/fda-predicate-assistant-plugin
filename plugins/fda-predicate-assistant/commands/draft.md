@@ -53,6 +53,124 @@ From `$ARGUMENTS`, extract:
 - `--revise` — Revise an existing draft: regenerate AI content while preserving user edits (see Revision Workflow below)
 - `--na` — Mark a section as "Not Applicable" with rationale template (see N/A Section Handling below)
 
+## Step 0.5: Load All Project Data
+
+**Before generating ANY section**, load and parse all available project data. This ensures every section can cross-reference sibling files instead of generating content in isolation.
+
+```bash
+python3 << 'PYEOF'
+import json, os, re, glob
+
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+projects_dir = os.path.expanduser('~/fda-510k-data/projects')
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        m = re.search(r'projects_dir:\s*(.+)', f.read())
+        if m: projects_dir = os.path.expanduser(m.group(1).strip())
+
+project = "PROJECT"  # Replace with actual project name
+pdir = os.path.join(projects_dir, project)
+
+# Load all available data files
+data_sources = {}
+
+# device_profile.json → device_description, intended_use, materials
+dp = os.path.join(pdir, 'device_profile.json')
+if os.path.exists(dp):
+    with open(dp) as f:
+        data_sources['device_profile'] = json.load(f)
+    print("LOADED:device_profile.json")
+
+# review.json → accepted predicates, K-numbers, scores
+rj = os.path.join(pdir, 'review.json')
+if os.path.exists(rj):
+    with open(rj) as f:
+        data_sources['review'] = json.load(f)
+    print("LOADED:review.json")
+
+# se_comparison.md → predicate specs, sterilization method, materials
+se = os.path.join(pdir, 'se_comparison.md')
+if os.path.exists(se):
+    with open(se) as f:
+        data_sources['se_comparison'] = f.read()
+    print("LOADED:se_comparison.md")
+    # Extract sterilization method from SE comparison
+    steril = re.search(r'[Ss]teriliz\w*[^|]*\|[^|]*\|[^|]*?(\bEO\b|ethylene oxide|gamma|radiation|steam|autoclave|electron beam)', data_sources['se_comparison'], re.I)
+    if steril:
+        print(f"SE_STERILIZATION:{steril.group(1)}")
+    # Extract materials
+    mat_section = re.findall(r'[Mm]aterial[^|]*\|([^|]+)\|', data_sources['se_comparison'])
+    if mat_section:
+        print(f"SE_MATERIALS:{'; '.join(m.strip() for m in mat_section)}")
+
+# standards_lookup.json → all applicable standards
+sl = os.path.join(pdir, 'standards_lookup.json')
+if os.path.exists(sl):
+    with open(sl) as f:
+        data_sources['standards_lookup'] = json.load(f)
+    count = len(data_sources['standards_lookup']) if isinstance(data_sources['standards_lookup'], list) else len(data_sources['standards_lookup'].keys())
+    print(f"LOADED:standards_lookup.json ({count} standards)")
+
+# test_plan.md → test categories, acceptance criteria
+tp = os.path.join(pdir, 'test_plan.md')
+if os.path.exists(tp):
+    with open(tp) as f:
+        data_sources['test_plan'] = f.read()
+    print("LOADED:test_plan.md")
+
+# calculations/ → shelf life AAF, sample sizes
+calc_dir = os.path.join(pdir, 'calculations')
+if os.path.isdir(calc_dir):
+    for cf in glob.glob(os.path.join(calc_dir, '*.json')):
+        fname = os.path.basename(cf)
+        with open(cf) as f:
+            data_sources[f'calc_{fname}'] = json.load(f)
+        print(f"LOADED:calculations/{fname}")
+
+# literature_cache.json → PubMed articles, evidence categories
+lc = os.path.join(pdir, 'literature_cache.json')
+if os.path.exists(lc):
+    with open(lc) as f:
+        data_sources['literature_cache'] = json.load(f)
+    print("LOADED:literature_cache.json")
+
+# safety data (if cached) → MAUDE event counts, failure modes
+sc_dir = os.path.join(pdir, 'safety_cache')
+if os.path.isdir(sc_dir):
+    for sf in glob.glob(os.path.join(sc_dir, '*.json')):
+        fname = os.path.basename(sf)
+        with open(sf) as f:
+            data_sources[f'safety_{fname}'] = json.load(f)
+        print(f"LOADED:safety_cache/{fname}")
+
+# import_data.json → imported eSTAR data
+imp = os.path.join(pdir, 'import_data.json')
+if os.path.exists(imp):
+    with open(imp) as f:
+        data_sources['import_data'] = json.load(f)
+    print("LOADED:import_data.json")
+
+# Existing drafts (for cross-referencing)
+drafts_dir = os.path.join(pdir, 'drafts')
+if os.path.isdir(drafts_dir):
+    for df in glob.glob(os.path.join(drafts_dir, 'draft_*.md')):
+        fname = os.path.basename(df)
+        print(f"EXISTING_DRAFT:{fname}")
+
+print(f"TOTAL_SOURCES:{len(data_sources)}")
+PYEOF
+```
+
+**Data Threading Rules**: When generating any section, use the loaded project data according to these priority rules:
+
+1. **User-provided arguments** (`--device-description`, `--intended-use`) take highest priority
+2. **Project-specific files** (`device_profile.json`, `import_data.json`) take second priority
+3. **Pipeline outputs** (`se_comparison.md`, `standards_lookup.json`, `test_plan.md`) take third priority
+4. **Inferred from FDA data** (openFDA, predicate PDFs) take lowest priority
+5. If no data source provides a value → use `[TODO: Company-specific — {description}]`
+
+**CRITICAL**: Never generate a value in one section that contradicts data already stated in another project file. If `se_comparison.md` says "EO sterilized", the sterilization draft MUST say "EO" — not `[TODO: EO or Radiation]`.
+
 ## Available Sections
 
 ### 1. device-description
@@ -250,6 +368,11 @@ Use UDI data to auto-populate in the labeling draft:
 
 If UDI data is unavailable, include `[TODO: Verify UDI requirements — run /fda:udi --product-code CODE]` placeholders.
 
+**Data threading from project files:**
+- If `safety_cache/` exists with MAUDE data, generate a device-type-appropriate contraindications and warnings framework based on observed failure modes. For example, if MAUDE shows needle breakage events, include a warning about needle breakage risk in the IFU.
+- Pull IFU text from `device_profile.json` `intended_use` field if available, and use it as the basis for the IFU section rather than generating generic placeholder text
+- If `se_comparison.md` has predicate labeling information, reference it for labeling consistency
+
 ### 8. sterilization
 
 Generates Section 10 of the eSTAR: Sterilization.
@@ -266,6 +389,13 @@ Generates Section 10 of the eSTAR: Sterilization.
 
 Auto-detect if sterilization is applicable from device description keywords: "sterile", "sterilized", "implant", "surgical", "invasive".
 
+**Data threading from project files:**
+- Check `se_comparison.md` — if predicate sterilization method is stated (e.g., "EO sterilized", "gamma irradiation"), default to that method for the subject device instead of writing `[TODO: EO or Radiation]`
+- Check `standards_lookup.json` — if ISO 11135 is listed, default to EO; if ISO 11137, default to radiation; if ISO 17665, default to steam
+- Check `import_data.json` for `sterilization_method` field
+- If multiple sources agree → use the agreed method
+- If sources conflict → flag the conflict and use `[TODO: Resolve sterilization method — SE comparison says {X}, standards lookup implies {Y}]`
+
 ### 9. shelf-life
 
 Generates Section 11 of the eSTAR: Shelf Life.
@@ -281,6 +411,11 @@ Generates Section 11 of the eSTAR: Shelf Life.
 
 For accelerated aging parameter calculations, reference `/fda:calc shelf-life`. The ASTM F1980 Q10 formula: `AAF = Q10^((T_accel - T_ambient)/10)`.
 
+**Data threading from project files:**
+- If `calculations/shelf_life_calc.json` exists, auto-populate AAF value, accelerated test duration, ambient/accelerated temperatures, and claimed shelf life from that file
+- If no calculation file, check `se_comparison.md` for predicate shelf life claim and use it as a reference point: "The predicate device claims a shelf life of {X}. The subject device targets [TODO: specify claimed shelf life]."
+- If `test_plan.md` mentions shelf life testing, pull the test protocol details into the draft
+
 ### 10. biocompatibility
 
 Generates Section 12 of the eSTAR: Biocompatibility.
@@ -295,6 +430,12 @@ Generates Section 12 of the eSTAR: Biocompatibility.
 - 12.4 Predicate material equivalence justification (if applicable)
 
 Auto-determine required endpoints based on contact type and duration.
+
+**Data threading from project files:**
+- Parse `drafts/draft_device-description.md` for all materials listed under "Materials of Construction", "Key Components", or the BOM table. Enumerate EACH specific material (e.g., "PTFE catheter", "stainless steel needle", "polycarbonate hub") in the contact classification table — do not use generic descriptions like "polymer" or "metal"
+- If `se_comparison.md` lists predicate materials, include a comparison row showing material equivalence or differences
+- If `import_data.json` has `biocompat_materials` or `materials` data, use it as the primary source for the materials list
+- Cross-reference patient-contacting status from device_profile.json or import_data.json
 
 ### 11. software
 
@@ -340,6 +481,11 @@ Generates Section 16 of the eSTAR: Clinical Evidence.
 - 16.4 Clinical conclusion
 
 Auto-determine strategy: if predicates had no clinical data, default to "no clinical data needed" with predicate precedent rationale.
+
+**Data threading from project files:**
+- If `literature_cache.json` exists, reference the clinical evidence found: list PubMed article titles, evidence categories (supportive/neutral/contradictory), and relevance scores. Include a structured literature summary table rather than leaving the clinical evidence section empty.
+- If safety data exists (`safety_cache/` files), reference MAUDE event counts and failure mode categories. Use event rates as supporting evidence for bench-testing-only justification: "Post-market surveillance data from MAUDE shows {N} events over {period}, with the most common failure mode being {mode}. This low adverse event rate supports the adequacy of bench testing."
+- If `review.json` indicates predicates were cleared without clinical data, cite this as precedent: "Predicate {K-number} was cleared without clinical data, establishing precedent for a bench-testing pathway."
 
 **Clinical Study Design Framework**: When clinical data is needed, provide study design guidance from `references/clinical-study-framework.md`:
 - Decision tree for whether clinical data is needed
@@ -413,10 +559,13 @@ Date: ___________________________________
 Signature: ________________________________
 ```
 
-Auto-populate standards list from:
-1. Project's `test_plan.md` (if available) — extract all ISO/IEC/ASTM standards cited
-2. `references/standards-tracking.md` — verify current editions
-3. `/fda:standards` output (if available) — FDA recognized consensus standards
+Auto-populate standards list from (in priority order):
+1. **`standards_lookup.json`** (if available from `/fda:standards`) — use ALL standards from this file, not just a subset. This file contains the complete list of applicable standards for the product code. Populate every standard from this file into the DoC table.
+2. Project's `test_plan.md` (if available) — extract all ISO/IEC/ASTM standards cited as supplementary
+3. `references/standards-tracking.md` — verify current editions for any standard listed
+4. `/fda:standards` output (if available) — FDA recognized consensus standards
+
+**CRITICAL**: If `standards_lookup.json` lists 14 standards, the DoC table MUST have at least 14 rows — not a truncated subset of 7. Every applicable standard from the lookup should appear in the declaration.
 
 ### 18. human-factors
 

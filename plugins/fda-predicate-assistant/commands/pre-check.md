@@ -357,14 +357,17 @@ Flag:
 
 If Biocompatibility reviewer assigned:
 - Check for `draft_biocompatibility.md`
+- **Content adequacy**: If file exists, check that it lists specific patient-contacting materials (not just `[TODO: specify materials]`). A biocompatibility section that doesn't enumerate actual materials is incomplete.
 - Check for material characterization in device description
 - Identify required ISO 10993 tests based on contact type and duration
 - Flag missing tests as MAJOR deficiency
+- Flag file with no specific materials listed as MAJOR deficiency: "Biocompatibility section exists but does not specify materials of construction"
 
 ### Software Review
 
 If Software reviewer assigned:
 - Check for `draft_software.md`
+- **Content adequacy**: If file exists, verify it specifies an IEC 62304 classification level (Class A/B/C), not just `[TODO: determine level]`
 - Check for cybersecurity documentation
 - Look for IEC 62304 references
 - Flag missing documentation level as MAJOR deficiency
@@ -373,14 +376,17 @@ If Software reviewer assigned:
 
 If Sterilization reviewer assigned:
 - Check for `draft_sterilization.md`
+- **Content adequacy**: If file exists, verify it specifies a concrete sterilization method (EO, radiation, steam, etc.), not just `[TODO: EO or Radiation]` or similar placeholder. A sterilization section without a determined method is incomplete.
 - Verify sterilization method specified
 - Check for SAL reference
 - Flag missing validation plan as MAJOR deficiency
+- Flag file with placeholder-only method as MAJOR deficiency: "Sterilization section exists but method is not determined — still shows [TODO]"
 
 ### Electrical/EMC Review
 
 If Electrical/EMC reviewer assigned:
 - Check for `draft_emc-electrical.md`
+- **Content adequacy**: If file exists, verify it references specific IEC 60601-1 edition and applicable particular standards
 - Verify IEC 60601-1 referenced
 - Check for EMC testing per IEC 60601-1-2
 - Flag missing test reports as MAJOR deficiency
@@ -389,6 +395,7 @@ If Electrical/EMC reviewer assigned:
 
 If Human Factors reviewer assigned:
 - Check for human factors data in project
+- **Content adequacy**: If file exists, verify it identifies specific critical tasks and user groups, not just template placeholders
 - Verify IEC 62366-1 referenced
 - Check for use-related risk analysis
 - Flag missing usability testing as MAJOR deficiency
@@ -397,6 +404,7 @@ If Human Factors reviewer assigned:
 
 If Clinical reviewer assigned:
 - Check for clinical data in project (literature, study)
+- **Content adequacy**: If `draft_clinical.md` exists, verify it contains either a literature summary with specific references or a study design — not just a template skeleton
 - Verify study design adequacy (if clinical study)
 - Check for financial certification
 - Flag missing clinical evidence as CRITICAL deficiency (if required)
@@ -441,14 +449,122 @@ For each deficiency:
 Use the scoring system from `references/cdrh-review-structure.md` Section 8:
 
 ```python
+import re
+
+def count_todo_markers(file_path):
+    """Count [TODO markers in a file. Returns count or -1 if file not found."""
+    try:
+        with open(file_path) as f:
+            text = f.read()
+        return len(re.findall(r'\[TODO', text))
+    except FileNotFoundError:
+        return -1
+
+def check_content_adequacy(project_dir, drafts):
+    """Score content adequacy — penalize files that are mostly TODO placeholders.
+    Returns a score from 0 to 15."""
+    adequacy_score = 0
+
+    # SE comparison has subject device column with real values (not all [TODO]): +5 pts
+    se_path = os.path.join(project_dir, 'se_comparison.md')
+    if os.path.exists(se_path):
+        with open(se_path) as f:
+            se_text = f.read()
+        # Count subject device cells that are real values vs [TODO]
+        todo_cells = len(re.findall(r'\[TODO[:\s]', se_text))
+        total_rows = len(re.findall(r'^\|', se_text, re.MULTILINE))
+        if total_rows > 0 and todo_cells < total_rows * 0.5:
+            adequacy_score += 5  # Majority of cells have real data
+        elif total_rows > 0 and todo_cells < total_rows * 0.8:
+            adequacy_score += 2  # Some cells have real data
+        # else: 0 pts — mostly placeholders
+
+    # Sterilization section specifies a method (not [TODO: EO or Radiation]): +3 pts
+    steril_path = os.path.join(project_dir, 'drafts', 'draft_sterilization.md')
+    if os.path.exists(steril_path):
+        with open(steril_path) as f:
+            steril_text = f.read()
+        has_method = bool(re.search(
+            r'(?:method|process)[:\s]+(ethylene oxide|EO|gamma|radiation|steam|autoclave)',
+            steril_text, re.I
+        ))
+        has_todo_method = bool(re.search(r'\[TODO.*(?:EO|radiation|steriliz)', steril_text, re.I))
+        if has_method and not has_todo_method:
+            adequacy_score += 3
+
+    # DoC lists all required standards from standards_lookup.json: +3 pts
+    std_lookup = os.path.join(project_dir, 'standards_lookup.json')
+    doc_path = os.path.join(project_dir, 'drafts', 'draft_doc.md')
+    if os.path.exists(std_lookup) and os.path.exists(doc_path):
+        with open(std_lookup) as f:
+            lookup_data = json.load(f)
+        with open(doc_path) as f:
+            doc_text = f.read()
+        # Count how many standards from lookup appear in DoC
+        lookup_standards = set()
+        if isinstance(lookup_data, list):
+            for item in lookup_data:
+                std_num = item.get('standard_number', '') or item.get('standard', '')
+                if std_num:
+                    lookup_standards.add(std_num.upper().split(':')[0])
+        elif isinstance(lookup_data, dict):
+            for key in lookup_data:
+                lookup_standards.add(key.upper().split(':')[0])
+        doc_upper = doc_text.upper()
+        matched = sum(1 for s in lookup_standards if s in doc_upper)
+        if lookup_standards and matched >= len(lookup_standards) * 0.8:
+            adequacy_score += 3
+        elif lookup_standards and matched >= len(lookup_standards) * 0.5:
+            adequacy_score += 1
+
+    # Biocompatibility section lists specific materials: +2 pts
+    biocompat_path = os.path.join(project_dir, 'drafts', 'draft_biocompatibility.md')
+    if os.path.exists(biocompat_path):
+        with open(biocompat_path) as f:
+            bio_text = f.read()
+        material_mentions = re.findall(
+            r'(PTFE|FEP|PEEK|stainless steel|titanium|nitinol|silicone|polyurethane|polycarbonate|nylon)',
+            bio_text, re.I
+        )
+        if len(set(m.lower() for m in material_mentions)) >= 1:
+            adequacy_score += 2
+
+    # Performance section has acceptance criteria: +2 pts
+    perf_path = os.path.join(project_dir, 'drafts', 'draft_performance-summary.md')
+    if os.path.exists(perf_path):
+        with open(perf_path) as f:
+            perf_text = f.read()
+        has_criteria = bool(re.search(r'acceptance criteria|pass.?fail|success criteria', perf_text, re.I))
+        if has_criteria:
+            adequacy_score += 2
+
+    return adequacy_score
+
 def calculate_readiness_score(rta_result, predicate_scores, se_comparison,
-                              testing_coverage, deficiencies, drafts):
+                              testing_coverage, deficiencies, drafts,
+                              project_dir=None):
     score = 0
 
-    # RTA completeness (25 pts)
+    # RTA completeness (25 pts) — with TODO penalty
     rta_present = sum(1 for item in rta_result if item["status"] == "present")
     rta_required = sum(1 for item in rta_result if item["required"])
-    score += 25 * (rta_present / max(rta_required, 1))
+    rta_base = 25 * (rta_present / max(rta_required, 1))
+
+    # TODO penalty: if critical files have excessive [TODO] markers, cap RTA score
+    if project_dir:
+        critical_files = [
+            os.path.join(project_dir, 'drafts', 'draft_device-description.md'),
+            os.path.join(project_dir, 'se_comparison.md'),
+            os.path.join(project_dir, 'drafts', 'draft_labeling.md'),
+        ]
+        high_todo_count = 0
+        for cf in critical_files:
+            todo_count = count_todo_markers(cf)
+            if todo_count > 3:
+                high_todo_count += 1
+        if high_todo_count >= 2:
+            rta_base = min(rta_base, 15)  # Cap at 15 if multiple critical files are TODO-heavy
+    score += rta_base
 
     # Predicate quality (20 pts)
     if predicate_scores:
@@ -462,9 +578,10 @@ def calculate_readiness_score(rta_result, predicate_scores, se_comparison,
     elif se_comparison == "partial":
         score += 8
 
-    # Testing coverage (15 pts)
-    if testing_coverage:
-        score += 15 * testing_coverage
+    # Content Adequacy (15 pts) — NEW: checks actual content quality
+    if project_dir:
+        score += check_content_adequacy(project_dir, drafts)
+    # else: 0 pts
 
     # Deficiency penalty (15 pts)
     critical_count = sum(1 for d in deficiencies if d["severity"] == "CRITICAL")
@@ -472,7 +589,7 @@ def calculate_readiness_score(rta_result, predicate_scores, se_comparison,
     penalty = min(15, 3 * critical_count + 1 * major_count)
     score += 15 - penalty
 
-    # Documentation quality (10 pts)
+    # Documentation quality (10 pts) — reduced from 15 since Content Adequacy now has 15
     if drafts:
         expected_sections = ["device-description", "se-discussion", "510k-summary",
                             "labeling", "cover-letter", "truthful-accuracy"]
@@ -482,6 +599,17 @@ def calculate_readiness_score(rta_result, predicate_scores, se_comparison,
 
     return round(score)
 ```
+
+### Score Breakdown (100 points total)
+
+| Component | Points | Description |
+|-----------|--------|-------------|
+| RTA completeness | 25 | Required files present; capped at 15 if critical files are TODO-heavy |
+| Predicate quality | 20 | Average predicate confidence score |
+| SE comparison | 15 | Complete (15), partial (8), or missing (0) |
+| **Content adequacy** | **15** | **NEW: Checks that content has real data, not just placeholders** |
+| Deficiency penalty | 15 | Minus 3 per CRITICAL, minus 1 per MAJOR |
+| Documentation | 10 | Core sections present |
 
 ## Step 8: Write Report
 
@@ -565,10 +693,10 @@ SUBMISSION READINESS INDEX (SRI)
 
   | Component | Score | Max | Notes |
   |-----------|-------|-----|-------|
-  | RTA completeness | {N} | 25 | {N}/{M} required items |
+  | RTA completeness | {N} | 25 | {N}/{M} required items (capped if TODO-heavy) |
   | Predicate quality | {N} | 20 | Avg confidence: {N}/100 |
   | SE comparison | {N} | 15 | {status} |
-  | Testing coverage | {N} | 15 | {N}/{M} tests planned |
+  | Content adequacy | {N} | 15 | SE real data, steril method, DoC coverage, materials, criteria |
   | Deficiency penalty | {N} | 15 | {N} critical, {M} major |
   | Documentation | {N} | 10 | {N}/{M} core sections |
 

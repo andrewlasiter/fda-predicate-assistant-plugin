@@ -204,6 +204,94 @@ Rows: Intended Use, Indications for Use, Material (nitrile/latex/vinyl), Physica
 **Default (Unknown Product Code)**:
 Rows: Intended Use, Indications for Use, Device Description, Technology/Principle of Operation, Materials, Key Performance Characteristics, Biocompatibility, Sterilization, Shelf Life, Software (if applicable), Electrical Safety (if applicable), Clinical Data
 
+## Step 1.5: Source Subject Device Specifications
+
+Before populating the subject device column, check for existing project data to avoid fabricating specs:
+
+1. Read `$PROJECTS_DIR/$PROJECT_NAME/device_profile.json` for device specs (dimensions, materials, configurations)
+2. Read `$PROJECTS_DIR/$PROJECT_NAME/drafts/draft_device-description.md` for component details and materials of construction
+3. Read `$PROJECTS_DIR/$PROJECT_NAME/se_comparison.md` for any prior comparison data (subject device column)
+4. Read `$PROJECTS_DIR/$PROJECT_NAME/import_data.json` for any imported eSTAR data
+
+```bash
+python3 << 'PYEOF'
+import json, os, re
+
+projects_dir = os.path.expanduser('~/fda-510k-data/projects')
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        m = re.search(r'projects_dir:\s*(.+)', f.read())
+        if m: projects_dir = os.path.expanduser(m.group(1).strip())
+
+project = "PROJECT"  # Replace with actual project name
+pdir = os.path.join(projects_dir, project)
+
+# Collect all subject device specs from project files
+specs = {}
+
+# 1. device_profile.json
+dp = os.path.join(pdir, 'device_profile.json')
+if os.path.exists(dp):
+    with open(dp) as f:
+        profile = json.load(f)
+    print(f"SOURCE:device_profile.json")
+    for k, v in profile.items():
+        if v and str(v).strip():
+            print(f"SPEC:{k}={v}")
+
+# 2. draft_device-description.md
+dd = os.path.join(pdir, 'drafts', 'draft_device-description.md')
+if os.path.exists(dd):
+    with open(dd) as f:
+        desc_text = f.read()
+    print(f"SOURCE:draft_device-description.md")
+    # Extract gauges, dimensions, materials
+    gauges = re.findall(r'\b(\d+)\s*[Gg](?:auge)?\b', desc_text)
+    if gauges:
+        print(f"SPEC:gauges={','.join(sorted(set(gauges)))}")
+    materials = re.findall(r'(?:made of|composed of|material[s]?[:\s]+)([^\n.]+)', desc_text, re.I)
+    if materials:
+        print(f"SPEC:materials={'; '.join(m.strip() for m in materials)}")
+
+# 3. import_data.json
+imp = os.path.join(pdir, 'import_data.json')
+if os.path.exists(imp):
+    with open(imp) as f:
+        idata = json.load(f)
+    print(f"SOURCE:import_data.json")
+    for k in ['device_description', 'materials', 'sterilization_method', 'dimensions']:
+        v = idata.get(k) or idata.get('sections', {}).get(k)
+        if v:
+            print(f"SPEC:{k}={v}")
+
+if not any(os.path.exists(os.path.join(pdir, f)) for f in ['device_profile.json', 'drafts/draft_device-description.md', 'import_data.json']):
+    print("SOURCE:none")
+PYEOF
+```
+
+**CRITICAL RULE: Never fabricate specific numerical values for the subject device.**
+
+When populating the subject device column in the SE comparison table:
+
+- **If a spec is found in project data** → use it exactly as stated (cite the source file)
+- **If a spec is NOT found in project data** → write `[TODO: Verify — typical range for {product_code} is {X-Y}]` instead of inventing a plausible value
+- **Predicate device specs** may be inferred from FDA data (510(k) summaries, GUDID, openFDA) — this is acceptable because those are public regulatory records
+- **Subject device specs** MUST come from the user's own project data or be explicitly marked as TODO placeholders
+- **Never mix** predicate-sourced data into the subject device column without explicit project data confirmation
+
+After populating the table, add a sourcing comment:
+```markdown
+<!-- Subject device specs sourced from: {comma-separated list of project files used, or "no project data — all values marked [TODO]"} -->
+```
+
+**Example of CORRECT behavior:**
+- Project data says "23G and 25G needles" → Subject column: "23G and 25G"
+- No project data on needle gauge → Subject column: `[TODO: Verify — specify needle gauge(s)]`
+
+**Example of INCORRECT behavior (DO NOT DO THIS):**
+- No project data on needle gauge → Subject column: "19G, 22G, and 25G" ← FABRICATED
+
 ## Step 2: Load Predicate & Reference Device Data
 
 ### Check PDF text cache
