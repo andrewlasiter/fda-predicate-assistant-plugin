@@ -435,6 +435,7 @@ class TestPluginVersion:
             data = json.load(f)
         assert data['version'] == '5.22.0'
 
+    @pytest.mark.skip(reason="SPRINT5_8AGENT_REVIEW.md removed during dev artifact cleanup")
     def test_sprint5_review_exists(self):
         """Sprint 5 review document must exist."""
         assert os.path.exists(os.path.join(PLUGIN_ROOT, 'SPRINT5_8AGENT_REVIEW.md'))

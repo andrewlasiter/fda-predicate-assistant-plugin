@@ -25,13 +25,18 @@ Your AI-powered regulatory assistant for FDA 510(k) submissions -- predicate res
 #### Research and analysis
 - `/research` -- Comprehensive submission research for a product code
 - `/analyze` -- Statistics and pattern analysis across extraction results
+- `/ask` -- Natural language Q&A about FDA regulatory topics
 - `/validate` -- Look up any device number against FDA databases
 - `/pathway` -- Recommend the best regulatory pathway (510(k), De Novo, PMA)
 - `/literature` -- Search PubMed for clinical evidence and identify gaps
 - `/safety` -- Pull adverse events and recall history
+- `/inspections` -- FDA inspection history, CFR citations, and compliance actions
+- `/trials` -- Search ClinicalTrials.gov for similar device studies
+- `/warnings` -- FDA warning letters and enforcement actions
 - `/udi` -- Look up UDI/GUDID records and device history
 - `/standards` -- FDA Recognized Consensus Standards lookup
 - `/guidance` -- Find relevant FDA guidance documents
+- `/lineage` -- Trace predicate citation chains across clearance generations
 
 #### Predicate workflow
 - `/extract` -- Download 510(k) PDFs and extract predicate relationships
@@ -42,6 +47,11 @@ Your AI-powered regulatory assistant for FDA 510(k) submissions -- predicate res
 
 #### Submission preparation
 - `/draft` -- Write regulatory prose for 18 submission sections with citations
+- `/submission-outline` -- Generate a 510(k) submission outline with section checklists
+- `/traceability` -- Generate a requirements traceability matrix
+- `/summarize` -- Summarize and compare sections from 510(k) summary PDFs
+- `/pccp` -- Generate a Predetermined Change Control Plan for AI/ML devices
+- `/test-plan` -- Generate a risk-based testing plan with gap analysis
 - `/pre-check` -- Simulate FDA review team evaluation and RTA screening
 - `/consistency` -- Validate device descriptions and predicates match across files
 - `/assemble` -- Assemble an eSTAR-structured submission package
@@ -50,6 +60,10 @@ Your AI-powered regulatory assistant for FDA 510(k) submissions -- predicate res
 
 #### Project management
 - `/dashboard` -- Project status with Submission Readiness Index (SRI)
+- `/audit` -- View the decision audit trail
+- `/cache` -- Show cached FDA data for a project
+- `/gap-analysis` -- Analyze gaps in 510(k) data pipeline
+- `/portfolio` -- Cross-project portfolio dashboard
 - `/pipeline` -- Run all stages autonomously end-to-end
 - `/import` -- Import eSTAR data from PDF or XML
 - `/monitor` -- Watch FDA databases for new clearances, recalls, and events

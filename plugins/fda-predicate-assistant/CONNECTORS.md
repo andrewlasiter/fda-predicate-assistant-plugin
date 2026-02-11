@@ -88,3 +88,5 @@ The plugin bundles Python scripts in `scripts/` that wrap these APIs with retry 
 | `fda_data_store.py` | Local data caching and project file management |
 | `fda_audit_logger.py` | Decision audit trail logging |
 | `alert_sender.py` | Monitoring alert dispatch |
+| `setup_api_key.py` | Interactive openFDA API key configuration |
+| `version.py` | Plugin version constant |
