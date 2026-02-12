@@ -4,11 +4,11 @@ Reference for eSTAR (electronic Submission Template And Resource) structure, sec
 
 ## eSTAR Templates
 
-| Template | Version | Device Types | FDA Download |
-|----------|---------|-------------|-------------|
-| nIVD eSTAR | v6 | Non-IVD medical devices | `fda.gov/media/174458/download` |
-| IVD eSTAR | v6 | In Vitro Diagnostic devices | `fda.gov/media/174459/download` |
-| PreSTAR | v2 | Pre-Submission requests | `fda.gov/media/169327/download` |
+| Template | Form ID | Version | Device Types | FDA Download |
+|----------|---------|---------|-------------|-------------|
+| nIVD eSTAR | FDA 4062 | v6.1 | Non-IVD medical devices | `fda.gov/media/174458/download` |
+| IVD eSTAR | FDA 4078 | v6.1 | In Vitro Diagnostic devices | `fda.gov/media/174459/download` |
+| PreSTAR | FDA 5064 | v2.1 | Pre-Submission requests | `fda.gov/media/169327/download` |
 
 ## Template Selection Matrix
 
@@ -16,11 +16,19 @@ Which eSTAR template to use for each submission type and device category:
 
 | Template | Submission Types | Device Types | OMB Control Numbers |
 |----------|-----------------|-------------|---------------------|
-| nIVD eSTAR v6 | 510(k), De Novo, PMA | Non-IVD devices | 0910-0120, 0910-0844, 0910-0231 |
-| IVD eSTAR v6 | 510(k), De Novo, PMA | In Vitro Diagnostic devices | 0910-0120, 0910-0844, 0910-0231 |
-| PreSTAR v2 | Pre-Submissions, IDE, 513(g) | All device types | 0910-0756, 0910-0078, 0910-0511 |
+| nIVD eSTAR v6.1 | 510(k), De Novo, PMA | Non-IVD devices | 0910-0120, 0910-0844, 0910-0231 |
+| IVD eSTAR v6.1 | 510(k), De Novo, PMA | In Vitro Diagnostic devices | 0910-0120, 0910-0844, 0910-0231 |
+| PreSTAR v2.1 | Pre-Submissions, IDE, 513(g) | All device types | 0910-0756, 0910-0078, 0910-0511 |
 
 **Decision logic:** Use nIVD for non-IVD devices, IVD for in vitro diagnostics, and PreSTAR for pre-submission meetings or IDE applications regardless of device type.
+
+## Template Differences
+
+| Template | Form ID | Text Fields | Unique Sections |
+|----------|---------|-------------|-----------------|
+| nIVD v6.1 | FDA 4062 | ~265 | `QualityManagement`, `PAS`, `RiskManagement`, `PredicatesSE` |
+| IVD v6.1 | FDA 4078 | ~316 | `AssayInstrumentInfo`, `AnalyticalPerformance`, `ClinicalStudies` |
+| PreSTAR v2.1 | FDA 5064 | ~193 | `SubmissionCharacteristics`, `Questions`, `InvestigationalPlan`, `ClinicalInformation` |
 
 ## Mandatory eSTAR Dates
 
@@ -54,9 +62,9 @@ As of February 2, 2026, nIVD and IVD eSTAR templates (v6) align with the new Qua
 - **Right-click the download link → "Save Link As"** (browser-specific wording)
 - Save the file before opening in Acrobat — eSTAR PDFs cannot be opened directly in web browsers
 - Download URLs:
-  - nIVD eSTAR v6: `fda.gov/media/174458/download`
-  - IVD eSTAR v6: `fda.gov/media/174459/download`
-  - PreSTAR v2: `fda.gov/media/169327/download`
+  - nIVD eSTAR v6.1: `fda.gov/media/174458/download`
+  - IVD eSTAR v6.1: `fda.gov/media/174459/download`
+  - PreSTAR v2.1: `fda.gov/media/169327/download`
   - FDA eSTAR guidance document: `fda.gov/media/152429/download`
 
 ### Early Technical Screening
@@ -65,107 +73,220 @@ FDA performs Early Technical Screening on eSTAR submissions. If the eSTAR fails 
 ### Submission Portal
 Submit completed eSTAR packages via the **CDRH Portal**: `https://ccp.fda.gov/prweb/PRAuth/app/default/extsso`. See `references/cdrh-portal.md` for portal details, file size limits, and submission procedures.
 
-## eSTAR Section Structure (nIVD v6)
+## Real eSTAR Section Structure
 
-> **Note:** The actual eSTAR template uses 22 lettered pages (A-V). The numbered sections below (01-17) are a **plugin convention** for organizing submission content and do not correspond to the FDA 2019 guidance 20-section format or actual eSTAR page letters. XFA field paths are derived from observed template structures and may vary across eSTAR versions.
+> **Note:** The actual eSTAR template uses 22 lettered pages (A-V). The numbered sections below (01-17) are a **plugin convention** for organizing submission content and do not correspond to the FDA 2019 guidance 20-section format or actual eSTAR page letters. XFA field paths below are extracted from the actual FDA eSTAR templates (nIVD v6.1, IVD v6.1).
 
-| # | Section | eSTAR Tab/Page | Required? | Auto-Populate? |
-|---|---------|----------------|-----------|----------------|
-| 01 | Cover Letter | Cover Letter | Yes | Partial |
-| 02 | Cover Sheet (FDA 3514) | Indications for Use | Yes | Template |
-| 03 | 510(k) Summary or Statement | 510(k) Summary | Yes | Partial |
-| 04 | Truthful & Accuracy Statement | Truthful and Accuracy | Yes | Template |
-| 05 | Financial Certification | Financial Certification | Yes | Template |
-| 06 | Device Description | Device Description | Yes | If data available |
-| 07 | SE Comparison | Substantial Equivalence | Yes | Yes |
-| 08 | Standards/Conformity | Standards | Conditional | Partial |
-| 09 | Labeling | Labeling | Yes | If data available |
-| 10 | Sterilization | Sterilization | Conditional | If applicable |
-| 11 | Shelf Life | Shelf Life | Conditional | If applicable |
-| 12 | Biocompatibility | Biocompatibility | Conditional | Partial |
-| 13 | Software/Cybersecurity | Software | Conditional | If applicable |
-| 14 | EMC/Electrical Safety | EMC/Electrical | Conditional | If applicable |
-| 15 | Performance Testing | Performance Testing | Yes | Partial |
-| 16 | Clinical | Clinical | Conditional | If available |
-| 17 | Human Factors | Usability Engineering | Conditional | If applicable |
-| 18 | Other | Additional Information | Optional | As available |
+### XML Hierarchy (shared across nIVD and IVD)
 
-## XFA XML Field Mapping
+```
+root
+├── GeneralIntroduction
+├── ApplicationType
+├── AdministrativeInformation
+│   ├── ApplicantInformation (ADTextField210, ADTextField140, ADTextField130, ...)
+│   ├── CorrespondentInformation
+│   ├── Standards
+│   └── RelatedSubmissions
+├── DeviceDescription
+│   ├── Devices → Device (TradeName, Model)
+│   ├── GeneralCharacteristics
+│   ├── Description (DDTextField400)
+│   └── Guidance
+├── IndicationsForUse
+│   ├── SubandDevice (IUTextField110)
+│   ├── Indications (IUTextField141)
+│   ├── IntendedPopulation
+│   └── TypeOfUse
+├── Classification
+│   ├── USAKnownClassification (DDTextField517a, DDTextField519, DDTextField518)
+│   └── USAProposedClassification
+├── PredicatesSE [nIVD/IVD only]
+│   ├── PredicateReference (ADTextField830, ADTextField840, ADTextField850)
+│   └── SubstantialEquivalence (SETextField110)
+├── RiskManagement (SpecialControls) [nIVD/IVD only]
+├── Labeling
+│   ├── GeneralLabeling (LBTextField110)
+│   ├── SpecificLabeling
+│   └── Guidance
+├── ReprocSter
+│   ├── Reprocessing
+│   ├── Sterility → STMethod (STTextField110)
+│   ├── ShelfLife (SLTextField110)
+│   └── Guidance
+├── Biocompatibility
+│   └── PatientMaterials (BCTextField110, BCTextField120, BCTextField130)
+├── SoftwareCyber
+│   ├── Cybersecurity
+│   └── Interoperability
+├── EMCWireless
+│   ├── EMC (EMTextField110)
+│   └── Wireless
+├── PerformanceTesting
+│   ├── BenchTesting (PTTextField110)
+│   ├── AnimalTesting
+│   ├── ClinicalTesting
+│   └── Guidance
+├── QualityManagement [nIVD/IVD only]
+├── PAS [nIVD/IVD only]
+├── References
+├── AdministrativeDocumentation
+│   ├── UserFee
+│   ├── TAStatement (TATextField105)
+│   ├── DoC (DCTextField120, DCTextField140)
+│   └── PMNSummary (SSTextField110, SSTextField220, SSTextField250, SSTextField260, SSTextField400)
+├── Amendment
+└── Verification (metadata)
+```
 
-eSTAR PDFs use XFA (XML Forms Architecture) to store form data. The XFA stream is embedded in the PDF under the `/AcroForm/XFA` key.
+| # | Section | Real XML Path | Required? | Auto-Populate? |
+|---|---------|---------------|-----------|----------------|
+| 01 | Cover Letter | `root.AdministrativeInformation.ApplicantInformation` | Yes | Partial |
+| 02 | Cover Sheet (FDA 3514) | `root.Classification.USAKnownClassification` | Yes | Template |
+| 03 | 510(k) Summary or Statement | `root.AdministrativeDocumentation.PMNSummary` | Yes | Partial |
+| 04 | Truthful & Accuracy Statement | `root.AdministrativeDocumentation.TAStatement` | Yes | Template |
+| 05 | Financial Certification | (attachment in eSTAR) | Yes | Template |
+| 06 | Device Description | `root.DeviceDescription.Description` | Yes | If data available |
+| 07 | SE Comparison | `root.PredicatesSE.SubstantialEquivalence` | Yes | Yes |
+| 08 | Standards/Conformity | `root.AdministrativeDocumentation.DoC` | Conditional | Partial |
+| 09 | Labeling | `root.Labeling.GeneralLabeling` | Yes | If data available |
+| 10 | Sterilization | `root.ReprocSter.Sterility.STMethod` | Conditional | If applicable |
+| 11 | Shelf Life | `root.ReprocSter.ShelfLife` | Conditional | If applicable |
+| 12 | Biocompatibility | `root.Biocompatibility.PatientMaterials` | Conditional | Partial |
+| 13 | Software/Cybersecurity | `root.SoftwareCyber` | Conditional | If applicable |
+| 14 | EMC/Electrical Safety | `root.EMCWireless` | Conditional | If applicable |
+| 15 | Performance Testing | `root.PerformanceTesting.BenchTesting` | Yes | Partial |
+| 16 | Clinical | `root.PerformanceTesting.ClinicalTesting` | Conditional | If available |
+| 17 | Human Factors | (attachment/guidance section) | Conditional | If applicable |
+| 18 | Other | `root.QualityManagement` / attachments | Optional | As available |
+
+## XFA XML Field Mapping (Real eSTAR Format)
+
+eSTAR PDFs use XFA (XML Forms Architecture) to store form data. The XFA stream is embedded in the PDF under the `/AcroForm/XFA` key. The fields below use the **real field IDs** from the official FDA templates.
 
 ### Core Identification Fields
 
-| XFA Field Path | Human Name | Maps To |
-|----------------|-----------|---------|
-| `form1.CoverLetter.ApplicantName` | Applicant/Company Name | `applicant_name` |
-| `form1.CoverLetter.ContactName` | Contact Person | `contact_name` |
-| `form1.CoverLetter.Address` | Company Address | `address` |
-| `form1.CoverLetter.Phone` | Phone Number | `phone` |
-| `form1.CoverLetter.Email` | Email Address | `email` |
-| `form1.CoverLetter.Date` | Submission Date | `submission_date` |
-| `form1.CoverLetter.DeviceName` | Trade/Proprietary Name | `device_trade_name` |
-| `form1.CoverLetter.CommonName` | Common/Usual Name | `device_common_name` |
+| Real XFA Field ID | XML Section Path | Human Name | Maps To |
+|-------------------|-----------------|-----------|---------|
+| `ADTextField210` | `root.AdministrativeInformation.ApplicantInformation` | Company Name | `applicant_name` |
+| `ADTextField140` | `root.AdministrativeInformation.ApplicantInformation` | Contact First Name | `contact_first_name` |
+| `ADTextField130` | `root.AdministrativeInformation.ApplicantInformation` | Contact Last Name | `contact_last_name` |
+| `ADTextField160` | `root.AdministrativeInformation.ApplicantInformation` | Email | `email` |
+| `ADTextField170` | `root.AdministrativeInformation.ApplicantInformation` | Phone | `phone` |
+| `ADTextField220` | `root.AdministrativeInformation.ApplicantInformation` | Address Line 1 | `address_street` |
+| `ADTextField240` | `root.AdministrativeInformation.ApplicantInformation` | City | `address_city` |
+| `ADTextField250` | `root.AdministrativeInformation.ApplicantInformation` | State | `address_state` |
+| `ADTextField260` | `root.AdministrativeInformation.ApplicantInformation` | ZIP | `address_zip` |
 
-### Classification Fields
+### Device Description & Classification Fields
 
-| XFA Field Path | Human Name | Maps To |
-|----------------|-----------|---------|
-| `form1.FDA3514.ProductCode` | Product Code | `product_code` |
-| `form1.FDA3514.RegulationNumber` | Regulation Number | `regulation_number` |
-| `form1.FDA3514.DeviceClass` | Device Class | `device_class` |
-| `form1.FDA3514.Panel` | Review Panel | `review_panel` |
-| `form1.FDA3514.SubmissionType` | 510(k) Type | `submission_type` |
+| Real XFA Field ID | XML Section Path | Human Name | Maps To |
+|-------------------|-----------------|-----------|---------|
+| `TradeName` | `root.DeviceDescription.Devices.Device` | Trade/Proprietary Name | `device_trade_name` |
+| `Model` | `root.DeviceDescription.Devices.Device` | Model Number | `device_model` |
+| `DDTextField400` | `root.DeviceDescription.Description` | Device Description Text | `device_description_text` |
+| `DDTextField517a` | `root.Classification.USAKnownClassification` | Product Code | `product_code` |
+| `DDTextField519` | `root.Classification.USAKnownClassification` | Regulation Number | `regulation_number` |
+| `DDTextField518` | `root.Classification.USAKnownClassification` | Device Class | `device_class` |
 
-### Indications for Use (FDA 3881)
+### Indications for Use
 
-| XFA Field Path | Human Name | Maps To |
-|----------------|-----------|---------|
-| `form1.FDA3881.DeviceName` | Device Name | `ifu_device_name` |
-| `form1.FDA3881.IndicationsText` | Indications for Use Text | `indications_for_use` |
-| `form1.FDA3881.Prescription` | Rx/OTC | `prescription_otc` |
+| Real XFA Field ID | XML Section Path | Human Name | Maps To |
+|-------------------|-----------------|-----------|---------|
+| `IUTextField110` | `root.IndicationsForUse.SubandDevice` | Device Name on IFU | `ifu_device_name` |
+| `IUTextField141` | `root.IndicationsForUse.Indications` | Indications for Use Text | `indications_for_use` |
 
 ### Predicate Information
 
-| XFA Field Path | Human Name | Maps To |
-|----------------|-----------|---------|
-| `form1.SE.PredicateDevice[0].KNumber` | Primary Predicate K-Number | `predicates[0].k_number` |
-| `form1.SE.PredicateDevice[0].DeviceName` | Primary Predicate Name | `predicates[0].device_name` |
-| `form1.SE.PredicateDevice[0].Manufacturer` | Primary Predicate Manufacturer | `predicates[0].manufacturer` |
-| `form1.SE.PredicateDevice[1].KNumber` | Secondary Predicate K-Number | `predicates[1].k_number` |
-| `form1.SE.PredicateDevice[1].DeviceName` | Secondary Predicate Name | `predicates[1].device_name` |
+| Real XFA Field ID | XML Section Path | Human Name | Maps To |
+|-------------------|-----------------|-----------|---------|
+| `ADTextField830` | `root.PredicatesSE.PredicateReference` | Primary Predicate K-Number | `predicate_k_number` |
+| `ADTextField840` | `root.PredicatesSE.PredicateReference` | Primary Predicate Device Name | `predicate_device_name` |
+| `ADTextField850` | `root.PredicatesSE.PredicateReference` | Primary Predicate Manufacturer | `predicate_manufacturer` |
+| `SETextField110` | `root.PredicatesSE.SubstantialEquivalence` | SE Discussion Text | `se_discussion_text` |
 
-### Section Content Fields
+### Sterilization, Shelf Life, and Reprocessing
 
-| XFA Field Path | Human Name | Maps To |
-|----------------|-----------|---------|
-| `form1.DeviceDescription.DescriptionText` | Device Description Narrative | `device_description_text` |
-| `form1.DeviceDescription.PrincipleOfOperation` | Principle of Operation | `principle_of_operation` |
-| `form1.SE.ComparisonNarrative` | SE Discussion Narrative | `se_discussion_text` |
-| `form1.SE.IntendedUseComparison` | Intended Use Comparison | `intended_use_comparison` |
-| `form1.SE.TechCharComparison` | Tech Characteristics Comparison | `tech_comparison` |
-| `form1.Performance.TestingSummary` | Performance Testing Summary | `performance_summary` |
-| `form1.Labeling.IFUText` | Instructions for Use | `ifu_text` |
-| `form1.Software.SoftwareLevel` | Software Level of Documentation | `software_doc_level` |
-| `form1.Sterilization.Method` | Sterilization Method | `sterilization_method` |
-| `form1.ShelfLife.ClaimedLife` | Claimed Shelf Life | `shelf_life_claim` |
+| Real XFA Field ID | XML Section Path | Human Name | Maps To |
+|-------------------|-----------------|-----------|---------|
+| `STTextField110` | `root.ReprocSter.Sterility.STMethod` | Sterilization Method | `sterilization_method` |
+| `SLTextField110` | `root.ReprocSter.ShelfLife` | Shelf Life Claim | `shelf_life_claim` |
 
-### Biocompatibility Fields
+### Biocompatibility
 
-| XFA Field Path | Human Name | Maps To |
-|----------------|-----------|---------|
-| `form1.Biocompat.ContactType` | Patient Contact Type | `biocompat_contact_type` |
-| `form1.Biocompat.ContactDuration` | Contact Duration | `biocompat_contact_duration` |
-| `form1.Biocompat.MaterialList` | Materials of Construction | `biocompat_materials` |
+| Real XFA Field ID | XML Section Path | Human Name | Maps To |
+|-------------------|-----------------|-----------|---------|
+| `BCTextField110` | `root.Biocompatibility.PatientMaterials` | Contact Type | `biocompat_contact_type` |
+| `BCTextField120` | `root.Biocompatibility.PatientMaterials` | Contact Duration | `biocompat_contact_duration` |
+| `BCTextField130` | `root.Biocompatibility.PatientMaterials` | Materials | `biocompat_materials` |
+
+### Software & EMC
+
+| Real XFA Field ID | XML Section Path | Human Name | Maps To |
+|-------------------|-----------------|-----------|---------|
+| `SWTextField110` | `root.SoftwareCyber` | Software Documentation Level | `software_doc_level` |
+| `EMTextField110` | `root.EMCWireless` | EMC Description | `emc_description` |
+
+### Performance Testing
+
+| Real XFA Field ID | XML Section Path | Human Name | Maps To |
+|-------------------|-----------------|-----------|---------|
+| `PTTextField110` | `root.PerformanceTesting.BenchTesting` | Performance Summary | `performance_summary` |
+
+### Administrative Documentation (510(k) Summary, DoC, T&A)
+
+| Real XFA Field ID | XML Section Path | Human Name | Maps To |
+|-------------------|-----------------|-----------|---------|
+| `SSTextField110` | `root.AdministrativeDocumentation.PMNSummary` | Summary Applicant Name | `summary_applicant_name` |
+| `SSTextField220` | `root.AdministrativeDocumentation.PMNSummary` | Summary Device Trade Name | `summary_device_trade_name` |
+| `SSTextField250` | `root.AdministrativeDocumentation.PMNSummary` | Summary Regulation Number | `summary_regulation_number` |
+| `SSTextField260` | `root.AdministrativeDocumentation.PMNSummary` | Summary Product Codes | `summary_product_codes` |
+| `SSTextField400` | `root.AdministrativeDocumentation.PMNSummary` | 510(k) Summary Text | `summary_text` |
+| `TATextField105` | `root.AdministrativeDocumentation.TAStatement` | T&A Certification | `ta_certify_capacity` |
+| `DCTextField120` | `root.AdministrativeDocumentation.DoC` | DoC Company Name | `doc_company_name` |
+| `DCTextField140` | `root.AdministrativeDocumentation.DoC` | DoC Device Trade Name | `doc_device_trade_name` |
+
+### IVD-Specific Fields (FDA 4078 only)
+
+| Real XFA Field ID | XML Section Path | Human Name | Maps To |
+|-------------------|-----------------|-----------|---------|
+| `DDTextField340` | `root.AssayInstrumentInfo` | Instrument Name | `instrument_name` |
+| `DDTextField350` | `root.AssayInstrumentInfo` | Instrument Info | `instrument_info` |
+| `APTextField110` | `root.AnalyticalPerformance` | Analytical Performance | `analytical_performance` |
+| `CSTextField110` | `root.ClinicalStudies` | Clinical Studies | `clinical_studies` |
+
+### PreSTAR-Specific Fields (FDA 5064 only)
+
+| Real XFA Field ID | XML Section Path | Human Name | Maps To |
+|-------------------|-----------------|-----------|---------|
+| `SCTextField110` | `root.SubmissionCharacteristics` | Submission Characteristics | `submission_characteristics` |
+| `QPTextField110` | `root.Questions` | Questions for FDA | `questions_text` |
+
+## Legacy XFA Field Mapping (form1.* format)
+
+The legacy format was used by earlier versions of this tool before real template analysis. It uses `form1.*` paths with semantic element names. Legacy XML is still supported for import (auto-detected).
+
+| Legacy XFA Path | Maps To |
+|----------------|---------|
+| `form1.CoverLetter.ApplicantName` | `applicant_name` |
+| `form1.CoverLetter.ContactName` | `contact_name` |
+| `form1.FDA3514.ProductCode` | `product_code` |
+| `form1.FDA3881.IndicationsText` | `indications_for_use` |
+| `form1.DeviceDescription.DescriptionText` | `device_description_text` |
+| `form1.SE.PredicateDevice0.KNumber` | predicate K-number |
+| `form1.Sterilization.Method` | `sterilization_method` |
+| `form1.ShelfLife.ClaimedLife` | `shelf_life_claim` |
+| `form1.Summary.SummaryText` | 510(k) summary text |
 
 ## XFA XML Extraction Process
 
 1. Open PDF with `pikepdf`
 2. Access `/Root/AcroForm/XFA` array
 3. Extract the `datasets` element (contains form data XML)
-4. Parse with `BeautifulSoup` / `lxml`
-5. Navigate field paths to extract values
-6. Map to structured `import_data.json`
+4. Auto-detect template type (nIVD, IVD, PreSTAR, or legacy)
+5. Parse with `BeautifulSoup` / `lxml`
+6. Match field IDs to import_data.json keys using template-specific field maps
+7. Write structured `import_data.json`
 
 ### XML Import Notes
 
@@ -173,6 +294,8 @@ eSTAR PDFs use XFA (XML Forms Architecture) to store form data. The XFA stream i
 - Generated XML must match the exact XFA schema of the target eSTAR template
 - Attachments (test reports, images) must be added manually in Adobe Acrobat after XML import
 - The `xfa:datasets` root element wraps all form data
+- Real format uses `<root>` as the data container; legacy format uses `<form1>`
+- Use `--format legacy` when generating XML to get the old form1.* format
 
 ## Section-to-Draft Mapping
 
@@ -202,24 +325,24 @@ Maps eSTAR sections to `/fda:draft` section names:
 
 ## Section Number to XML Element Mapping
 
-Used for parsing eSTAR XML and routing to correct project data fields:
+Used for parsing eSTAR XML and routing to correct project data fields. Shows both real and legacy paths:
 
-| Section # | XML Element Root | Pattern Regex |
-|-----------|-----------------|---------------|
-| 01 | `form1.CoverLetter` | `CoverLetter\\.` |
-| 02 | `form1.FDA3514` | `FDA3514\\.` |
-| 03 | `form1.Summary` | `Summary\\.` |
-| 04 | `form1.TruthfulAccuracy` | `TruthfulAccuracy\\.` |
-| 05 | `form1.FinancialCert` | `FinancialCert\\.` |
-| 06 | `form1.DeviceDescription` | `DeviceDescription\\.` |
-| 07 | `form1.SE` | `SE\\.` |
-| 08 | `form1.Standards` | `Standards\\.` |
-| 09 | `form1.Labeling` | `Labeling\\.` |
-| 10 | `form1.Sterilization` | `Sterilization\\.` |
-| 11 | `form1.ShelfLife` | `ShelfLife\\.` |
-| 12 | `form1.Biocompat` | `Biocompat\\.` |
-| 13 | `form1.Software` | `Software\\.` |
-| 14 | `form1.EMC` | `EMC\\.` |
-| 15 | `form1.Performance` | `Performance\\.` |
-| 16 | `form1.Clinical` | `Clinical\\.` |
-| 17 | `form1.HumanFactors` | `HumanFactors\\.` |
+| Section # | Real XML Path | Legacy XML Element | Legacy Pattern Regex |
+|-----------|---------------|-------------------|---------------------|
+| 01 | `root.AdministrativeInformation.ApplicantInformation` | `form1.CoverLetter` | `CoverLetter\.` |
+| 02 | `root.Classification.USAKnownClassification` | `form1.FDA3514` | `FDA3514\.` |
+| 03 | `root.AdministrativeDocumentation.PMNSummary` | `form1.Summary` | `Summary\.` |
+| 04 | `root.AdministrativeDocumentation.TAStatement` | `form1.TruthfulAccuracy` | `TruthfulAccuracy\.` |
+| 05 | (attachment) | `form1.FinancialCert` | `FinancialCert\.` |
+| 06 | `root.DeviceDescription.Description` | `form1.DeviceDescription` | `DeviceDescription\.` |
+| 07 | `root.PredicatesSE` | `form1.SE` | `SE\.` |
+| 08 | `root.AdministrativeDocumentation.DoC` | `form1.Standards` | `Standards\.` |
+| 09 | `root.Labeling.GeneralLabeling` | `form1.Labeling` | `Labeling\.` |
+| 10 | `root.ReprocSter.Sterility` | `form1.Sterilization` | `Sterilization\.` |
+| 11 | `root.ReprocSter.ShelfLife` | `form1.ShelfLife` | `ShelfLife\.` |
+| 12 | `root.Biocompatibility.PatientMaterials` | `form1.Biocompat` | `Biocompat\.` |
+| 13 | `root.SoftwareCyber` | `form1.Software` | `Software\.` |
+| 14 | `root.EMCWireless` | `form1.EMC` | `EMC\.` |
+| 15 | `root.PerformanceTesting.BenchTesting` | `form1.Performance` | `Performance\.` |
+| 16 | `root.PerformanceTesting.ClinicalTesting` | `form1.Clinical` | `Clinical\.` |
+| 17 | (attachment/guidance) | `form1.HumanFactors` | `HumanFactors\.` |

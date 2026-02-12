@@ -99,25 +99,35 @@ As of February 2, 2026, nIVD and IVD eSTAR templates (v6) align with the new Qua
 
 ### Section Number to XML Element Mapping
 
-| Section # | XML Element Root | Pattern Regex |
-|-----------|-----------------|---------------|
-| 01 | `form1.CoverLetter` | `CoverLetter\\.` |
-| 02 | `form1.FDA3514` | `FDA3514\\.` |
-| 03 | `form1.Summary` | `Summary\\.` |
-| 04 | `form1.TruthfulAccuracy` | `TruthfulAccuracy\\.` |
-| 05 | `form1.FinancialCert` | `FinancialCert\\.` |
-| 06 | `form1.DeviceDescription` | `DeviceDescription\\.` |
-| 07 | `form1.SE` | `SE\\.` |
-| 08 | `form1.Standards` | `Standards\\.` |
-| 09 | `form1.Labeling` | `Labeling\\.` |
-| 10 | `form1.Sterilization` | `Sterilization\\.` |
-| 11 | `form1.ShelfLife` | `ShelfLife\\.` |
-| 12 | `form1.Biocompat` | `Biocompat\\.` |
-| 13 | `form1.Software` | `Software\\.` |
-| 14 | `form1.EMC` | `EMC\\.` |
-| 15 | `form1.Performance` | `Performance\\.` |
-| 16 | `form1.Clinical` | `Clinical\\.` |
-| 17 | `form1.HumanFactors` | `HumanFactors\\.` |
+Shows both real eSTAR paths (from FDA templates) and legacy paths (from earlier tool versions):
+
+| Section # | Real XML Path | Legacy XML Element | Legacy Pattern Regex |
+|-----------|---------------|-------------------|---------------------|
+| 01 | `root.AdministrativeInformation.ApplicantInformation` | `form1.CoverLetter` | `CoverLetter\.` |
+| 02 | `root.Classification.USAKnownClassification` | `form1.FDA3514` | `FDA3514\.` |
+| 03 | `root.AdministrativeDocumentation.PMNSummary` | `form1.Summary` | `Summary\.` |
+| 04 | `root.AdministrativeDocumentation.TAStatement` | `form1.TruthfulAccuracy` | `TruthfulAccuracy\.` |
+| 05 | (attachment) | `form1.FinancialCert` | `FinancialCert\.` |
+| 06 | `root.DeviceDescription.Description` | `form1.DeviceDescription` | `DeviceDescription\.` |
+| 07 | `root.PredicatesSE` | `form1.SE` | `SE\.` |
+| 08 | `root.AdministrativeDocumentation.DoC` | `form1.Standards` | `Standards\.` |
+| 09 | `root.Labeling.GeneralLabeling` | `form1.Labeling` | `Labeling\.` |
+| 10 | `root.ReprocSter.Sterility` | `form1.Sterilization` | `Sterilization\.` |
+| 11 | `root.ReprocSter.ShelfLife` | `form1.ShelfLife` | `ShelfLife\.` |
+| 12 | `root.Biocompatibility.PatientMaterials` | `form1.Biocompat` | `Biocompat\.` |
+| 13 | `root.SoftwareCyber` | `form1.Software` | `Software\.` |
+| 14 | `root.EMCWireless` | `form1.EMC` | `EMC\.` |
+| 15 | `root.PerformanceTesting.BenchTesting` | `form1.Performance` | `Performance\.` |
+| 16 | `root.PerformanceTesting.ClinicalTesting` | `form1.Clinical` | `Clinical\.` |
+| 17 | (attachment/guidance) | `form1.HumanFactors` | `HumanFactors\.` |
+
+### Template Form IDs
+
+| Template | Form ID | Version |
+|----------|---------|---------|
+| nIVD eSTAR | FDA 4062 | v6.1 |
+| IVD eSTAR | FDA 4078 | v6.1 |
+| PreSTAR | FDA 5064 | v2.1 |
 
 ### Section Applicability by Device Type
 

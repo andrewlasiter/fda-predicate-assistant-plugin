@@ -23,13 +23,13 @@ SKILL_REFS_DIR = os.path.join(PLUGIN_ROOT, 'skills', 'fda-510k-knowledge', 'refe
 
 sys.path.insert(0, SCRIPTS_DIR)
 
-from estar_xml import _build_estar_xml, _xml_escape
+from estar_xml import _build_estar_xml, _build_legacy_xml, _xml_escape
 
 
 # ===== C-07: XML Section Builders for 03/04/05 =====
 
 class TestXMLSection03Summary:
-    """estar_xml.py must generate <Summary> element for Section 03."""
+    """Legacy format: estar_xml.py must generate <Summary> element for Section 03."""
 
     def _generate(self, drafts=None):
         project_data = {
@@ -38,7 +38,7 @@ class TestXMLSection03Summary:
             "review": {},
             "drafts": drafts or {},
         }
-        return _build_estar_xml(project_data, "nIVD")
+        return _build_legacy_xml(project_data, "nIVD")
 
     def test_summary_element_present(self):
         xml = self._generate()
@@ -56,7 +56,7 @@ class TestXMLSection03Summary:
 
 
 class TestXMLSection04TruthfulAccuracy:
-    """estar_xml.py must generate <TruthfulAccuracy> element for Section 04."""
+    """Legacy format: estar_xml.py must generate <TruthfulAccuracy> element for Section 04."""
 
     def _generate(self, drafts=None):
         project_data = {
@@ -65,7 +65,7 @@ class TestXMLSection04TruthfulAccuracy:
             "review": {},
             "drafts": drafts or {},
         }
-        return _build_estar_xml(project_data, "nIVD")
+        return _build_legacy_xml(project_data, "nIVD")
 
     def test_truthful_accuracy_element_present(self):
         xml = self._generate()
@@ -83,7 +83,7 @@ class TestXMLSection04TruthfulAccuracy:
 
 
 class TestXMLSection05FinancialCert:
-    """estar_xml.py must generate <FinancialCert> element for Section 05."""
+    """Legacy format: estar_xml.py must generate <FinancialCert> element for Section 05."""
 
     def _generate(self, drafts=None):
         project_data = {
@@ -92,7 +92,7 @@ class TestXMLSection05FinancialCert:
             "review": {},
             "drafts": drafts or {},
         }
-        return _build_estar_xml(project_data, "nIVD")
+        return _build_legacy_xml(project_data, "nIVD")
 
     def test_financial_cert_element_present(self):
         xml = self._generate()
@@ -112,7 +112,7 @@ class TestXMLSection05FinancialCert:
 # ===== L-06: Human Factors XML Always Generated =====
 
 class TestXMLHumanFactorsAlwaysPresent:
-    """HumanFactors XML element must always be generated (not conditional)."""
+    """Legacy format: HumanFactors XML element must always be generated (not conditional)."""
 
     def _generate(self, drafts=None):
         project_data = {
@@ -121,7 +121,7 @@ class TestXMLHumanFactorsAlwaysPresent:
             "review": {},
             "drafts": drafts or {},
         }
-        return _build_estar_xml(project_data, "nIVD")
+        return _build_legacy_xml(project_data, "nIVD")
 
     def test_human_factors_present_without_draft(self):
         """HumanFactors element must exist even when no draft_human-factors.md."""
@@ -148,7 +148,7 @@ class TestXMLHumanFactorsAlwaysPresent:
 # ===== XML Section Order =====
 
 class TestXMLSectionOrder:
-    """Verify all 18 sections appear in the generated XML."""
+    """Legacy format: Verify all 18 sections appear in the legacy XML."""
 
     def _generate(self, drafts=None):
         project_data = {
@@ -157,10 +157,10 @@ class TestXMLSectionOrder:
             "review": {},
             "drafts": drafts or {},
         }
-        return _build_estar_xml(project_data, "nIVD")
+        return _build_legacy_xml(project_data, "nIVD")
 
-    def test_all_section_elements_present(self):
-        """All eSTAR section XML elements must be present."""
+    def test_all_legacy_section_elements_present(self):
+        """All legacy eSTAR section XML elements must be present."""
         xml = self._generate()
         expected_elements = [
             "CoverLetter",       # 01
@@ -183,8 +183,8 @@ class TestXMLSectionOrder:
             "HumanFactors",      # 17
         ]
         for elem in expected_elements:
-            assert f"<{elem}>" in xml, f"Missing XML element: <{elem}>"
-            assert f"</{elem}>" in xml, f"Missing closing tag: </{elem}>"
+            assert f"<{elem}>" in xml, f"Missing legacy XML element: <{elem}>"
+            assert f"</{elem}>" in xml, f"Missing legacy closing tag: </{elem}>"
 
 
 # ===== M-11: estar-structure.md XML Field Paths =====
@@ -208,14 +208,37 @@ class TestEstarStructureXMLPaths:
 
     def test_all_sections_have_xml_paths(self, structure_content):
         """All 17 content sections (01-17) should have XML element mappings."""
-        # Extract the XML mapping table entries
         required_sections = ["01", "02", "03", "04", "05", "06", "07", "08",
                              "09", "10", "11", "12", "13", "14", "15", "16", "17"]
         for section in required_sections:
-            # Look for "| 05 |" pattern in the table
+            # Table has both real and legacy columns; check legacy column still present
             pattern = rf'\|\s*{section}\s*\|.*form1\.'
             assert re.search(pattern, structure_content), \
-                f"Section {section} missing from XML Element Mapping table"
+                f"Section {section} missing legacy path from XML Element Mapping table"
+
+    def test_all_sections_have_real_xml_paths(self, structure_content):
+        """All sections should have real eSTAR XML paths in the mapping table."""
+        # Real XML paths use root.* notation
+        real_path_sections = {
+            "01": "AdministrativeInformation",
+            "02": "Classification",
+            "03": "AdministrativeDocumentation",
+            "06": "DeviceDescription",
+            "07": "PredicatesSE",
+            "08": "AdministrativeDocumentation",
+            "09": "Labeling",
+            "10": "ReprocSter",
+            "11": "ReprocSter",
+            "12": "Biocompatibility",
+            "13": "SoftwareCyber",
+            "14": "EMCWireless",
+            "15": "PerformanceTesting",
+            "16": "PerformanceTesting",
+        }
+        for section, real_elem in real_path_sections.items():
+            pattern = rf'\|\s*{section}\s*\|.*{real_elem}'
+            assert re.search(pattern, structure_content), \
+                f"Section {section} missing real path '{real_elem}' in mapping table"
 
 
 class TestEstarStructureSkillMirror:
@@ -401,7 +424,7 @@ class TestSubmissionAssemblerConsistency:
 # ===== XML Escape in New Sections =====
 
 class TestXMLEscapeInNewSections:
-    """Verify XML escaping works in new section content."""
+    """Verify XML escaping works in legacy section content."""
 
     def _generate(self, drafts=None):
         project_data = {
@@ -410,7 +433,7 @@ class TestXMLEscapeInNewSections:
             "review": {},
             "drafts": drafts or {},
         }
-        return _build_estar_xml(project_data, "nIVD")
+        return _build_legacy_xml(project_data, "nIVD")
 
     def test_summary_escapes_ampersand(self):
         xml = self._generate(drafts={"510k-summary": "Device A & Device B"})
@@ -423,3 +446,207 @@ class TestXMLEscapeInNewSections:
     def test_financial_cert_escapes_quotes(self):
         xml = self._generate(drafts={"financial-certification": 'No "conflicts"'})
         assert "No &quot;conflicts&quot;" in xml
+
+
+# ===== Real eSTAR Format Tests =====
+
+class TestRealXMLGeneration:
+    """Verify _build_estar_xml produces real eSTAR format (root.* paths)."""
+
+    def _generate(self, template="nIVD", drafts=None, import_data=None):
+        project_data = {
+            "import": import_data or {
+                "classification": {}, "applicant": {}, "indications_for_use": {},
+                "predicates": [], "sections": {},
+            },
+            "query": {},
+            "review": {},
+            "drafts": drafts or {},
+        }
+        return _build_estar_xml(project_data, template)
+
+    def test_real_xml_has_root_element(self):
+        """Real format must use <root> not <form1>."""
+        xml = self._generate()
+        assert "<root>" in xml
+        assert "</root>" in xml
+        assert "<form1>" not in xml
+
+    def test_real_xml_has_xfa_wrapper(self):
+        """Real format must have xfa:datasets wrapper."""
+        xml = self._generate()
+        assert "xfa:datasets" in xml
+        assert "xfa:data" in xml
+
+    def test_nivd_has_form_id(self):
+        """nIVD XML must contain FDA 4062 form identifier."""
+        xml = self._generate(template="nIVD")
+        assert "FDA 4062" in xml
+
+    def test_ivd_has_form_id(self):
+        """IVD XML must contain FDA 4078 form identifier."""
+        xml = self._generate(template="IVD")
+        assert "FDA 4078" in xml
+
+    def test_prestar_has_form_id(self):
+        """PreSTAR XML must contain FDA 5064 form identifier."""
+        xml = self._generate(template="PreSTAR")
+        assert "FDA 5064" in xml
+
+    def test_nivd_real_sections_present(self):
+        """nIVD real format must contain all major real eSTAR sections."""
+        xml = self._generate(template="nIVD")
+        expected = [
+            "AdministrativeInformation",
+            "DeviceDescription",
+            "IndicationsForUse",
+            "Classification",
+            "PredicatesSE",
+            "Labeling",
+            "ReprocSter",
+            "Biocompatibility",
+            "SoftwareCyber",
+            "EMCWireless",
+            "PerformanceTesting",
+            "AdministrativeDocumentation",
+        ]
+        for elem in expected:
+            assert f"<{elem}>" in xml, f"Missing real section: <{elem}>"
+            assert f"</{elem}>" in xml, f"Missing closing: </{elem}>"
+
+    def test_ivd_has_ivd_specific_sections(self):
+        """IVD format must contain IVD-specific sections."""
+        xml = self._generate(template="IVD")
+        assert "<AssayInstrumentInfo>" in xml
+        assert "<AnalyticalPerformance>" in xml
+        assert "<ClinicalStudies>" in xml
+
+    def test_prestar_lacks_predicates(self):
+        """PreSTAR format must NOT contain PredicatesSE."""
+        xml = self._generate(template="PreSTAR")
+        assert "<PredicatesSE>" not in xml
+        assert "<SubmissionCharacteristics>" in xml
+        assert "<Questions>" in xml
+
+    def test_real_xml_applicant_field_ids(self):
+        """Real format uses coded field IDs like ADTextField210."""
+        xml = self._generate(import_data={
+            "classification": {}, "predicates": [], "sections": {},
+            "applicant": {"applicant_name": "Acme Medical"},
+            "indications_for_use": {},
+        })
+        assert "<ADTextField210>Acme Medical</ADTextField210>" in xml
+
+    def test_real_xml_classification_field_ids(self):
+        """Real format uses DDTextField517a for product code."""
+        xml = self._generate(import_data={
+            "applicant": {}, "predicates": [], "sections": {},
+            "classification": {"product_code": "FJL"},
+            "indications_for_use": {},
+        })
+        assert "<DDTextField517a>FJL</DDTextField517a>" in xml
+
+    def test_real_xml_ifu_field_ids(self):
+        """Real format uses IUTextField141 for indications."""
+        xml = self._generate(import_data={
+            "applicant": {}, "classification": {}, "predicates": [], "sections": {},
+            "indications_for_use": {"indications_for_use": "Urological catheter"},
+        })
+        assert "<IUTextField141>Urological catheter</IUTextField141>" in xml
+
+    def test_real_xml_summary_in_admin_docs(self):
+        """510(k) summary goes in AdministrativeDocumentation.PMNSummary."""
+        xml = self._generate(drafts={"510k-summary": "This device is SE."})
+        assert "<PMNSummary>" in xml
+        assert "<SSTextField400>This device is SE.</SSTextField400>" in xml
+
+    def test_real_xml_truthful_accuracy_in_admin_docs(self):
+        """TA statement goes in AdministrativeDocumentation.TAStatement."""
+        xml = self._generate(drafts={"truthful-accuracy": "I certify accuracy."})
+        assert "<TAStatement>" in xml
+        assert "<TATextField105>I certify accuracy.</TATextField105>" in xml
+
+    def test_real_xml_predicate_fields(self):
+        """Predicate K-number uses ADTextField830."""
+        xml = self._generate(import_data={
+            "applicant": {}, "classification": {}, "indications_for_use": {}, "sections": {},
+            "predicates": [{"k_number": "K201234", "device_name": "Test Device", "manufacturer": "Acme"}],
+        })
+        assert "<ADTextField830>K201234</ADTextField830>" in xml
+        assert "<ADTextField840>Test Device</ADTextField840>" in xml
+        assert "<ADTextField850>Acme</ADTextField850>" in xml
+
+    def test_real_xml_escaping(self):
+        """Real format must also XML-escape special characters."""
+        xml = self._generate(drafts={"510k-summary": "A & B < C"})
+        assert "A &amp; B &lt; C" in xml
+
+    def test_real_xml_device_description(self):
+        """Device description uses DDTextField400."""
+        xml = self._generate(drafts={"device-description": "A surgical catheter."})
+        assert "<DDTextField400>A surgical catheter.</DDTextField400>" in xml
+
+    def test_real_xml_sterilization(self):
+        """Sterilization method uses STTextField110 under ReprocSter."""
+        xml = self._generate(import_data={
+            "applicant": {}, "classification": {}, "indications_for_use": {},
+            "predicates": [],
+            "sections": {"sterilization_method": "EO"},
+        })
+        assert "<STTextField110>EO</STTextField110>" in xml
+        assert "<ReprocSter>" in xml
+
+
+class TestRealVsLegacyFormatConsistency:
+    """Verify real and legacy formats both contain the same data, just different structure."""
+
+    def _project_data(self):
+        return {
+            "import": {
+                "classification": {"product_code": "FJL", "device_trade_name": "TestCath"},
+                "applicant": {"applicant_name": "Acme Med", "email": "test@acme.com"},
+                "indications_for_use": {"indications_for_use": "Urological use"},
+                "predicates": [{"k_number": "K201234", "device_name": "PredCath"}],
+                "sections": {},
+            },
+            "query": {},
+            "review": {},
+            "drafts": {"510k-summary": "SE summary text", "device-description": "Catheter desc"},
+        }
+
+    def test_both_formats_contain_applicant(self):
+        data = self._project_data()
+        real = _build_estar_xml(data, "nIVD")
+        legacy = _build_legacy_xml(data, "nIVD")
+        assert "Acme Med" in real
+        assert "Acme Med" in legacy
+
+    def test_both_formats_contain_product_code(self):
+        data = self._project_data()
+        real = _build_estar_xml(data, "nIVD")
+        legacy = _build_legacy_xml(data, "nIVD")
+        assert "FJL" in real
+        assert "FJL" in legacy
+
+    def test_both_formats_contain_ifu(self):
+        data = self._project_data()
+        real = _build_estar_xml(data, "nIVD")
+        legacy = _build_legacy_xml(data, "nIVD")
+        assert "Urological use" in real
+        assert "Urological use" in legacy
+
+    def test_both_formats_contain_predicate(self):
+        data = self._project_data()
+        real = _build_estar_xml(data, "nIVD")
+        legacy = _build_legacy_xml(data, "nIVD")
+        assert "K201234" in real
+        assert "K201234" in legacy
+
+    def test_real_uses_root_legacy_uses_form1(self):
+        data = self._project_data()
+        real = _build_estar_xml(data, "nIVD")
+        legacy = _build_legacy_xml(data, "nIVD")
+        assert "<root>" in real
+        assert "<form1>" not in real
+        assert "<form1>" in legacy
+        assert "<root>" not in legacy

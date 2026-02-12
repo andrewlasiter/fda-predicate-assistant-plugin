@@ -5,14 +5,18 @@ eSTAR XML Extraction and Generation Tool
 Extracts XFA form data from eSTAR PDFs and generates XML for re-import.
 Uses pikepdf for PDF access and BeautifulSoup/lxml for XML parsing.
 
+Supports both real FDA eSTAR template formats (nIVD v6.1, IVD v6.1, PreSTAR v2.1)
+and the legacy format used by earlier versions of this tool.
+
 Usage:
     python3 estar_xml.py extract <pdf-or-xml-path> [--output DIR]
-    python3 estar_xml.py generate --project NAME [--template nIVD|IVD|PreSTAR] [--output FILE]
+    python3 estar_xml.py generate --project NAME [--template nIVD|IVD|PreSTAR] [--format real|legacy] [--output FILE]
     python3 estar_xml.py fields <pdf-path>  # List all XFA field names
 
 References:
     - AF-VCD/pdf-xfa-tools patterns for XFA extraction
-    - FDA eSTAR templates: nIVD v6, IVD v6, PreSTAR v2
+    - FDA eSTAR templates: nIVD v6.1, IVD v6.1, PreSTAR v2.1
+    - Form IDs: FDA 4062 (nIVD), FDA 4078 (IVD), FDA 5064 (PreSTAR)
 """
 
 import argparse
@@ -20,7 +24,7 @@ import json
 import os
 import re
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 try:
@@ -39,12 +43,123 @@ except ImportError:
     etree = None
 
 
-# --- XFA Field Mappings ---
+# --- Real eSTAR Field Mappings (from actual FDA templates) ---
 
-# Maps XFA field path suffixes (case-insensitive) to structured import_data.json keys.
-# Both XFA-style (ApplicantName) and standard XML (applicantName) tags are handled
-# by performing case-insensitive suffix matching.
-FIELD_MAP = {
+# Shared fields common to nIVD and IVD eSTAR templates.
+# Keys are XFA field IDs (the last element of the XFA path); values are our
+# internal import_data.json keys.
+_BASE_FIELD_MAP = {
+    # AdministrativeInformation.ApplicantInformation
+    "ADTextField210": "applicant_name",        # Company Name
+    "ADTextField140": "contact_first_name",    # First Name
+    "ADTextField130": "contact_last_name",     # Last Name
+    "ADTextField160": "email",
+    "ADTextField170": "phone",
+    "ADTextField220": "address_street",        # Address Line 1
+    "ADTextField240": "address_city",
+    "ADTextField250": "address_state",
+    "ADTextField260": "address_zip",
+    # DeviceDescription.Devices.Device
+    "TradeName": "device_trade_name",
+    "Model": "device_model",
+    # DeviceDescription.Description
+    "DDTextField400": "device_description_text",
+    # Classification.USAKnownClassification
+    "DDTextField517a": "product_code",
+    "DDTextField519": "regulation_number",
+    "DDTextField518": "device_class",
+    # IndicationsForUse.Indications
+    "IUTextField141": "indications_for_use",
+    # IndicationsForUse.SubandDevice
+    "IUTextField110": "ifu_device_name",
+    # PredicatesSE.PredicateReference
+    "ADTextField830": "predicate_k_number",
+    "ADTextField840": "predicate_device_name",
+    "ADTextField850": "predicate_manufacturer",
+    # ReprocSter.Sterility.STMethod
+    "STTextField110": "sterilization_method",
+    # ReprocSter.ShelfLife
+    "SLTextField110": "shelf_life_claim",
+    # AdministrativeDocumentation.PMNSummary (510(k) Summary)
+    "SSTextField110": "summary_applicant_name",
+    "SSTextField220": "summary_device_trade_name",
+    "SSTextField250": "summary_regulation_number",
+    "SSTextField260": "summary_product_codes",
+    "SSTextField400": "summary_text",
+    # AdministrativeDocumentation.DoC
+    "DCTextField120": "doc_company_name",
+    "DCTextField140": "doc_device_trade_name",
+    # AdministrativeDocumentation.TAStatement (Truthful & Accuracy)
+    "TATextField105": "ta_certify_capacity",
+    # Labeling
+    "LBTextField110": "labeling_text",
+    # Biocompatibility.PatientMaterials
+    "BCTextField110": "biocompat_contact_type",
+    "BCTextField120": "biocompat_contact_duration",
+    "BCTextField130": "biocompat_materials",
+    # SoftwareCyber
+    "SWTextField110": "software_doc_level",
+    # EMCWireless
+    "EMTextField110": "emc_description",
+    # PerformanceTesting.BenchTesting
+    "PTTextField110": "performance_summary",
+}
+
+# nIVD eSTAR (FDA 4062) — extends base with nIVD-specific fields
+NIVD_FIELD_MAP = {
+    **_BASE_FIELD_MAP,
+    # QualityManagement (nIVD-specific)
+    "QMTextField110": "qms_info",
+}
+
+# IVD eSTAR (FDA 4078) — extends base with IVD-specific fields
+IVD_FIELD_MAP = {
+    **_BASE_FIELD_MAP,
+    # AssayInstrumentInfo (IVD-specific)
+    "DDTextField340": "instrument_name",
+    "DDTextField350": "instrument_info",
+    # AnalyticalPerformance (IVD-specific)
+    "APTextField110": "analytical_performance",
+    # ClinicalStudies (IVD-specific)
+    "CSTextField110": "clinical_studies",
+}
+
+# PreSTAR (FDA 5064) — subset of base fields, no predicates/QM
+PRESTAR_FIELD_MAP = {
+    # Admin fields
+    "ADTextField210": "applicant_name",
+    "ADTextField140": "contact_first_name",
+    "ADTextField130": "contact_last_name",
+    "ADTextField160": "email",
+    "ADTextField170": "phone",
+    "ADTextField220": "address_street",
+    "ADTextField240": "address_city",
+    "ADTextField250": "address_state",
+    "ADTextField260": "address_zip",
+    # Device identification
+    "TradeName": "device_trade_name",
+    "Model": "device_model",
+    "DDTextField400": "device_description_text",
+    "DDTextField517a": "product_code",
+    # IFU
+    "IUTextField141": "indications_for_use",
+    "IUTextField110": "ifu_device_name",
+    # PreSTAR-specific
+    "SCTextField110": "submission_characteristics",
+    "QPTextField110": "questions_text",
+}
+
+# Maps template type to field map
+TEMPLATE_FIELD_MAPS = {
+    "nIVD": NIVD_FIELD_MAP,
+    "IVD": IVD_FIELD_MAP,
+    "PreSTAR": PRESTAR_FIELD_MAP,
+}
+
+
+# --- Legacy Field Mappings (backward compatibility with older generated XML) ---
+
+LEGACY_FIELD_MAP = {
     # Applicant info
     "applicantname": "applicant_name",
     "contactname": "contact_name",
@@ -90,6 +205,9 @@ FIELD_MAP = {
     "contactduration": "biocompat_contact_duration",
     "materiallist": "biocompat_materials",
 }
+
+# Public alias for backward compatibility (tests import FIELD_MAP)
+FIELD_MAP = LEGACY_FIELD_MAP
 
 # K-number extraction pattern
 KNUMBER_PATTERN = re.compile(
@@ -147,6 +265,38 @@ def check_dependencies():
         print(f"ERROR: Missing dependencies: {', '.join(missing)}")
         print(f"Install with: pip install {' '.join(missing)}")
         sys.exit(1)
+
+
+# --- Template Detection ---
+
+def detect_template_type(xml_string):
+    """Detect which eSTAR template generated this XML.
+
+    Returns: 'nIVD', 'IVD', 'PreSTAR', or 'legacy' (our old format).
+    """
+    # Legacy format: uses <form1> root with semantic element names
+    if "<form1>" in xml_string and "<CoverLetter>" in xml_string:
+        return "legacy"
+
+    # Real template detection by Form ID
+    if "Form FDA 4062" in xml_string or "FDA 4062" in xml_string:
+        return "nIVD"
+    if "Form FDA 4078" in xml_string or "FDA 4078" in xml_string:
+        return "IVD"
+    if "Form FDA 5064" in xml_string or "FDA 5064" in xml_string:
+        return "PreSTAR"
+
+    # Fallback: detect by unique section names
+    if "SubmissionCharacteristics" in xml_string or "InvestigationalPlan" in xml_string:
+        return "PreSTAR"
+    if "AssayInstrumentInfo" in xml_string or "AnalyticalPerformance" in xml_string:
+        return "IVD"
+
+    # Real eSTAR uses <root> as top-level data element
+    if "<root>" in xml_string:
+        return "nIVD"  # default for root-format
+
+    return "legacy"
 
 
 def extract_xfa_from_pdf(pdf_path):
@@ -210,18 +360,24 @@ def extract_xfa_from_pdf(pdf_path):
         pdf.close()
 
 
+# --- Parsing ---
+
 def parse_xml_data(xml_string):
     """Parse XFA XML and extract structured form data.
 
-    Returns a dict with mapped field names and values.
+    Auto-detects format (real eSTAR or legacy) and returns a dict
+    with mapped field names and values. Both formats produce the
+    same import_data.json output structure.
     """
     check_dependencies()
 
+    template_type = detect_template_type(xml_string)
     soup = BeautifulSoup(xml_string, "lxml-xml")
     result = {
         "metadata": {
-            "extracted_at": datetime.now(tz=__import__('datetime').timezone.utc).isoformat(),
+            "extracted_at": datetime.now(tz=timezone.utc).isoformat(),
             "source_format": "xfa_xml",
+            "template_type": template_type,
         },
         "applicant": {},
         "classification": {},
@@ -231,16 +387,34 @@ def parse_xml_data(xml_string):
         "raw_fields": {},
     }
 
-    # Track the submission number to filter it from predicates later
+    if template_type == "legacy":
+        _parse_legacy_format(soup, result)
+    else:
+        _parse_real_format(soup, result, template_type)
+
+    # Extract predicate K-numbers (works for both formats)
+    _extract_predicates(soup, result)
+
+    # Detect sections from narrative content
+    for path, value in result["raw_fields"].items():
+        if len(value) > 50:
+            for section_name, pattern in SECTION_PATTERNS.items():
+                if pattern.search(path) or (len(value) > 200 and pattern.search(value[:200])):
+                    if section_name not in result["sections"]:
+                        result["sections"][section_name] = value
+
+    return result
+
+
+def _parse_legacy_format(soup, result):
+    """Parse XML in our legacy format (form1.CoverLetter.ApplicantName style)."""
     submission_number = None
 
-    # Extract all text nodes with their paths (case-insensitive field matching)
     def walk(element, path=""):
         nonlocal submission_number
         if element.name is None:
             return
         current_path = f"{path}.{element.name}" if path else element.name
-        # Only use leaf-node text (direct text, not recursive) for field mapping
         direct_text = element.string
         full_text = element.get_text(strip=True)
         leaf_text = direct_text.strip() if direct_text and direct_text.strip() else None
@@ -248,16 +422,12 @@ def parse_xml_data(xml_string):
         if full_text:
             result["raw_fields"][current_path] = full_text
 
-        # Map known fields using leaf text (avoids concatenated parent text)
-        # Skip FIELD_MAP matching for elements inside predicateDevices or
-        # performanceTesting — those contain predicate/test-specific data
-        # that should NOT overwrite device-level fields.
         if leaf_text:
             path_lower = current_path.lower()
             tag_lower = element.name.lower()
             in_predicate_context = "predicatedevices" in path_lower or "performancetesting" in path_lower
             if not in_predicate_context:
-                for field_suffix, mapped_key in FIELD_MAP.items():
+                for field_suffix, mapped_key in LEGACY_FIELD_MAP.items():
                     if path_lower.endswith(field_suffix) or tag_lower == field_suffix:
                         _route_field(result, mapped_key, leaf_text)
                         if mapped_key == "submission_number":
@@ -269,9 +439,53 @@ def parse_xml_data(xml_string):
 
     walk(soup)
 
-    # Extract predicate K-numbers from predicate-related fields
-    # Use find_all to handle duplicate elements (e.g., multiple <predicate> tags)
-    predicate_tags = soup.find_all(re.compile(r"(?i)predicate|kNumber|knumber"))
+    # Filter submission number from predicates
+    if submission_number:
+        result["predicates"] = [
+            p for p in result["predicates"]
+            if p["k_number"] != submission_number
+        ]
+
+
+def _parse_real_format(soup, result, template_type):
+    """Parse XML in real eSTAR format (root.AdministrativeInformation... style).
+
+    Matches field IDs (e.g. ADTextField210) from the XFA field path to our
+    internal keys using the template-specific field map.
+    """
+    field_map = TEMPLATE_FIELD_MAPS.get(template_type, NIVD_FIELD_MAP)
+
+    def walk(element, path=""):
+        if element.name is None:
+            return
+        current_path = f"{path}.{element.name}" if path else element.name
+        direct_text = element.string
+        full_text = element.get_text(strip=True)
+        leaf_text = direct_text.strip() if direct_text and direct_text.strip() else None
+
+        if full_text:
+            result["raw_fields"][current_path] = full_text
+
+        # Match by field ID (the element tag name itself)
+        if leaf_text:
+            tag = element.name
+            if tag in field_map:
+                mapped_key = field_map[tag]
+                _route_field(result, mapped_key, leaf_text)
+
+        for child in element.children:
+            if hasattr(child, "name") and child.name:
+                walk(child, current_path)
+
+    walk(soup)
+
+
+def _extract_predicates(soup, result):
+    """Extract predicate K-numbers from any format."""
+    # From predicate-related tags
+    predicate_tags = soup.find_all(re.compile(
+        r"(?i)predicate|kNumber|knumber|ADTextField830|ADTextField840|PredicateReference"
+    ))
     for tag in predicate_tags:
         text = tag.get_text(strip=True)
         knumbers_in_tag = KNUMBER_PATTERN.findall(text)
@@ -279,46 +493,30 @@ def parse_xml_data(xml_string):
             if kn not in [p.get("k_number") for p in result["predicates"]]:
                 result["predicates"].append({"k_number": kn, "source": "xfa_xml"})
 
-    # Also scan SE-related raw fields
+    # Scan SE-related raw fields
     se_text = ""
     for path, value in result["raw_fields"].items():
         path_lower = path.lower()
-        if "se." in path_lower or "predicate" in path_lower or "comparison" in path_lower:
+        if any(kw in path_lower for kw in ("se.", "predicate", "comparison", "PredicatesSE".lower())):
             se_text += " " + value
     knumbers = KNUMBER_PATTERN.findall(se_text)
     for kn in knumbers:
         if kn not in [p.get("k_number") for p in result["predicates"]]:
             result["predicates"].append({"k_number": kn, "source": "xfa_xml"})
 
-    # Fallback: scan all text for K-numbers
+    # Fallback: scan all text
     all_text = " ".join(result["raw_fields"].values())
     all_knumbers = KNUMBER_PATTERN.findall(all_text)
     for kn in all_knumbers:
         if kn not in [p.get("k_number") for p in result["predicates"]]:
             result["predicates"].append({"k_number": kn, "source": "full_text_scan"})
 
-    # Filter out the submission number from predicates (it's not a predicate)
-    if submission_number:
-        result["predicates"] = [
-            p for p in result["predicates"]
-            if p["k_number"] != submission_number
-        ]
-
-    # Detect sections from narrative content
-    for path, value in result["raw_fields"].items():
-        if len(value) > 50:  # Only consider substantial text blocks
-            for section_name, pattern in SECTION_PATTERNS.items():
-                if pattern.search(path) or (len(value) > 200 and pattern.search(value[:200])):
-                    if section_name not in result["sections"]:
-                        result["sections"][section_name] = value
-
-    return result
-
 
 def _route_field(result, mapped_key, value):
     """Route a mapped field value to the correct location in result dict."""
     # Applicant fields
-    if mapped_key in ("applicant_name", "contact_name", "address",
+    if mapped_key in ("applicant_name", "contact_name", "contact_first_name",
+                       "contact_last_name", "address",
                        "address_street", "address_city", "address_state", "address_zip",
                        "address_country", "phone", "email"):
         result["applicant"][mapped_key] = value
@@ -333,11 +531,15 @@ def _route_field(result, mapped_key, value):
                 result["applicant"]["address"] = ", ".join(parts)
     # Classification fields
     elif mapped_key in ("product_code", "regulation_number", "device_class", "review_panel",
-                        "submission_type", "device_trade_name", "device_common_name", "submission_date"):
+                        "submission_type", "device_trade_name", "device_common_name",
+                        "device_model", "submission_date"):
         result["classification"][mapped_key] = value
     # IFU fields
     elif mapped_key in ("indications_for_use", "prescription_otc", "ifu_device_name"):
         result["indications_for_use"][mapped_key] = value
+    # Predicate fields (route to classification for reference, predicates extracted separately)
+    elif mapped_key in ("predicate_k_number", "predicate_device_name", "predicate_manufacturer"):
+        result["classification"][mapped_key] = value
     # Section content
     else:
         result["sections"][mapped_key] = value
@@ -391,8 +593,10 @@ def extract_from_file(file_path, output_dir=None):
     predicate_count = len(data["predicates"])
     section_count = len(data["sections"])
     product_code = data["classification"].get("product_code", "N/A")
+    template_type = data["metadata"].get("template_type", "unknown")
 
     print(f"\nImport complete:")
+    print(f"  Template type: {template_type}")
     print(f"  Fields extracted: {field_count}")
     print(f"  Product code: {product_code}")
     print(f"  Predicates found: {predicate_count}")
@@ -410,10 +614,18 @@ def extract_from_file(file_path, output_dir=None):
     return str(output_path)
 
 
-def generate_xml(project_dir, template_type="nIVD", output_file=None):
+# --- XML Generation ---
+
+def generate_xml(project_dir, template_type="nIVD", output_file=None, fmt="real"):
     """Generate eSTAR-compatible XML from project data for import into official template.
 
     Reads review.json, draft_*.md, query.json, and import_data.json to produce XML.
+
+    Args:
+        project_dir: Path to the project directory.
+        template_type: 'nIVD', 'IVD', or 'PreSTAR'.
+        output_file: Optional output file path.
+        fmt: 'real' for actual eSTAR XML paths, 'legacy' for old form1.* format.
     """
     project_dir = Path(project_dir)
     if not project_dir.exists():
@@ -456,7 +668,10 @@ def generate_xml(project_dir, template_type="nIVD", output_file=None):
     project_data["drafts"] = drafts
 
     # Build XML
-    xml = _build_estar_xml(project_data, template_type)
+    if fmt == "legacy":
+        xml = _build_legacy_xml(project_data, template_type)
+    else:
+        xml = _build_estar_xml(project_data, template_type)
 
     # Write output
     if output_file:
@@ -467,6 +682,7 @@ def generate_xml(project_dir, template_type="nIVD", output_file=None):
     out_path.write_text(xml, encoding="utf-8")
     print(f"eSTAR XML generated: {out_path}")
     print(f"Template type: {template_type}")
+    print(f"Format: {fmt}")
     print(f"Data sources used:")
     for key in project_data:
         if key == "drafts":
@@ -484,7 +700,505 @@ def generate_xml(project_dir, template_type="nIVD", output_file=None):
 
 
 def _build_estar_xml(project_data, template_type):
-    """Build XFA-compatible XML from project data."""
+    """Build real eSTAR-format XFA XML matching actual FDA template field paths."""
+
+    if template_type == "IVD":
+        return _build_ivd_xml(project_data)
+    elif template_type == "PreSTAR":
+        return _build_prestar_xml(project_data)
+    else:
+        return _build_nivd_xml(project_data)
+
+
+def _collect_project_values(project_data):
+    """Collect all field values from project data sources into a flat dict."""
+    import_data = project_data.get("import", {})
+    query = project_data.get("query", {})
+    review = project_data.get("review", {})
+    drafts = project_data.get("drafts", {})
+    classification = import_data.get("classification", {})
+    applicant = import_data.get("applicant", {})
+    ifu = import_data.get("indications_for_use", {})
+    sections = import_data.get("sections", {})
+
+    def get_val(key, *sources):
+        for source in sources:
+            if isinstance(source, dict):
+                val = source.get(key)
+                if val:
+                    return val
+        return ""
+
+    # Get product code (may be a list)
+    pc = get_val("product_code", classification, query)
+    if isinstance(pc, list):
+        pc = pc[0] if pc else ""
+    pc = str(pc)
+
+    # Get predicates
+    predicates = import_data.get("predicates", [])
+    if not predicates and review:
+        for kn, info in review.get("predicates", {}).items():
+            if info.get("decision") == "accepted":
+                predicates.append({
+                    "k_number": kn,
+                    "device_name": info.get("device_name", ""),
+                    "manufacturer": info.get("applicant", ""),
+                })
+
+    return {
+        "applicant_name": get_val("applicant_name", applicant),
+        "contact_first_name": get_val("contact_first_name", applicant),
+        "contact_last_name": get_val("contact_last_name", applicant),
+        "contact_name": get_val("contact_name", applicant),
+        "email": get_val("email", applicant),
+        "phone": get_val("phone", applicant),
+        "address_street": get_val("address_street", applicant),
+        "address_city": get_val("address_city", applicant),
+        "address_state": get_val("address_state", applicant),
+        "address_zip": get_val("address_zip", applicant),
+        "address": get_val("address", applicant),
+        "device_trade_name": get_val("device_trade_name", classification),
+        "device_common_name": get_val("device_common_name", classification),
+        "device_model": get_val("device_model", classification),
+        "product_code": pc,
+        "regulation_number": get_val("regulation_number", classification),
+        "device_class": get_val("device_class", classification),
+        "review_panel": get_val("review_panel", classification),
+        "submission_type": get_val("submission_type", classification),
+        "indications_for_use": get_val("indications_for_use", ifu),
+        "prescription_otc": get_val("prescription_otc", ifu),
+        "sterilization_method": get_val("sterilization_method", sections),
+        "shelf_life_claim": get_val("shelf_life_claim", sections),
+        "software_doc_level": get_val("software_doc_level", sections),
+        "biocompat_contact_type": get_val("biocompat_contact_type", sections),
+        "biocompat_contact_duration": get_val("biocompat_contact_duration", sections),
+        "biocompat_materials": get_val("biocompat_materials", sections),
+        "device_description_text": get_val("device_description_text", sections),
+        "principle_of_operation": get_val("principle_of_operation", sections),
+        "se_discussion_text": get_val("se_discussion_text", sections),
+        "performance_summary": get_val("performance_summary", sections),
+        # Drafts
+        "draft_device_description": drafts.get("device-description", ""),
+        "draft_se_discussion": drafts.get("se-discussion", ""),
+        "draft_performance": drafts.get("performance-summary", ""),
+        "draft_510k_summary": drafts.get("510k-summary", ""),
+        "draft_truthful_accuracy": drafts.get("truthful-accuracy", ""),
+        "draft_financial_cert": drafts.get("financial-certification", ""),
+        "draft_labeling": drafts.get("labeling", ""),
+        "draft_software": drafts.get("software", ""),
+        "draft_sterilization": drafts.get("sterilization", ""),
+        "draft_shelf_life": drafts.get("shelf-life", ""),
+        "draft_biocompatibility": drafts.get("biocompatibility", ""),
+        "draft_emc": drafts.get("emc-electrical", ""),
+        "draft_clinical": drafts.get("clinical", ""),
+        "draft_doc": drafts.get("doc", ""),
+        "draft_human_factors": drafts.get("human-factors", ""),
+        # Predicates list
+        "predicates": predicates,
+        # Date
+        "date": datetime.now(tz=timezone.utc).strftime("%Y-%m-%d"),
+    }
+
+
+def _build_nivd_xml(project_data):
+    """Build nIVD eSTAR XML (FDA 4062 format)."""
+    v = _collect_project_values(project_data)
+    e = _xml_escape
+
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<xfa:datasets xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">',
+        '  <xfa:data>',
+        '    <root>',
+        '',
+        '      <GeneralIntroduction>',
+        f'        <GITextField110>Form FDA 4062 - nIVD eSTAR</GITextField110>',
+        '      </GeneralIntroduction>',
+        '',
+        '      <AdministrativeInformation>',
+        '        <ApplicantInformation>',
+        f'          <ADTextField210>{e(v["applicant_name"])}</ADTextField210>',
+        f'          <ADTextField140>{e(v["contact_first_name"] or v["contact_name"])}</ADTextField140>',
+        f'          <ADTextField130>{e(v["contact_last_name"])}</ADTextField130>',
+        f'          <ADTextField160>{e(v["email"])}</ADTextField160>',
+        f'          <ADTextField170>{e(v["phone"])}</ADTextField170>',
+        f'          <ADTextField220>{e(v["address_street"] or v["address"])}</ADTextField220>',
+        f'          <ADTextField240>{e(v["address_city"])}</ADTextField240>',
+        f'          <ADTextField250>{e(v["address_state"])}</ADTextField250>',
+        f'          <ADTextField260>{e(v["address_zip"])}</ADTextField260>',
+        '        </ApplicantInformation>',
+        '      </AdministrativeInformation>',
+        '',
+        '      <DeviceDescription>',
+        '        <Devices>',
+        '          <Device>',
+        f'            <TradeName>{e(v["device_trade_name"])}</TradeName>',
+        f'            <Model>{e(v["device_model"])}</Model>',
+        '          </Device>',
+        '        </Devices>',
+        '        <Description>',
+        f'          <DDTextField400>{e(v["draft_device_description"] or v["device_description_text"])}</DDTextField400>',
+        '        </Description>',
+        '      </DeviceDescription>',
+        '',
+        '      <IndicationsForUse>',
+        '        <SubandDevice>',
+        f'          <IUTextField110>{e(v["device_trade_name"])}</IUTextField110>',
+        '        </SubandDevice>',
+        '        <Indications>',
+        f'          <IUTextField141>{e(v["indications_for_use"])}</IUTextField141>',
+        '        </Indications>',
+        '      </IndicationsForUse>',
+        '',
+        '      <Classification>',
+        '        <USAKnownClassification>',
+        f'          <DDTextField517a>{e(v["product_code"])}</DDTextField517a>',
+        f'          <DDTextField519>{e(v["regulation_number"])}</DDTextField519>',
+        f'          <DDTextField518>{e(v["device_class"])}</DDTextField518>',
+        '        </USAKnownClassification>',
+        '      </Classification>',
+        '',
+        '      <PredicatesSE>',
+        '        <PredicateReference>',
+    ]
+
+    # Add predicate devices
+    for i, pred in enumerate(v["predicates"][:3]):
+        lines.append(f'          <ADTextField{830 + i * 10}>{e(pred.get("k_number", ""))}</ADTextField{830 + i * 10}>')
+        lines.append(f'          <ADTextField{840 + i * 10}>{e(pred.get("device_name", ""))}</ADTextField{840 + i * 10}>')
+        lines.append(f'          <ADTextField{850 + i * 10}>{e(pred.get("manufacturer", ""))}</ADTextField{850 + i * 10}>')
+    if not v["predicates"]:
+        lines.append('          <ADTextField830></ADTextField830>')
+        lines.append('          <ADTextField840></ADTextField840>')
+
+    lines.extend([
+        '        </PredicateReference>',
+        '        <SubstantialEquivalence>',
+        f'          <SETextField110>{e(v["draft_se_discussion"] or v["se_discussion_text"])}</SETextField110>',
+        '        </SubstantialEquivalence>',
+        '      </PredicatesSE>',
+        '',
+        '      <Labeling>',
+        '        <GeneralLabeling>',
+        f'          <LBTextField110>{e(v["draft_labeling"])}</LBTextField110>',
+        '        </GeneralLabeling>',
+        '      </Labeling>',
+        '',
+        '      <ReprocSter>',
+        '        <Sterility>',
+        '          <STMethod>',
+        f'            <STTextField110>{e(v["sterilization_method"] or v["draft_sterilization"])}</STTextField110>',
+        '          </STMethod>',
+        '        </Sterility>',
+        '        <ShelfLife>',
+        f'          <SLTextField110>{e(v["shelf_life_claim"] or v["draft_shelf_life"])}</SLTextField110>',
+        '        </ShelfLife>',
+        '      </ReprocSter>',
+        '',
+        '      <Biocompatibility>',
+        '        <PatientMaterials>',
+        f'          <BCTextField110>{e(v["biocompat_contact_type"])}</BCTextField110>',
+        f'          <BCTextField120>{e(v["biocompat_contact_duration"])}</BCTextField120>',
+        f'          <BCTextField130>{e(v["biocompat_materials"])}</BCTextField130>',
+        '        </PatientMaterials>',
+    ])
+    if v["draft_biocompatibility"]:
+        lines.append(f'        <BCTextField400>{e(v["draft_biocompatibility"])}</BCTextField400>')
+    lines.extend([
+        '      </Biocompatibility>',
+        '',
+        '      <SoftwareCyber>',
+        f'        <SWTextField110>{e(v["software_doc_level"] or v["draft_software"])}</SWTextField110>',
+        '      </SoftwareCyber>',
+        '',
+        '      <EMCWireless>',
+        f'        <EMTextField110>{e(v["draft_emc"])}</EMTextField110>',
+        '      </EMCWireless>',
+        '',
+        '      <PerformanceTesting>',
+        '        <BenchTesting>',
+        f'          <PTTextField110>{e(v["draft_performance"] or v["performance_summary"])}</PTTextField110>',
+        '        </BenchTesting>',
+    ])
+    if v["draft_clinical"]:
+        lines.append('        <ClinicalTesting>')
+        lines.append(f'          <CTTextField110>{e(v["draft_clinical"])}</CTTextField110>')
+        lines.append('        </ClinicalTesting>')
+    lines.extend([
+        '      </PerformanceTesting>',
+        '',
+        '      <RiskManagement>',
+        '      </RiskManagement>',
+        '',
+        '      <QualityManagement>',
+        '      </QualityManagement>',
+        '',
+        '      <AdministrativeDocumentation>',
+        '        <PMNSummary>',
+        f'          <SSTextField110>{e(v["applicant_name"])}</SSTextField110>',
+        f'          <SSTextField220>{e(v["device_trade_name"])}</SSTextField220>',
+        f'          <SSTextField250>{e(v["regulation_number"])}</SSTextField250>',
+        f'          <SSTextField260>{e(v["product_code"])}</SSTextField260>',
+        f'          <SSTextField400>{e(v["draft_510k_summary"])}</SSTextField400>',
+        '        </PMNSummary>',
+        '        <TAStatement>',
+        f'          <TATextField105>{e(v["draft_truthful_accuracy"])}</TATextField105>',
+        '        </TAStatement>',
+        '        <DoC>',
+        f'          <DCTextField120>{e(v["applicant_name"])}</DCTextField120>',
+        f'          <DCTextField140>{e(v["device_trade_name"])}</DCTextField140>',
+    ])
+    if v["draft_doc"]:
+        lines.append(f'          <DCTextField400>{e(v["draft_doc"])}</DCTextField400>')
+    lines.extend([
+        '        </DoC>',
+        '      </AdministrativeDocumentation>',
+        '',
+        '    </root>',
+        '  </xfa:data>',
+        '</xfa:datasets>',
+    ])
+
+    return "\n".join(lines)
+
+
+def _build_ivd_xml(project_data):
+    """Build IVD eSTAR XML (FDA 4078 format).
+
+    Shares the nIVD structure but adds IVD-specific sections.
+    """
+    v = _collect_project_values(project_data)
+    e = _xml_escape
+
+    # Start with the same admin/device/IFU sections as nIVD
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<xfa:datasets xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">',
+        '  <xfa:data>',
+        '    <root>',
+        '',
+        '      <GeneralIntroduction>',
+        '        <GITextField110>Form FDA 4078 - IVD eSTAR</GITextField110>',
+        '      </GeneralIntroduction>',
+        '',
+        '      <AdministrativeInformation>',
+        '        <ApplicantInformation>',
+        f'          <ADTextField210>{e(v["applicant_name"])}</ADTextField210>',
+        f'          <ADTextField140>{e(v["contact_first_name"] or v["contact_name"])}</ADTextField140>',
+        f'          <ADTextField130>{e(v["contact_last_name"])}</ADTextField130>',
+        f'          <ADTextField160>{e(v["email"])}</ADTextField160>',
+        f'          <ADTextField170>{e(v["phone"])}</ADTextField170>',
+        f'          <ADTextField220>{e(v["address_street"] or v["address"])}</ADTextField220>',
+        f'          <ADTextField240>{e(v["address_city"])}</ADTextField240>',
+        f'          <ADTextField250>{e(v["address_state"])}</ADTextField250>',
+        f'          <ADTextField260>{e(v["address_zip"])}</ADTextField260>',
+        '        </ApplicantInformation>',
+        '      </AdministrativeInformation>',
+        '',
+        '      <DeviceDescription>',
+        '        <Devices>',
+        '          <Device>',
+        f'            <TradeName>{e(v["device_trade_name"])}</TradeName>',
+        f'            <Model>{e(v["device_model"])}</Model>',
+        '          </Device>',
+        '        </Devices>',
+        '        <Description>',
+        f'          <DDTextField400>{e(v["draft_device_description"] or v["device_description_text"])}</DDTextField400>',
+        '        </Description>',
+        '      </DeviceDescription>',
+        '',
+        '      <AssayInstrumentInfo>',
+        f'        <DDTextField340>{e(v.get("instrument_name", ""))}</DDTextField340>',
+        f'        <DDTextField350>{e(v.get("instrument_info", ""))}</DDTextField350>',
+        '      </AssayInstrumentInfo>',
+        '',
+        '      <IndicationsForUse>',
+        '        <SubandDevice>',
+        f'          <IUTextField110>{e(v["device_trade_name"])}</IUTextField110>',
+        '        </SubandDevice>',
+        '        <Indications>',
+        f'          <IUTextField141>{e(v["indications_for_use"])}</IUTextField141>',
+        '        </Indications>',
+        '      </IndicationsForUse>',
+        '',
+        '      <Classification>',
+        '        <USAKnownClassification>',
+        f'          <DDTextField517a>{e(v["product_code"])}</DDTextField517a>',
+        f'          <DDTextField519>{e(v["regulation_number"])}</DDTextField519>',
+        f'          <DDTextField518>{e(v["device_class"])}</DDTextField518>',
+        '        </USAKnownClassification>',
+        '      </Classification>',
+        '',
+        '      <PredicatesSE>',
+        '        <PredicateReference>',
+    ]
+
+    for i, pred in enumerate(v["predicates"][:3]):
+        lines.append(f'          <ADTextField{830 + i * 10}>{e(pred.get("k_number", ""))}</ADTextField{830 + i * 10}>')
+        lines.append(f'          <ADTextField{840 + i * 10}>{e(pred.get("device_name", ""))}</ADTextField{840 + i * 10}>')
+    if not v["predicates"]:
+        lines.append('          <ADTextField830></ADTextField830>')
+
+    lines.extend([
+        '        </PredicateReference>',
+        '        <SubstantialEquivalence>',
+        f'          <SETextField110>{e(v["draft_se_discussion"] or v["se_discussion_text"])}</SETextField110>',
+        '        </SubstantialEquivalence>',
+        '      </PredicatesSE>',
+        '',
+        '      <AnalyticalPerformance>',
+        f'        <APTextField110></APTextField110>',
+        '      </AnalyticalPerformance>',
+        '',
+        '      <ClinicalStudies>',
+    ])
+    if v["draft_clinical"]:
+        lines.append(f'        <CSTextField110>{e(v["draft_clinical"])}</CSTextField110>')
+    lines.extend([
+        '      </ClinicalStudies>',
+        '',
+        '      <Labeling>',
+        '        <GeneralLabeling>',
+        f'          <LBTextField110>{e(v["draft_labeling"])}</LBTextField110>',
+        '        </GeneralLabeling>',
+        '      </Labeling>',
+        '',
+        '      <ReprocSter>',
+        '        <Sterility>',
+        '          <STMethod>',
+        f'            <STTextField110>{e(v["sterilization_method"] or v["draft_sterilization"])}</STTextField110>',
+        '          </STMethod>',
+        '        </Sterility>',
+        '        <ShelfLife>',
+        f'          <SLTextField110>{e(v["shelf_life_claim"] or v["draft_shelf_life"])}</SLTextField110>',
+        '        </ShelfLife>',
+        '      </ReprocSter>',
+        '',
+        '      <Biocompatibility>',
+        '        <PatientMaterials>',
+        f'          <BCTextField110>{e(v["biocompat_contact_type"])}</BCTextField110>',
+        f'          <BCTextField120>{e(v["biocompat_contact_duration"])}</BCTextField120>',
+        f'          <BCTextField130>{e(v["biocompat_materials"])}</BCTextField130>',
+        '        </PatientMaterials>',
+        '      </Biocompatibility>',
+        '',
+        '      <SoftwareCyber>',
+        f'        <SWTextField110>{e(v["software_doc_level"] or v["draft_software"])}</SWTextField110>',
+        '      </SoftwareCyber>',
+        '',
+        '      <EMCWireless>',
+        f'        <EMTextField110>{e(v["draft_emc"])}</EMTextField110>',
+        '      </EMCWireless>',
+        '',
+        '      <PerformanceTesting>',
+        '        <BenchTesting>',
+        f'          <PTTextField110>{e(v["draft_performance"] or v["performance_summary"])}</PTTextField110>',
+        '        </BenchTesting>',
+        '      </PerformanceTesting>',
+        '',
+        '      <AdministrativeDocumentation>',
+        '        <PMNSummary>',
+        f'          <SSTextField110>{e(v["applicant_name"])}</SSTextField110>',
+        f'          <SSTextField220>{e(v["device_trade_name"])}</SSTextField220>',
+        f'          <SSTextField250>{e(v["regulation_number"])}</SSTextField250>',
+        f'          <SSTextField260>{e(v["product_code"])}</SSTextField260>',
+        f'          <SSTextField400>{e(v["draft_510k_summary"])}</SSTextField400>',
+        '        </PMNSummary>',
+        '        <TAStatement>',
+        f'          <TATextField105>{e(v["draft_truthful_accuracy"])}</TATextField105>',
+        '        </TAStatement>',
+        '        <DoC>',
+        f'          <DCTextField120>{e(v["applicant_name"])}</DCTextField120>',
+        f'          <DCTextField140>{e(v["device_trade_name"])}</DCTextField140>',
+        '        </DoC>',
+        '      </AdministrativeDocumentation>',
+        '',
+        '    </root>',
+        '  </xfa:data>',
+        '</xfa:datasets>',
+    ])
+
+    return "\n".join(lines)
+
+
+def _build_prestar_xml(project_data):
+    """Build PreSTAR XML (FDA 5064 format).
+
+    Simpler structure: admin, device, IFU, questions — no predicates or QM.
+    """
+    v = _collect_project_values(project_data)
+    e = _xml_escape
+
+    lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<xfa:datasets xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">',
+        '  <xfa:data>',
+        '    <root>',
+        '',
+        '      <GeneralIntroduction>',
+        '        <GITextField110>Form FDA 5064 - PreSTAR</GITextField110>',
+        '      </GeneralIntroduction>',
+        '',
+        '      <AdministrativeInformation>',
+        '        <ApplicantInformation>',
+        f'          <ADTextField210>{e(v["applicant_name"])}</ADTextField210>',
+        f'          <ADTextField140>{e(v["contact_first_name"] or v["contact_name"])}</ADTextField140>',
+        f'          <ADTextField130>{e(v["contact_last_name"])}</ADTextField130>',
+        f'          <ADTextField160>{e(v["email"])}</ADTextField160>',
+        f'          <ADTextField170>{e(v["phone"])}</ADTextField170>',
+        f'          <ADTextField220>{e(v["address_street"] or v["address"])}</ADTextField220>',
+        f'          <ADTextField240>{e(v["address_city"])}</ADTextField240>',
+        f'          <ADTextField250>{e(v["address_state"])}</ADTextField250>',
+        f'          <ADTextField260>{e(v["address_zip"])}</ADTextField260>',
+        '        </ApplicantInformation>',
+        '      </AdministrativeInformation>',
+        '',
+        '      <DeviceDescription>',
+        '        <Devices>',
+        '          <Device>',
+        f'            <TradeName>{e(v["device_trade_name"])}</TradeName>',
+        f'            <Model>{e(v["device_model"])}</Model>',
+        '          </Device>',
+        '        </Devices>',
+        '        <Description>',
+        f'          <DDTextField400>{e(v["draft_device_description"] or v["device_description_text"])}</DDTextField400>',
+        '        </Description>',
+        '      </DeviceDescription>',
+        '',
+        '      <IndicationsForUse>',
+        '        <SubandDevice>',
+        f'          <IUTextField110>{e(v["device_trade_name"])}</IUTextField110>',
+        '        </SubandDevice>',
+        '        <Indications>',
+        f'          <IUTextField141>{e(v["indications_for_use"])}</IUTextField141>',
+        '        </Indications>',
+        '      </IndicationsForUse>',
+        '',
+        '      <Classification>',
+        '        <USAKnownClassification>',
+        f'          <DDTextField517a>{e(v["product_code"])}</DDTextField517a>',
+        '        </USAKnownClassification>',
+        '      </Classification>',
+        '',
+        '      <SubmissionCharacteristics>',
+        f'        <SCTextField110></SCTextField110>',
+        '      </SubmissionCharacteristics>',
+        '',
+        '      <Questions>',
+        f'        <QPTextField110></QPTextField110>',
+        '      </Questions>',
+        '',
+        '    </root>',
+        '  </xfa:data>',
+        '</xfa:datasets>',
+    ]
+
+    return "\n".join(lines)
+
+
+def _build_legacy_xml(project_data, template_type):
+    """Build legacy-format XFA XML (form1.* paths) for backward compatibility."""
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<xfa:datasets xmlns:xfa="http://www.xfa.org/schema/xfa-data/1.0/">',
@@ -492,7 +1206,6 @@ def _build_estar_xml(project_data, template_type):
         '    <form1>',
     ]
 
-    # Helper to get value from multiple sources
     def get_val(key, *sources):
         for source in sources:
             if isinstance(source, dict):
@@ -516,7 +1229,7 @@ def _build_estar_xml(project_data, template_type):
     lines.append(f"        <Address>{_xml_escape(get_val('address', applicant))}</Address>")
     lines.append(f"        <Phone>{_xml_escape(get_val('phone', applicant))}</Phone>")
     lines.append(f"        <Email>{_xml_escape(get_val('email', applicant))}</Email>")
-    lines.append(f"        <Date>{datetime.now(tz=__import__('datetime').timezone.utc).strftime('%Y-%m-%d')}</Date>")
+    lines.append(f"        <Date>{datetime.now(tz=timezone.utc).strftime('%Y-%m-%d')}</Date>")
     lines.append(f"        <DeviceName>{_xml_escape(get_val('device_trade_name', classification))}</DeviceName>")
     lines.append(f"        <CommonName>{_xml_escape(get_val('device_common_name', classification))}</CommonName>")
     lines.append("      </CoverLetter>")
@@ -573,10 +1286,8 @@ def _build_estar_xml(project_data, template_type):
     lines.append(f"        <IntendedUseComparison>{_xml_escape(get_val('intended_use_comparison', sections_data))}</IntendedUseComparison>")
     lines.append(f"        <TechCharComparison>{_xml_escape(get_val('tech_comparison', sections_data))}</TechCharComparison>")
 
-    # Predicate devices
     predicates = import_data.get("predicates", [])
     if not predicates and review:
-        # Pull from review.json accepted predicates
         for kn, info in review.get("predicates", {}).items():
             if info.get("decision") == "accepted":
                 predicates.append({
@@ -659,7 +1370,7 @@ def _build_estar_xml(project_data, template_type):
         lines.append(f"        <DeclarationOfConformity>{_xml_escape(doc_text)}</DeclarationOfConformity>")
     lines.append("      </Standards>")
 
-    # Human Factors (Section 17 — always generated for round-trip import support)
+    # Human Factors
     hf_text = drafts.get("human-factors", "")
     lines.append("      <HumanFactors>")
     if hf_text:
@@ -687,32 +1398,50 @@ def _xml_escape(text):
 
 
 def list_fields(pdf_path):
-    """List all XFA field names found in an eSTAR PDF."""
+    """List all XFA field names found in an eSTAR PDF.
+
+    Groups fields by section for clearer output.
+    """
     xml_string = extract_xfa_from_pdf(pdf_path)
     if xml_string is None:
         return
 
+    template_type = detect_template_type(xml_string)
     soup = BeautifulSoup(xml_string, "lxml-xml")
 
     fields = []
+    current_section = None
 
-    def walk(element, path=""):
+    def walk(element, path="", depth=0):
+        nonlocal current_section
         if element.name is None:
             return
         current_path = f"{path}.{element.name}" if path else element.name
         text = element.get_text(strip=True)
+
+        # Track top-level sections for grouping
+        if depth == 2:  # Direct children of <root> or <form1>
+            current_section = element.name
+
         if text:
-            fields.append((current_path, text[:80]))
+            fields.append((current_section or "ungrouped", current_path, text[:80]))
         for child in element.children:
             if hasattr(child, "name") and child.name:
-                walk(child, current_path)
+                walk(child, current_path, depth + 1)
 
     walk(soup)
 
     print(f"XFA Fields in: {pdf_path}")
+    print(f"Template type: {template_type}")
     print(f"Total fields with data: {len(fields)}")
     print()
-    for path, preview in sorted(fields):
+
+    # Group by section
+    last_section = None
+    for section, path, preview in sorted(fields, key=lambda x: (x[0], x[1])):
+        if section != last_section:
+            print(f"\n--- {section} ---")
+            last_section = section
         print(f"  {path}")
         if preview:
             print(f"    = {preview}{'...' if len(preview) >= 80 else ''}")
@@ -755,6 +1484,11 @@ def main():
         choices=["nIVD", "IVD", "PreSTAR"],
         help="eSTAR template type (default: nIVD)"
     )
+    gen_parser.add_argument(
+        "--format", "-f", default="real",
+        choices=["real", "legacy"],
+        help="XML format: 'real' for FDA template paths (default), 'legacy' for old form1.* paths"
+    )
     gen_parser.add_argument("--output", "-o", help="Output XML file path")
 
     # Fields command
@@ -775,7 +1509,7 @@ def main():
     elif args.command == "generate":
         projects_dir = get_settings()
         project_dir = os.path.join(projects_dir, args.project)
-        generate_xml(project_dir, args.template, args.output)
+        generate_xml(project_dir, args.template, args.output, args.format)
 
     elif args.command == "fields":
         check_dependencies()
