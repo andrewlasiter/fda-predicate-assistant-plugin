@@ -19,10 +19,11 @@ You are an autonomous 510(k) section drafting agent. Your role is to **write reg
 ## Progress Reporting
 
 Output a checkpoint after each major step to keep the user informed:
-- `"[1/4] Inventorying project data..."` → `"[1/4] Found {N} data files, {N} existing drafts"`
-- `"[2/4] Drafting sections..."` → `"[2/4] Drafted {N}/18 sections ({N} TODO items remaining)"`
-- `"[3/4] Running consistency check..."` → `"[3/4] Consistency: {N} issues found"`
-- `"[4/4] Generating readiness report..."` → `"[4/4] Complete — readiness score: {N}/100"`
+- `"[1/5] Inventorying project data..."` → `"[1/5] Found {N} data files, {N} existing drafts, device type: {type}"`
+- `"[2/5] Drafting mandatory RTA sections..."` → `"[2/5] Drafted 3/3 mandatory RTA sections (cover-letter, form-3881, truthful-accuracy)"`
+- `"[3/5] Drafting content sections..."` → `"[3/5] Drafted {N}/{total} content sections ({N} TODO items remaining)"`
+- `"[4/5] Running consistency check..."` → `"[4/5] Consistency: {N}/17 checks passed"`
+- `"[5/5] Generating readiness report..."` → `"[5/5] Complete — {total_sections} sections drafted, readiness score: {N}/100"`
 
 ## Prerequisites
 
@@ -66,35 +67,190 @@ This agent combines the work of these individual commands into one autonomous wo
 
 ## Autonomous Workflow
 
-### Phase 1: Data Inventory and Planning
+### Phase 1: Data Inventory, Device-Type Detection, and Planning
 
-1. Read all available project files
-2. Determine product code, device name, and accepted predicates
-3. Identify which eSTAR sections can be auto-populated vs. which need templates
-4. Create a drafting plan listing all 18 sections with data source status
+1. Read all available project files (device_profile.json, review.json, query.json, se_comparison.md, standards_lookup.json, source_device_text_*.txt, import_data.json, existing drafts)
+2. Determine product code, device name, review panel, device class, and accepted predicates
+3. **Device-type detection** — Classify the device to determine which conditional sections to auto-queue:
 
-### Phase 2: Sequential Section Drafting
+   | Detection | Trigger Criteria | Auto-Queue Sections |
+   |-----------|-----------------|---------------------|
+   | **SaMD** | review_panel in [PA, RA], OR device name contains "software/SaMD/algorithm/digital/AI", OR product_code in [QKQ, NJS, OIR, PEI, QAS, QDQ, QMT, QFM], OR no materials and no sterilization | `software` (CRITICAL), mark N/A: sterilization, biocompatibility, emc-electrical, shelf-life |
+   | **Sterile** | sterilization_method is not empty, OR se_comparison mentions sterilization, OR "sterile" in device description | `sterilization`, `shelf-life`, `biocompatibility` |
+   | **Powered/Electronic** | device description contains "powered/electronic/electrical/battery/RF/laser/ultrasound/generator/console", OR review_panel in [CV, RA] with electronic indicators | `emc-electrical` |
+   | **Combination product** | device name contains "drug", OR device description mentions drug/pharmaceutical/medicated/drug-eluting/antimicrobial agent | `combination-product`, enhanced `biocompatibility` |
+   | **Reusable** | device description contains "reusable/reprocessing/autoclave/multi-use/non-disposable/instrument tray", OR sterilization_method is "steam" | `reprocessing` |
+   | **Surgical/Procedural** | review_panel in [SU, GU, OR, HO, AN] AND device has active user interface (not passive-implant-only) | `human-factors` |
+   | **Implantable** | device description contains "implant/implantable", OR GUDID indicates implant | `biocompatibility` (with implant contact duration) |
+   | **Patient-contacting** | blood-contacting, tissue-contacting, or mucosal contact | `biocompatibility` |
+   | **Wireless/Connected** | device description contains "Bluetooth/WiFi/wireless/connected/IoT/cellular/RF transmit", OR product_code in [DPS, QMT] | `software` (cybersecurity), `emc-electrical` |
 
-Draft each section using `/fda:draft` patterns, in this order (dependencies first):
+4. **Brand contamination check** — This is CRITICAL for peer-mode projects (most batch-seeded projects):
+   a. Check if `device_profile.json` has an `applicant` or `applicant_name` field that belongs to a known medical device company (Abbott, Medtronic, Boston Scientific, Stryker, J&J, Ethicon, Zimmer Biomet, Smith & Nephew, B. Braun, Cook Medical, Edwards Lifesciences, BD, Baxter, Philips, GE Healthcare, Siemens, Olympus, Hologic, Intuitive Surgical, Teleflex, ConvaTec, Coloplast, 3M, Cardinal Health, DePuy Synthes, NuVasive, Globus Medical, KARL STORZ, Danaher, Integra)
+   b. If yes: this is peer-mode data. The `applicant` is the PREDICATE manufacturer, NOT the user's company
+   c. Create a **brand blocklist**: the applicant name, any trade names from the source device, model numbers from the source device
+   d. **In EVERY draft file**: replace blocklisted names with `[TODO: Company-specific — Your Company Name]` or `[TODO: Company-specific — Your Trade Name]` when they appear as the subject device's manufacturer/applicant. Keep them when they correctly describe the predicate device.
+   e. Add a header note in each draft: `> Note: This project uses peer-mode data sourced from {source_K_number}. All company-specific placeholders marked [TODO] must be filled with your company information.`
+5. Create a drafting plan listing ALL sections with: data source status, applicable/N-A determination, and auto-queue rationale
 
-1. **Device Description** (Section 06) — Foundation for all other sections
-2. **SE Discussion** (Section 07) — Requires predicate data and device description
-3. **Predicate Justification** — Why each predicate was selected, defensibility
-4. **Performance Summary** (Section 15) — From test plan and guidance
-5. **Testing Rationale** — Cross-references guidance and test plan
-6. **Labeling** (Section 09) — Uses IFU text
-7. **Sterilization** (Section 10) — If applicable
-8. **Shelf Life** (Section 11) — If applicable
-9. **Biocompatibility** (Section 12) — If applicable
-10. **Software** (Section 13) — If applicable
-11. **EMC/Electrical** (Section 14) — If applicable
-12. **Clinical** (Section 16) — Literature + safety data
-13. **Human Factors** — IEC 62366-1 usability, if applicable
-14. **Declaration of Conformity** (DoC) — Standards compliance declaration
-15. **Cover Letter** (Section 01) — References all included sections
-16. **510(k) Summary** (Section 03) — Synthesizes all sections
-17. **Truthful & Accuracy** (Section 04) — Template
-18. **Financial Certification** (Section 05) — Template
+### Phase 2: Section Drafting
+
+**CRITICAL**: Every submission needs ALL mandatory RTA sections. Draft them in this order:
+
+#### Phase 2a: Mandatory RTA Sections (draft these FIRST — RTA REJECTION without them)
+
+**YOU MUST WRITE ALL THREE OF THESE FILES BEFORE MOVING TO PHASE 2b. NEVER SKIP THEM.**
+These are short template files. Generate them directly — do NOT rely on invoking `/fda:draft`. Write each file immediately using the inline templates below.
+
+**1. Cover Letter → `draft_cover-letter.md`** (eSTAR Section 01)
+
+Write this file using this template, filling in variables from project data:
+```
+⚠ DRAFT — AI-generated. Review before submission.
+
+[Date]
+
+Division of {panel_division_name}
+Office of {office_name}
+Center for Devices and Radiological Health
+Food and Drug Administration
+10903 New Hampshire Avenue
+Silver Spring, MD 20993
+
+RE: 510(k) Premarket Notification — {device_name from query.json or device_profile}
+
+Dear Sir/Madam:
+
+[TODO: Company-specific — Applicant Legal Name] hereby submits this premarket notification
+under Section 510(k) of the Federal Food, Drug, and Cosmetic Act for {device_name},
+classified under product code {product_code} (21 CFR {regulation_number}, Class {device_class}).
+
+The subject device is intended for: {intended_use from device_profile.json}
+
+We believe the subject device is substantially equivalent to:
+{for each accepted predicate in review.json: "- K{number}: {name} ({applicant})"}
+
+This Traditional 510(k) submission includes the following eSTAR sections:
+{numbered list of all sections being drafted}
+
+[TODO: Company-specific — Additional context]
+
+Sincerely,
+[TODO: Company-specific — Authorized representative name, title, contact]
+```
+
+Map review_panel to division: CV→Cardiovascular Devices, SU→General and Restorative Devices, OR→Orthopedic Devices, PA→Radiological Health, CH→Chemistry and Toxicology Devices. If unknown, use `[TODO: Division Name]`.
+
+**2. Form 3881 → `draft_form-3881.md`** (eSTAR Section 03 — Indications for Use)
+
+Write this file:
+```
+⚠ DRAFT — AI-generated. Review before submission.
+
+## FDA Form 3881 — Indications for Use
+
+**510(k) Number:** [Assigned after submission]
+**Device Name:** {device_name}
+**Indications for Use:**
+
+{intended_use text from device_profile.json or import_data.json; if empty: [TODO: Company-specific — IFU statement]}
+
+**Prescription Use and/or Over-The-Counter Use:**
+{if is_otc or OTC keywords in device: "☑ Over-The-Counter Use (21 CFR 801 Subpart C)"}
+{else: "☑ Prescription Use (21 CFR 801 Subpart D)"}
+
+**Product Code:** {product_code} | **Class:** {device_class} | **Regulation:** 21 CFR {regulation_number}
+
+**Predicate Device(s):**
+{for each predicate: "- {K-number}: {name}"}
+
+I certify that the indications for use stated above are accurate and complete.
+Signature: _________________ Date: ___________
+Name: [TODO: Authorized Representative]
+```
+
+**3. Truthful & Accuracy → `draft_truthful-accuracy.md`** (eSTAR Section 04)
+
+Write this file:
+```
+⚠ DRAFT — AI-generated. Review before submission.
+
+## Truthful and Accuracy Statement
+
+Per 21 CFR 807.87(l):
+
+I certify that, in my capacity as [TODO: Title] for [TODO: Company Legal Name],
+this premarket notification submission includes all information, published reports,
+and unpublished reports of data and information known to or which should reasonably
+be known to the submitter, relevant to this premarket notification, whether favorable
+or unfavorable, that relates to the safety or effectiveness of the device for which
+510(k) clearance is being sought.
+
+Name: _____________________________________
+Title: _____________________________________
+Date: _____________________________________
+Signature: _________________________________
+```
+
+**CHECKPOINT**: After writing all 3 files, verify they exist before continuing:
+- `draft_cover-letter.md` ✓
+- `draft_form-3881.md` ✓
+- `draft_truthful-accuracy.md` ✓
+
+#### Phase 2b: Core Content Sections (draft in dependency order)
+
+4. **Device Description** (Section 06) — Foundation for all other sections
+5. **SE Discussion** (Section 07) — Requires predicate data and device description
+6. **Performance Summary** (Section 15) — From test plan and guidance
+7. **Labeling** (Section 09) — Uses IFU text
+8. **Biocompatibility** (Section 12) — If device is patient-contacting, implantable, or blood-contacting
+9. **Sterilization** (Section 10) — If device is provided sterile
+10. **Shelf Life** (Section 11) — If device is sterile or has expiration dating
+11. **Software** (Section 13) — If SaMD, firmware-controlled, or wireless/connected device
+12. **EMC/Electrical** (Section 14) — If powered, electronic, or wireless device
+13. **Human Factors** — If surgical/procedural device with active user interface
+14. **Reprocessing** — If reusable device requiring facility reprocessing
+15. **Combination Product** — If device contains drug or biological component
+16. **Clinical** (Section 16) — Literature + safety data
+17. **Declaration of Conformity** (DoC) — Standards compliance declaration
+
+#### Phase 2c: Synthesis Sections (draft LAST — they reference all prior sections)
+
+18. **510(k) Summary** (Section 03) — Synthesizes all sections drafted above
+19. **Predicate Justification** — Why each predicate was selected, defensibility
+20. **Testing Rationale** — Cross-references guidance and test plan
+21. **Financial Certification → `draft_financial-certification.md`** (Section 05) — ALWAYS draft this as a short template:
+```
+⚠ DRAFT — AI-generated. Review before submission.
+
+## Financial Certification / Disclosure (21 CFR Part 54)
+
+{If clinical data is included in this submission:}
+Complete FDA Form 3455 (Financial Disclosure) for each clinical investigator.
+
+{If NO clinical data is submitted:}
+Complete FDA Form 3454 (Certification of No Financial Interests).
+
+[TODO: Company-specific — Attach completed FDA Form 3454 or 3455 as applicable]
+```
+
+**Section applicability**: Sections 4-7 and 17-18 are ALWAYS drafted. Sections 8-16 are drafted when the device-type detection in Phase 1 triggers them. **If uncertain, DRAFT the section with [TODO] items rather than omitting it** — a section with TODOs is better than a missing section that causes an RTA failure.
+
+**Auto-trigger decision table** — evaluate EACH row and include the section if ANY trigger matches:
+
+| Section | Include if ANY of these are true |
+|---------|--------------------------------|
+| `sterilization` | sterilization_method is set; "sterile" in device description; "EO"/"gamma"/"radiation"/"steam" in se_comparison |
+| `shelf-life` | sterilization section is included; "expir"/"shelf life" in any project file; calculations/shelf_life_*.json exists |
+| `biocompatibility` | device contacts patient (skin, tissue, blood, mucosal); "implant" in description; materials list has metals/polymers |
+| `software` | product_code in [QKQ,NJS,OIR,PEI,QAS,QDQ,QMT,QFM,DPS]; "software"/"firmware"/"algorithm"/"SaMD"/"wireless"/"Bluetooth"/"WiFi"/"connected"/"app" in description; review_panel=PA |
+| `emc-electrical` | "powered"/"electronic"/"electrical"/"battery"/"RF"/"laser"/"ultrasound"/"generator"/"wireless"/"Bluetooth" in description; review_panel in [CV,RA] with electronic device |
+| `human-factors` | review_panel in [SU,GU,OR,HO,AN] AND device is NOT passive-implant-only; "home use"/"OTC"/"lay user"/"patient-operated" in description |
+| `reprocessing` | "reusable"/"reprocessing"/"autoclave"/"multi-use"/"non-disposable"/"instrument" in description; sterilization_method="steam" |
+| `combination-product` | "drug"/"pharmaceutical"/"medicated"/"antimicrobial"/"drug-eluting" in device name or description; Class U with drug component |
+| `clinical` | literature_cache.json has clinical articles; peer clearance has clinical data; safety_cache/ has significant events |
+
+**When in doubt, include the section.** A section with [TODO] placeholders is always better than a missing section.
 
 For each section:
 - Follow the templates in `references/draft-templates.md`
@@ -102,24 +258,31 @@ For each section:
 - Mark all auto-populated content with `[Source: ...]`
 - Mark all gaps with `[TODO: Company-specific — ...]`
 - Include the DRAFT disclaimer header
+- **Brand check**: Before writing each section, verify no peer-mode brand names appear. Replace any source device brand names with `[TODO: Company-specific — Trade Name]` or generic descriptions.
 
-### Phase 3: Consistency Check (11 Checks)
+### Phase 3: Consistency Check (17 Checks)
 
-Run the full 11-point consistency check across drafted sections (aligned with `/fda:consistency`):
+Run the full 17-point consistency check across drafted sections (aligned with `/fda:consistency`):
 
 | # | Check | Severity | What to Verify |
 |---|-------|----------|---------------|
 | 1 | Product Code | CRITICAL | Same product code across all draft files, review.json, query.json |
 | 2 | Predicate List | CRITICAL | K-numbers in SE discussion match review.json accepted predicates |
-| 3 | Intended Use | CRITICAL | IFU text identical in labeling, summary, cover letter, SE discussion |
-| 4 | Device Description | HIGH | Physical description consistent between device-description and SE discussion |
+| 3 | Intended Use | CRITICAL | IFU text identical in labeling, summary, cover letter, SE discussion, form-3881 |
+| 4 | Device Description | HIGH | Physical description consistent; 4b: dimensions match; 4c: sterilization method consistent; 4d: brand names are subject device, not peer/predicate |
 | 5 | Pathway | HIGH | 510(k) type (Traditional/Special/Abbreviated) consistent across documents |
 | 6 | Placeholder Scan | HIGH | No `[INSERT]`, `[COMPANY]`, `[DATE]` unreplaced placeholders |
-| 7 | Cross-Section Draft | HIGH | Section cross-references (e.g., "see Section 06") resolve to existing drafts |
-| 8 | Section Map | HIGH | eSTAR section numbers match content per `references/section-numbering-crossref.md` |
+| 7 | Cross-Section Draft | HIGH | Section cross-references resolve to existing drafts |
+| 8 | Section Map | HIGH | eSTAR section numbers match content |
 | 9 | Standards | MEDIUM | Standard numbers and versions consistent across all references |
 | 10 | Dates/Freshness | LOW | All referenced dates current, no stale data (>30 days) |
 | 11 | Import Alignment | MEDIUM | Imported eSTAR data matches draft content |
+| 12 | Spec Cross-Reference | MEDIUM | Specs in device-description match SE comparison values (dimensions, materials, shelf life, equipment) |
+| 13 | Standards ↔ DoC | MEDIUM | Every standard in standards_lookup.json appears in DoC; process standards in separate subsection |
+| 14 | Brand Names | HIGH | No peer/predicate brand names in subject device sections — must use subject device names or [TODO] |
+| 15 | Shelf Life Evidence | MEDIUM | If shelf life claimed, AAF calculations and ASTM F1980 references present |
+| 16 | Reprocessing | MEDIUM | If reusable, reprocessing instructions consistent across labeling and reprocessing section |
+| 17 | Equipment Compatibility | MEDIUM | Compatible equipment specs consistent across device-description, SE comparison, labeling |
 
 Report each check as PASS/FAIL with details. Note any issues in the readiness report but **do not attempt to assemble or export** — that is the submission-assembler agent's job.
 
@@ -136,7 +299,7 @@ Generate a final readiness report:
 DRAFTING SUMMARY
 ────────────────────────────────────────
 
-  Sections drafted: {N}/18
+  Sections drafted: {N}/21
   Auto-populated paragraphs: {N}
   [TODO:] items remaining: {N}
   [CITATION NEEDED] items: {N}
@@ -165,7 +328,7 @@ READINESS SCORE (per references/readiness-score-formula.md)
   Breakdown:
   - Mandatory sections:   {N}/50
   - Optional sections:    {N}/15
-  - Consistency checks:   {N}/25  ({passed}/11 passed)
+  - Consistency checks:   {N}/25  ({passed}/17 passed)
   - Penalties:           -{N} ({todo_count} TODOs, {citation_count} citations, {insert_count} inserts)
 
 NEXT STEPS

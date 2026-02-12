@@ -1,0 +1,126 @@
+{
+  "version": "1.0",
+  "description": "FDA 510(k) device archetype matrix for automated test harness",
+  "archetypes": [
+    {
+      "id": "simple_powered",
+      "label": "Simple Powered Device",
+      "product_code": "GEI",
+      "panel": "SU",
+      "seed_flags": ["--use-peer-for-data"],
+      "expected_sections": [
+        "device-description", "performance-summary", "doc", "labeling",
+        "510k-summary", "electrical-safety"
+      ],
+      "expected_specialists": ["EMC/Electrical"],
+      "notes": "Electrosurgical generator/pencil. Non-sterile, powered, Class II. Tests electrical safety (IEC 60601-1), EMC. No biocompat/sterilization needed."
+    },
+    {
+      "id": "sterile_catheter",
+      "label": "Sterile Catheter",
+      "product_code": "DQY",
+      "panel": "CV",
+      "seed_flags": ["--use-peer-for-data"],
+      "expected_sections": [
+        "device-description", "performance-summary", "doc", "labeling",
+        "510k-summary", "sterilization", "biocompatibility", "shelf-life"
+      ],
+      "expected_specialists": ["Biocompatibility", "Sterilization", "Clinical"],
+      "notes": "Percutaneous cardiovascular catheter. EO sterilized, blood-contacting, single-use. Tests ISO 10993, ISO 11135, shelf life ASTM F1980."
+    },
+    {
+      "id": "samd",
+      "label": "Software as Medical Device",
+      "product_code": "QKQ",
+      "panel": "PA",
+      "seed_flags": ["--use-peer-for-data"],
+      "expected_sections": [
+        "device-description", "performance-summary", "doc", "labeling",
+        "510k-summary", "software"
+      ],
+      "expected_specialists": ["Software"],
+      "na_sections": ["sterilization", "biocompatibility", "shelf-life", "electrical-safety", "reprocessing"],
+      "notes": "Digital pathology SaMD. No patient contact, no sterilization, no biocompat. Tests IEC 62304 software lifecycle, cybersecurity (Section 524B)."
+    },
+    {
+      "id": "ivd",
+      "label": "In Vitro Diagnostic",
+      "product_code": "CFR",
+      "panel": "CH",
+      "seed_flags": ["--use-peer-for-data"],
+      "expected_sections": [
+        "device-description", "performance-summary", "doc", "labeling",
+        "510k-summary", "analytical-performance"
+      ],
+      "expected_specialists": ["Clinical Chemistry"],
+      "estar_template": "FDA 4078",
+      "notes": "Hexokinase glucose IVD. Different eSTAR template (FDA 4078 vs 4062). Clinical chemistry panel (reg# 862.x). CLIA waiver considerations. Analytical performance (precision, accuracy, linearity)."
+    },
+    {
+      "id": "combination_product",
+      "label": "Combination Product (Drug+Device)",
+      "product_code": "FRO",
+      "panel": "SU",
+      "seed_flags": ["--use-peer-for-data"],
+      "expected_sections": [
+        "device-description", "performance-summary", "doc", "labeling",
+        "510k-summary", "combination-product"
+      ],
+      "expected_specialists": ["Combination Product"],
+      "notes": "Wound dressing with drug component. OTC labeling, Class U possible. Drug-device interaction testing, shelf life for drug stability."
+    },
+    {
+      "id": "orthopedic_implant",
+      "label": "Orthopedic Implant",
+      "product_code": "OVE",
+      "panel": "OR",
+      "seed_flags": ["--use-peer-for-data"],
+      "expected_sections": [
+        "device-description", "performance-summary", "doc", "labeling",
+        "510k-summary", "sterilization", "biocompatibility", "shelf-life",
+        "mri-safety"
+      ],
+      "expected_specialists": ["Biocompatibility", "Sterilization", "MRI Safety"],
+      "notes": "Cervical fusion implant. PEEK+titanium materials, implantable (>30 days), MRI conditional testing (ASTM F2052/F2213), fatigue/static testing."
+    },
+    {
+      "id": "reusable_surgical",
+      "label": "Reusable Surgical Instrument",
+      "product_code": "GCJ",
+      "panel": "SU",
+      "seed_flags": ["--use-peer-for-data"],
+      "expected_sections": [
+        "device-description", "performance-summary", "doc", "labeling",
+        "510k-summary", "reprocessing", "biocompatibility", "human-factors"
+      ],
+      "expected_specialists": ["Reprocessing", "Biocompatibility"],
+      "notes": "Reusable laparoscopic instrument. Autoclave reprocessing validation, cleaning validation, limited biocompat (mucosal contact). Human factors for complex assembly/disassembly."
+    },
+    {
+      "id": "home_use_otc",
+      "label": "Home-Use OTC Device",
+      "product_code": "OAP",
+      "panel": "SU",
+      "seed_flags": ["--use-peer-for-data"],
+      "expected_sections": [
+        "device-description", "performance-summary", "doc", "labeling",
+        "510k-summary", "human-factors", "electrical-safety"
+      ],
+      "expected_specialists": ["Human Factors", "EMC/Electrical"],
+      "notes": "Consumer laser device. OTC labeling (21 CFR Part C), human factors summative study, IEC 60601-1-11 home healthcare, lay user instructions."
+    },
+    {
+      "id": "wireless_connected",
+      "label": "Wireless/BT Connected Device",
+      "product_code": "DPS",
+      "panel": "CV",
+      "seed_flags": ["--use-peer-for-data"],
+      "expected_sections": [
+        "device-description", "performance-summary", "doc", "labeling",
+        "510k-summary", "software", "electrical-safety"
+      ],
+      "expected_specialists": ["Software", "EMC/Electrical", "Cybersecurity"],
+      "notes": "Cardiovascular monitor with Bluetooth. Cybersecurity Section 524B, wireless coexistence testing (ANSI C63.27), EMC per IEC 60601-1-2, software IEC 62304."
+    }
+  ]
+}

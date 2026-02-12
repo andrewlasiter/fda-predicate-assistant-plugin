@@ -580,19 +580,30 @@ Auto-determine strategy: if predicates had no clinical data, default to "no clin
 
 ### 14. cover-letter
 
-Generates Section 1 of the eSTAR: Cover Letter.
+Generates Section 1 of the eSTAR: Cover Letter. **This is a MANDATORY RTA section — every 510(k) must include it.**
 
-**Required data**: applicant info from import_data.json, product code, predicate list
-**Enriched by**: openFDA classification, review.json
+**Required data**: product code, predicate list from review.json, device name from query.json or device_profile.json
+**Enriched by**: openFDA classification (for CDRH division/OHT), import_data.json (for applicant info)
+**Fallback**: If import_data.json is absent (peer-mode projects), use `[TODO: Company-specific — ...]` for applicant name, address, contact. Still generate the full letter structure.
 
-**Output structure**: See `references/draft-templates.md` Section 01. Formal letter addressed to appropriate CDRH division.
+**Output structure**: See `references/draft-templates.md` Section 01. Formal letter addressed to appropriate CDRH division. Auto-populate:
+- Division name from review panel (e.g., CV → Division of Cardiovascular Devices)
+- Device trade name: from query.json `device_name` or `[TODO: Company-specific — Trade Name]`
+- Product code: from query.json
+- Predicate device(s): from review.json accepted predicates with K-numbers
+- List of enclosed eSTAR sections: reference all drafted sections
+- Submission type: Traditional 510(k) (default unless otherwise specified)
+- Applicant: from import_data.json or `[TODO: Company-specific — Applicant Name]`
 
 ### 15. truthful-accuracy
 
-Generates Section 4 of the eSTAR: Truthful and Accuracy Statement.
+Generates Section 4 of the eSTAR: Truthful and Accuracy Statement. **This is a MANDATORY RTA section — every 510(k) must include it.**
 
-**Required data**: applicant_name from import_data.json
-**Output**: Standard certification text per 21 CFR 807.87(l). Minimal auto-population — mostly a template requiring authorized signature.
+**Required data**: None — this is a standard template per 21 CFR 807.87(l)
+**Enriched by**: applicant_name from import_data.json or device_profile.json
+**Fallback**: If no applicant name available, use `[TODO: Company-specific — Authorized Representative]`
+
+**Output**: Standard certification text. Auto-populate applicant name if available. Include signature block with Name, Title, Date, Signature lines.
 
 ### 16. financial-certification
 
@@ -725,7 +736,7 @@ Cross-reference:
 
 ### 19. form-3881
 
-Generates FDA Form 3881 (Indications for Use) — a CRITICAL RTA item required for all 510(k) submissions.
+Generates FDA Form 3881 (Indications for Use) — **a MANDATORY RTA section required for ALL 510(k) submissions**. Its absence causes immediate RTA rejection.
 
 **Required data**: intended_use from device_profile.json, import_data.json, or `--intended-use`
 **Enriched by**: openFDA classification, review.json (predicate IFU for reference)
@@ -1089,23 +1100,33 @@ When running a multi-section pipeline (not a single section), auto-detect the de
 - **CRITICAL**: `performance-summary` should focus on algorithm validation, not bench testing
 - Mark N/A with rationale: `sterilization`, `biocompatibility`, `emc-electrical`, `shelf-life`
 - `labeling` should include cybersecurity labeling if Section 524B applies
-- **Auto-queue rule**: When `--all` is used and SaMD is detected, automatically include `software` in the section queue without requiring the user to explicitly request it. If `software` would otherwise be omitted, add it with a note: `"Auto-queued: software section required for SaMD device (product code {code})"`
+- **Auto-queue rule**: Automatically include `software` in the section queue. If `software` would otherwise be omitted, add it with a note: `"Auto-queued: software section required for SaMD device (product code {code})"`
+
+**Wireless/Connected Devices — Software + EMC Auto-Trigger** (detected by: product_code in [DPS, QMT] OR `classification_device_name` or device description contains "wireless", "Bluetooth", "WiFi", "connected", "IoT", "cellular", "RF transmit", "app-based", "mobile", "telemetry", "remote monitoring"):
+- **CRITICAL**: `software` section MUST be drafted — wireless devices have firmware/software requiring IEC 62304 documentation and Section 524B cybersecurity
+- **CRITICAL**: `emc-electrical` section MUST be drafted — wireless devices require EMC testing per IEC 60601-1-2 and FCC compliance
+- Auto-queue BOTH `software` AND `emc-electrical` sections
+
+**Powered/Electronic Devices — EMC Auto-Trigger** (detected by: device description contains "powered", "electronic", "electrical", "battery", "AC power", "generator", "motor", "laser", "ultrasound", "RF energy" OR review_panel in [CV, RA, SU] with electronic indicators):
+- **CRITICAL**: `emc-electrical` section MUST be drafted for any powered device
+- Auto-queue `emc-electrical`
 
 **Combination Products** (detected by: `classification_device_name` contains "drug", or device_profile `device_description` mentions drug/active ingredient/pharmaceutical/medicated/drug-eluting/antimicrobial agent/OTC drug, or product_code associated with combination products):
 - Flag 21 CFR Part 3/4 PMOA determination as a required consideration
 - `biocompatibility` must address drug component toxicity/pharmacology
 - `labeling` must address drug labeling requirements (OTC Drug Facts if applicable)
-- **Auto-queue rule**: When `--all` is used and combination product detected, automatically include `combination-product` section. Add note: `"Auto-queued: combination-product section required for device with drug/biological component"`
+- **Auto-queue rule**: Automatically include `combination-product` section. Add note: `"Auto-queued: combination-product section required for device with drug/biological component"`
 
 **Sterile Devices — Shelf Life Auto-Trigger** (detected by: `sterilization_method` is not empty in device_profile/se_comparison/import_data, OR shelf life mentioned in se_comparison.md, OR `calculations/shelf_life_*.json` exists, OR keywords "sterile", "shelf life", "expiration", "expiry" in device description):
-- **Auto-queue rule**: When `--all` is used and sterile/shelf-life indicators detected, automatically include `shelf-life` section without explicit request. Add note: `"Auto-queued: shelf-life section required for sterile device with expiration dating"`
+- **Auto-queue rule**: Automatically include `shelf-life` section without explicit request. Add note: `"Auto-queued: shelf-life section required for sterile device with expiration dating"`
 
-**Reusable Devices — Reprocessing Auto-Trigger** (detected by: keywords "reusable", "reprocessing", "reprocessed", "autoclave", "multi-use", "non-disposable", "endoscope", "instrument tray" in device description, OR sterilization_method is "steam" for facility-sterilized devices):
-- **Auto-queue rule**: When `--all` is used and reusable device detected, automatically include `reprocessing` section. Add note: `"Auto-queued: reprocessing section required for reusable medical device"`
+**Reusable Devices — Reprocessing Auto-Trigger** (detected by: keywords "reusable", "reprocessing", "reprocessed", "autoclave", "multi-use", "non-disposable", "endoscope", "instrument tray", "surgical instrument" in device description, OR sterilization_method is "steam" for facility-sterilized devices, OR classification_device_name contains "instrument" and review_panel in [SU, GU, OR]):
+- **Auto-queue rule**: Automatically include `reprocessing` section. Add note: `"Auto-queued: reprocessing section required for reusable medical device"`
 
-**Surgical/Procedural Devices — Human Factors Auto-Trigger** (detected by: `review_panel` in [SU, GU, OR, HO, AN] AND device is NOT a passive-implant-only device — i.e., device has an active user interface, requires procedural steps, or involves patient interaction beyond simple implantation):
-- **Auto-queue rule**: When `--all` is used and surgical/procedural device detected, automatically include `human-factors` section unless the device is a passive implant with no user interface (e.g., a bone screw, plate, or mesh with no electronic/software component). Add note: `"Auto-queued: human-factors section recommended for surgical device (review panel {panel})"`
+**Surgical/Procedural Devices — Human Factors Auto-Trigger** (detected by: `review_panel` in [SU, GU, OR, HO, AN] AND device is NOT a passive-implant-only device — i.e., device has an active user interface, requires procedural steps, or involves patient interaction beyond simple implantation; OR device description contains "home use", "OTC", "lay user", "patient-operated", "over-the-counter"):
+- **Auto-queue rule**: Automatically include `human-factors` section unless the device is a passive implant with no user interface (e.g., a bone screw, plate, or mesh with no electronic/software component). Add note: `"Auto-queued: human-factors section recommended for surgical device (review panel {panel})"`
 - Passive implant exemption: if `classification_device_name` contains ONLY implant-related terms (screw, plate, rod, cage, mesh, stent, valve, graft) and NO active terms (powered, electronic, software, display, console, generator), skip the auto-queue
+- Home use / OTC devices ALWAYS get human-factors (no exemption) — lay users require IEC 62366-1 evaluation
 
 **Unclassified Devices (Class U)** (detected by: `device_class` = "U" or regulation_number is empty):
 - Note missing regulation number throughout — do not fabricate one
