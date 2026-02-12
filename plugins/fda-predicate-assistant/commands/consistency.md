@@ -146,9 +146,23 @@ Device description text should be semantically consistent across files.
 ### Check 4: Intended Use Consistency (CRITICAL)
 IFU text must be identical across all submission components.
 
+**4a. Cross-document IFU match:**
 **PASS**: Exact same IFU text everywhere.
 **WARN**: Minor formatting differences.
 **FAIL**: Different IFU text in different documents. List each variant.
+
+**4b. Form 3881 IFU match:**
+If `drafts/draft_form-3881.md` exists, extract the IFU text from it and compare against:
+- `drafts/draft_labeling.md` IFU text
+- `drafts/draft_510k-summary.md` IFU text
+- `device_profile.json` `intended_use` field
+**PASS**: Form 3881 IFU matches all other documents exactly.
+**FAIL**: Form 3881 IFU differs from other submission documents. This will trigger an AI request from FDA.
+
+**4c. No competitor brand names in IFU:**
+Cross-reference with Check 14 — scan the IFU text specifically for competitor company names that appear as the subject device manufacturer (not as predicate references).
+**PASS**: IFU text does not contain competitor brand names as subject device manufacturer.
+**FAIL**: IFU text contains competitor brand name '{company}' — likely peer-mode data leakage. This is a subset of Check 14 but specifically flagged for IFU because FDA Form 3881 inconsistency is a common RTA trigger.
 
 ### Check 5: Pathway Consistency (HIGH)
 Submission pathway should be consistent.
@@ -216,6 +230,9 @@ Verify that every draft file maps to a section in the export section_map. Expect
 - `draft_performance-summary.md` → `15_PerformanceTesting/`
 - `draft_clinical.md` → `16_Clinical/`
 - `draft_human-factors.md` → `17_HumanFactors/`
+- `draft_form-3881.md` → `03_510kSummary/`
+- `draft_reprocessing.md` → `18_Other/reprocessing/`
+- `draft_combination-product.md` → `18_Other/`
 
 **PASS**: All draft files have corresponding section_map entries.
 **WARN**: Unmapped draft files found (may be supplementary content).
@@ -268,6 +285,26 @@ def extract_specs(text):
     steril_match = re.search(r'(ethylene oxide|EO|E\.?O\.?|gamma|electron beam|e-beam|radiation|steam|autoclave)\s*steriliz', text, re.I)
     if steril_match:
         specs['sterilization'] = steril_match.group(1).strip()
+
+    # Shelf life duration
+    shelf_match = re.search(r'(?:shelf\s*life|expir\w+|dating)[^.]*?(\d+)\s*(year|month|day)s?', text, re.I)
+    if shelf_match:
+        specs['shelf_life'] = f"{shelf_match.group(1)} {shelf_match.group(2)}(s)"
+
+    # Compatible equipment model numbers
+    equip_match = re.findall(r'(?:compatible with|for use with|requires|generator|console|controller)[^.]*?([A-Z][A-Z0-9]{2,}[-\s]?[A-Z0-9]+)', text, re.I)
+    if equip_match:
+        specs['compatible_equipment'] = sorted(set(equip_match))
+
+    # Sterilization cycle parameters (temperature, time, pressure)
+    cycle_match = re.search(r'(\d+)\s*°?\s*[CF]\s*(?:for|×|x)\s*(\d+)\s*min', text, re.I)
+    if cycle_match:
+        specs['sterilization_cycle'] = f"{cycle_match.group(1)}°/{cycle_match.group(2)} min"
+
+    # Steam sterilization specific: temperature and exposure time
+    steam_match = re.search(r'(?:steam|autoclave)[^.]*?(\d{3})\s*°?\s*[CF][^.]*?(\d+)\s*min', text, re.I)
+    if steam_match:
+        specs['steam_cycle'] = f"{steam_match.group(1)}°/{steam_match.group(2)} min"
 
     return specs
 ```
@@ -323,6 +360,85 @@ def extract_standards(text):
 If `standards_lookup.json` does not exist, report: `"○ Not checked — no standards_lookup.json found. Run /fda:standards to generate."`
 If `drafts/draft_doc.md` does not exist, report: `"○ Not checked — no draft_doc.md found. Run /fda:draft doc to generate."`
 
+### Check 14: Brand Name / Applicant Consistency (CRITICAL)
+
+Scan ALL draft files + device_profile.json fields for competitor brand names that don't match the applicant. This catches peer-mode data leakage where predicate device data was incorrectly attributed to the subject device.
+
+**Steps:**
+1. Extract `applicant` (or `applicant_name`, `company_name`) from `device_profile.json`, `import_data.json`, or `review.json`
+2. Define known company names list: `KARL STORZ`, `Boston Scientific`, `Medtronic`, `Abbott`, `Johnson & Johnson`, `Ethicon`, `Stryker`, `Zimmer Biomet`, `Smith & Nephew`, `B. Braun`, `Cook Medical`, `Edwards Lifesciences`, `Becton Dickinson`, `BD`, `Baxter`, `Philips`, `GE Healthcare`, `Siemens Healthineers`, `Olympus`, `Hologic`, `Intuitive Surgical`, `Teleflex`, `ConvaTec`, `Coloplast`, `3M Health Care`, `Cardinal Health`, `Danaher`, `Integra LifeSciences`, `NuVasive`, `Globus Medical`, `DePuy Synthes`
+3. For each draft file and device_profile field (intended_use, device_description, extracted_sections):
+   - Search for each known company name (case-insensitive)
+   - If found AND it does NOT match the `applicant` field:
+     - Check context: is it a predicate reference (acceptable) or subject device attribution (FAIL)?
+     - Predicate references typically appear as: "compared to {company}'s {K-number}", "predicate manufactured by {company}", "reference device from {company}"
+     - Subject device attributions appear as: "{company} {device_name}", "manufactured by {company}" (without predicate context), "{company}" in IFU text as the applicant
+
+**PASS**: No competitor brand names appear as subject device manufacturer across any file.
+**FAIL**: Competitor brand name `{company}` found as subject device attribution in `{file}`. This is likely peer-mode data leakage. Quote the specific text and file location.
+
+### Check 15: Shelf Life Claim vs Evidence (CRITICAL)
+
+Extract shelf life claims from project data and verify supporting evidence exists.
+
+**Steps:**
+1. Search for shelf life claims in:
+   - `se_comparison.md` — "Shelf Life" row, subject device column
+   - `device_profile.json` — any shelf_life field
+   - `drafts/draft_labeling.md` — expiration/shelf life mentions
+   - `import_data.json` — shelf life fields
+2. If a shelf life claim is found (e.g., "3 years", "24 months", "5 year shelf life"):
+   - Check for `drafts/draft_shelf-life.md` — exists AND has non-TODO content (not >80% [TODO] placeholders)
+   - Check for `calculations/shelf_life_calc.json` or `calculations/shelf_life_*.json` — exists with AAF data
+   - Check for ASTM F1980 reference in any draft file
+3. Score evidence:
+
+**PASS**: Shelf life claim found AND (draft_shelf-life.md with real content OR calculations with AAF data).
+**WARN**: Shelf life claim found AND draft_shelf-life.md exists but is mostly [TODO] placeholders.
+**FAIL**: Shelf life claim found but NO supporting evidence (no draft, no calculations, no ASTM F1980 reference). Report: "Shelf life of '{claim}' claimed in {source_file} but no supporting evidence found. Run: /fda:draft shelf-life --project NAME and /fda:calc shelf-life --project NAME"
+
+If no shelf life claim found in any file, report: `"○ Not checked — no shelf life claim detected in project data."`
+
+### Check 16: Reusable Device Reprocessing Consistency (HIGH)
+
+If the device is marked as reusable, verify reprocessing documentation exists and is consistent.
+
+**Steps:**
+1. Detect reusable device: scan device_profile.json, se_comparison.md, draft_device-description.md for "reusable", "reprocessing", "multi-use", "non-disposable", "autoclave", "endoscope", "instrument tray"
+2. If reusable device detected:
+   - Check for `drafts/draft_reprocessing.md` — reprocessing validation documentation
+   - Check for reprocessing instructions in `drafts/draft_labeling.md` — cleaning/disinfection/sterilization IFU
+   - Check for AAMI TIR30, AAMI ST91, or ISO 17664 references in any draft
+3. Cross-validate:
+   - Reprocessing method in draft_reprocessing.md should match sterilization section (if steam between uses)
+   - Maximum reprocessing cycles should be consistent between device description and reprocessing draft
+   - Cleaning agents in reprocessing section should appear in labeling IFU
+
+**PASS**: Reusable device with reprocessing docs AND labeling includes reprocessing IFU.
+**WARN**: Reusable device with reprocessing docs but missing from labeling IFU.
+**FAIL**: Reusable device detected but no reprocessing documentation at all. Report: "Device appears to be reusable but no reprocessing validation found. Run: /fda:draft reprocessing --project NAME"
+
+If device is not reusable, report: `"○ Not checked — device not identified as reusable."`
+
+### Check 17: Compatible Equipment Consistency (MEDIUM)
+
+If compatible equipment is mentioned in the device description, verify consistent mentions across submission documents.
+
+**Steps:**
+1. Scan `drafts/draft_device-description.md` and `device_profile.json` for equipment references: "generator", "console", "controller", "power supply", "light source", "camera head", "processor", "power unit", "energy source"
+2. Extract equipment names/models if found
+3. If equipment detected, check for consistent references in:
+   - `drafts/draft_labeling.md` — equipment should be listed in IFU compatibility section
+   - `drafts/draft_performance-summary.md` or `test_plan.md` — testing should reference the compatible equipment
+   - `drafts/draft_emc-electrical.md` — EMC testing should include equipment combinations
+   - `se_comparison.md` — compatible equipment row (if present)
+
+**PASS**: Equipment mentioned in description AND referenced in labeling AND testing.
+**WARN**: Equipment mentioned in description but missing from labeling OR testing. Report which documents are missing the reference.
+**FAIL**: Equipment mentioned as required for operation but completely absent from labeling and testing. Report: "Compatible equipment '{equipment}' in device description but not addressed in labeling or testing documentation."
+
+If no compatible equipment detected, report: `"○ Not checked — no compatible equipment references found in device description."`
+
 ## Step 4: Generate Report
 
 Present the report using the standard FDA Professional CLI format (see `references/output-formatting.md`):
@@ -336,21 +452,25 @@ Present the report using the standard FDA Professional CLI format (see `referenc
 RESULTS SUMMARY
 ────────────────────────────────────────
 
-  | #  | Check               | Status | Details      |
-  |----|---------------------|--------|--------------|
-  | 1  | Product Code        | ✓      | {details}    |
-  | 2  | Predicate List      | ✗      | {details}    |
-  | 3  | Device Description  | ⚠      | {details}    |
-  | 4  | Intended Use        | ✓      | {details}    |
-  | 5  | Pathway             | ✓      | {details}    |
-  | 6  | Standards Coverage  | ⚠      | {details}    |
-  | 7  | Dates/Freshness     | ○      | {details}    |
-  | 8  | Placeholder Scan    | ✓      | {details}    |
-  | 9  | Cross-Section Draft | ✓      | {details}    |
-  | 10 | eSTAR Import Align  | ○      | {details}    |
-  | 11 | Section Map Align   | ✓      | {details}    |
-  | 12 | Spec Cross-Ref      | ✗      | {details}    |
-  | 13 | Standards ↔ DoC     | ⚠      | {details}    |
+  | #  | Check                  | Status | Details      |
+  |----|------------------------|--------|--------------|
+  | 1  | Product Code           | ✓      | {details}    |
+  | 2  | Predicate List         | ✗      | {details}    |
+  | 3  | Device Description     | ⚠      | {details}    |
+  | 4  | Intended Use (4a/4b/4c)| ✓      | {details}    |
+  | 5  | Pathway                | ✓      | {details}    |
+  | 6  | Standards Coverage     | ⚠      | {details}    |
+  | 7  | Dates/Freshness        | ○      | {details}    |
+  | 8  | Placeholder Scan       | ✓      | {details}    |
+  | 9  | Cross-Section Draft    | ✓      | {details}    |
+  | 10 | eSTAR Import Align     | ○      | {details}    |
+  | 11 | Section Map Align      | ✓      | {details}    |
+  | 12 | Spec Cross-Ref         | ✗      | {details}    |
+  | 13 | Standards ↔ DoC        | ⚠      | {details}    |
+  | 14 | Brand Name / Applicant | ✗      | {details}    |
+  | 15 | Shelf Life vs Evidence | ⚠      | {details}    |
+  | 16 | Reprocessing Consistency| ○     | {details}    |
+  | 17 | Compatible Equipment   | ○      | {details}    |
 
   Status: ✓ pass, ✗ fail, ⚠ warning, ○ not checked
 
@@ -398,7 +518,7 @@ After all consistency checks are complete, log each result using `fda_audit_logg
 
 ### Log each check result
 
-For each of the 13 checks, log the result:
+For each of the 17 checks, log the result:
 
 ```bash
 # For passed checks:

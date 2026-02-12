@@ -75,7 +75,28 @@ You think like an FDA review team. Each reviewer on the team has specific expert
    - Extract text using PyMuPDF
    - Focus on: IFU section, device description, SE comparison, testing sections
 
-2. **Query openFDA** — For classification, MAUDE events, recalls, recent clearances for the product code
+2. **Assess predicate PDF quality** — After downloading or loading each predicate's text, classify:
+   ```python
+   def classify_pdf_quality(text):
+       if not text or len(text.strip()) == 0: return "UNAVAILABLE"
+       if len(text.strip()) < 500: return "STUB"
+       if len(text.strip()) < 2000: return "SPARSE"
+       return "ADEQUATE"
+   ```
+
+   Generate a **Predicate Data Quality** table for the report:
+   ```markdown
+   | Predicate | K-Number | Text Length | Quality | Impact |
+   |-----------|----------|-------------|---------|--------|
+   | Primary | {K-num} | {chars} | {ADEQUATE/SPARSE/STUB/UNAVAILABLE} | {impact_note} |
+   ```
+
+   **Quality impact on scoring:**
+   - If primary predicate is **STUB** or **UNAVAILABLE**: reduce SE probability by one tier (e.g., MODERATE → LOW). Flag as **MAJOR** deficiency: "Primary predicate {K-number} has insufficient PDF text ({N} chars). SE comparison cannot be adequately validated."
+   - If primary predicate is **SPARSE**: flag as **MINOR** deficiency with recommendation to obtain full 510(k) summary
+   - If primary predicate is **ADEQUATE**: no impact
+
+3. **Query openFDA** — For classification, MAUDE events, recalls, recent clearances for the product code
 
 3. **Identify applicable guidance** — Using product code and device characteristics, identify FDA guidance documents that apply. Use the **3-tier guidance trigger system** from `commands/guidance.md`:
    - **Tier 1 (API Flags)**: Check `implant_flag`, `life_sustain_support_flag`, GUDID sterilization data
@@ -99,7 +120,100 @@ Using the classification data (review_panel → OHT):
         any(kw in desc_lower for kw in ivd_keywords)):
         team.append("IVD")
 
+#### Explicit Specialist Triggers (Auto-Composition Rules)
+
+In addition to the standard specialist detection from `references/cdrh-review-structure.md`, apply these explicit triggers with audit logging:
+
+**Reprocessing Reviewer:**
+- **Trigger keywords:** "reusable", "reprocessing", "reprocessed", "autoclave", "multi-use", "non-disposable", "endoscope", "instrument tray"
+- **Trigger product codes:** FDS, FDT, FGB (endoscopes), GEI/GEX (electrosurgical — check if reusable)
+- **Detection scope:** device description, classification_device_name, se_comparison.md, sterilization_method == "steam" for facility use
+- **Audit log:** `"Reprocessing Reviewer assigned: {trigger_reason} found in {source_file}"`
+- **Evaluation focus:** AAMI TIR30 cleaning validation, lifecycle testing, reprocessing IFU
+
+**Combination Product Reviewer (OCP):**
+- **Trigger keywords:** "drug", "pharmaceutical", "active ingredient", "drug-eluting", "antimicrobial agent", "medicated", "drug-device", "combination product", "OTC drug", "Drug Facts", "active pharmaceutical", "biologic component"
+- **Detection scope:** device description, classification_device_name, device_profile.json fields
+- **Audit log:** `"Combination Product Reviewer assigned: {trigger_reason} found in {source_file}"`
+- **Evaluation focus:** PMOA determination, 21 CFR Part 3/4 compliance, drug characterization, OTC Drug Facts
+
+**MRI Safety Reviewer:**
+- **Trigger:** Device is implantable AND contains metallic components (detected from materials list or keywords: "implant", "metallic", "titanium", "stainless steel", "nitinol", "cobalt-chromium")
+- **Exclude:** Software-only devices, non-implantable external devices
+- **Detection scope:** device description, materials list, classification (implant_flag from openFDA)
+- **Audit log:** `"MRI Safety Reviewer assigned: implantable metallic device detected — {materials_found}"`
+- **Evaluation focus:** ASTM F2052/F2213/F2119/F2182 testing, MR Conditional labeling per ASTM F2503
+
+**Cybersecurity Reviewer:**
+- **Trigger keywords:** "software", "SaMD", "firmware", "wireless", "bluetooth", "wifi", "connected", "cloud", "network", "app", "algorithm", "AI/ML", "IoT", "telemetry", "digital"
+- **Trigger product codes:** QKQ, NJS, OIR, PEI, QAS, QDQ, QMT, QFM
+- **Detection scope:** device description, classification_device_name, product code
+- **Audit log:** `"Cybersecurity Reviewer assigned: {trigger_reason} — Section 524B documentation required"`
+- **Evaluation focus:** Section 524B compliance, SBOM, threat model, patch/update mechanism
+
+**Auto-composition audit summary:**
+After assembling the review team, output:
+```
+Review Team Auto-Composition:
+  Standard reviewers: Lead, Team Lead, Labeling (always assigned)
+  Specialist triggers:
+    {Reviewer}: {trigger_reason} [Source: {file}]
+    ...
+  Total reviewers: {N}
+```
+
 ### Phase 4: Individual Reviewer Evaluations
+
+**Pre-evaluation: [TODO] and Placeholder Counting**
+
+Before individual reviewer evaluations, pre-scan ALL draft files for completion metrics:
+
+```python
+import re, os, glob
+
+placeholder_patterns = [
+    r'\[TODO[:\s]',
+    r'\[CITATION NEEDED\]',
+    r'\[INSERT[:\s]',
+    r'\[REVIEW NEEDED\]',
+    r'\[YOUR DEVICE[:\s]',
+    r'\[Company-specific',
+]
+
+drafts_dir = os.path.join(project_dir, 'drafts')
+section_metrics = {}
+
+for df in glob.glob(os.path.join(drafts_dir, 'draft_*.md')):
+    fname = os.path.basename(df)
+    with open(df) as f:
+        text = f.read()
+    lines = text.split('\n')
+    content_lines = [l for l in lines if l.strip() and not l.startswith('#') and not l.startswith('⚠') and not l.startswith('Generated')]
+    total = len(content_lines)
+    placeholder_count = sum(1 for l in content_lines if any(re.search(p, l) for p in placeholder_patterns))
+    completion_pct = round((1 - placeholder_count / max(total, 1)) * 100) if total > 0 else 0
+
+    section_metrics[fname] = {
+        'total_lines': total,
+        'placeholders': placeholder_count,
+        'completion_pct': completion_pct,
+    }
+```
+
+**Scoring impact:** Each reviewer should factor completion percentage into their section score:
+- 0 [TODO] items in their section → full credit for content
+- 1-3 [TODO] items → 75% credit
+- 4-6 [TODO] items → 50% credit
+- 7+ [TODO] items → 25% credit
+
+Generate a **Placeholder Summary** table for the Phase 6 report:
+```markdown
+### Placeholder Summary
+
+| Section | Total Lines | Placeholders | Completion | Credit |
+|---------|------------|-------------|------------|--------|
+| {draft_name} | {N} | {N} [TODO] + {N} [CITATION] | {N}% | {full/75%/50%/25%} |
+```
 
 **Evaluate from each reviewer's perspective independently.** Do not let one reviewer's assessment influence another.
 
@@ -111,6 +225,7 @@ Assess:
 - Does the intended use match the predicate's IFU?
 - Are technological differences adequately addressed?
 - Would you recommend SE, NSE, or AI request?
+- **Brand name mismatch:** Compare the `applicant` field against company/brand names in IFU, labeling, and device description across ALL project files. Known company patterns: KARL STORZ, Boston Scientific, Medtronic, Abbott, Johnson & Johnson, Ethicon, Stryker, Zimmer Biomet, Smith & Nephew, B. Braun, Cook Medical, Edwards Lifesciences, Becton Dickinson, BD, Baxter, Philips, GE Healthcare, Siemens Healthineers, Olympus, Hologic, Intuitive Surgical, Teleflex, ConvaTec, Coloplast, 3M Health Care, Cardinal Health, Danaher, Integra LifeSciences, NuVasive, Globus Medical, DePuy Synthes. If a competitor brand appears as the subject device manufacturer (not as a predicate reference), flag as **CRITICAL**: "Applicant is '{applicant}' but '{competitor}' appears as subject device manufacturer in {file}. This indicates peer-mode data leakage and will cause FDA to question the submission's accuracy."
 - **Predicate legal status:** Is each accepted predicate still legally marketed?
   - Check for WITHDRAWN status (device removed from market)
   - Check for ENFORCEMENT_ACTION status (FDA enforcement, recall, consent decree)
@@ -350,12 +465,42 @@ Assess each category and score:
 - "CLIA waiver: The CLIA waiver study design is incomplete — [missing untrained operators / insufficient specimen count / no comparison to lab method]. Refer to CLSI EP12 for waiver study requirements."
 - "Reference traceability: Calibration traceability to [NIST/WHO/IFCC] reference materials is not documented. Please provide traceability chain for the calibration of [analyte]."
 
-### Phase 5: Cross-Reference and Synthesis
+### Phase 5: Cross-Reference, Deduplication, and Synthesis
 
 1. **Identify conflicting findings** — Where one reviewer's finding affects another's assessment
-2. **Prioritize deficiencies** — Rank by severity and likelihood of causing delay
-3. **Assess overall SE probability** — Based on all reviewer inputs
-4. **Generate remediation roadmap** — Ordered by priority with estimated effort
+
+2. **Cross-reviewer deficiency deduplication** — Multiple reviewers may flag the same underlying issue. Before finalizing the deficiency list:
+
+   **Deduplication algorithm:**
+   For each pair of deficiencies, compute similarity across 4 dimensions:
+   - **Same section** — Both reference the same eSTAR section or draft file (e.g., both mention draft_sterilization.md)
+   - **Same standard** — Both reference the same ISO/IEC/ASTM standard
+   - **Same type** — Both have the same severity (CRITICAL/MAJOR/MINOR)
+   - **Overlapping remediation** — Both recommend the same or similar `/fda:` command
+
+   **Merge rule:** If ≥2 dimensions match, merge the deficiencies:
+   - Keep the **highest severity** (CRITICAL > MAJOR > MINOR)
+   - List ALL reviewers who flagged the issue
+   - Combine finding text from both reviewers
+   - Use the most specific remediation command
+
+   **Example merge:**
+   ```
+   Before:
+     DEF-003 [MAJOR] Sterilization Reviewer: "No SAL specified in draft_sterilization.md"
+     DEF-007 [MAJOR] Lead Reviewer: "Sterilization section missing SAL target"
+   After:
+     DEF-003 [MAJOR] Sterilization Reviewer + Lead Reviewer: "No SAL target specified in draft_sterilization.md. Both sterilization specialist and lead reviewer flagged this gap."
+   ```
+
+   **Reporting:**
+   - Report both raw count and merged count: `"Found {raw} deficiencies across all reviewers → {merged} unique deficiencies after deduplication"`
+   - Use merged count for SRI penalty calculation to prevent double-counting
+   - In the detailed deficiency list, note which deficiencies were merged: `"(Merged from {N} reviewer findings)"`
+
+3. **Prioritize deficiencies** — Rank by severity and likelihood of causing delay
+4. **Assess overall SE probability** — Based on all reviewer inputs
+5. **Generate remediation roadmap** — Ordered by priority with estimated effort
 
 ### Phase 6: Report Generation
 

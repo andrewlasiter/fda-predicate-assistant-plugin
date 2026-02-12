@@ -47,6 +47,7 @@ From `$ARGUMENTS`, extract:
 - `--output-dir DIR` — Where to create the eSTAR structure (default: project_dir/estar/)
 - `--infer` — Auto-detect product code from project
 - `--attach FILE [SECTION]` — Attach a file (test report, labeling PDF, image) to a specific eSTAR section. SECTION is the 2-digit section number (e.g., `15` for Performance Testing). Can be specified multiple times.
+- `--refresh` — Lightweight update mode: detect stale eSTAR sections (where draft is newer than eSTAR copy), re-import updated drafts, and regenerate the eSTAR index. Skips full directory creation (Step 2) and section mapping (Step 3) if eSTAR directory already exists.
 
 ## Step 1: Inventory Available Data
 
@@ -101,6 +102,99 @@ if os.path.isdir(sd):
 PYEOF
 ```
 
+## Step 1b: Draft-vs-eSTAR Freshness Check
+
+After inventorying project files, compare modification times of draft files against their eSTAR copies to detect stale sections:
+
+```bash
+python3 << 'PYEOF'
+import os, glob, json
+
+project = "PROJECT"  # Replace
+projects_dir = os.path.expanduser("~/fda-510k-data/projects")
+# ... resolve from settings ...
+pdir = os.path.join(projects_dir, project)
+estar_dir = os.path.join(pdir, "estar")
+drafts_dir = os.path.join(pdir, "drafts")
+
+# Mapping: draft filename → eSTAR section folder
+draft_to_estar = {
+    "draft_cover-letter.md": "01_CoverLetter",
+    "draft_510k-summary.md": "03_510kSummary",
+    "draft_truthful-accuracy.md": "04_TruthfulAccuracy",
+    "draft_financial-certification.md": "05_FinancialCert",
+    "draft_device-description.md": "06_DeviceDescription",
+    "draft_se-discussion.md": "07_SEComparison",
+    "draft_doc.md": "08_Standards",
+    "draft_labeling.md": "09_Labeling",
+    "draft_sterilization.md": "10_Sterilization",
+    "draft_shelf-life.md": "11_ShelfLife",
+    "draft_biocompatibility.md": "12_Biocompatibility",
+    "draft_software.md": "13_Software",
+    "draft_emc-electrical.md": "14_EMC",
+    "draft_performance-summary.md": "15_PerformanceTesting",
+    "draft_clinical.md": "16_Clinical",
+    "draft_human-factors.md": "17_HumanFactors",
+    "draft_form-3881.md": "03_510kSummary",
+    "draft_reprocessing.md": "18_Other",
+    "draft_combination-product.md": "18_Other",
+}
+
+stale = []
+fresh = []
+missing_estar = []
+
+if os.path.isdir(estar_dir) and os.path.isdir(drafts_dir):
+    for draft_name, estar_section in draft_to_estar.items():
+        draft_path = os.path.join(drafts_dir, draft_name)
+        if not os.path.exists(draft_path):
+            continue
+
+        draft_mtime = os.path.getmtime(draft_path)
+
+        # Find corresponding eSTAR file
+        estar_section_dir = os.path.join(estar_dir, estar_section)
+        if not os.path.isdir(estar_section_dir):
+            missing_estar.append(draft_name)
+            continue
+
+        # Check if any file in the eSTAR section matches
+        estar_files = glob.glob(os.path.join(estar_section_dir, "*.md"))
+        if not estar_files:
+            missing_estar.append(draft_name)
+            continue
+
+        newest_estar = max(os.path.getmtime(f) for f in estar_files)
+        if draft_mtime > newest_estar:
+            stale.append((draft_name, estar_section, draft_mtime - newest_estar))
+        else:
+            fresh.append((draft_name, estar_section))
+
+    for s in stale:
+        print(f"STALE:{s[0]}|{s[1]}|{s[2]:.0f}s behind")
+    for f in fresh:
+        print(f"FRESH:{f[0]}|{f[1]}")
+    for m in missing_estar:
+        print(f"MISSING_ESTAR:{m}")
+    print(f"SUMMARY:stale={len(stale)},fresh={len(fresh)},missing={len(missing_estar)}")
+else:
+    if not os.path.isdir(estar_dir):
+        print("ESTAR_DIR:not_found")
+    if not os.path.isdir(drafts_dir):
+        print("DRAFTS_DIR:not_found")
+PYEOF
+```
+
+**If `--refresh` mode:**
+1. If eSTAR directory does not exist: **ERROR**: "No existing eSTAR directory found. Run `/fda:assemble --project NAME` first to create the initial eSTAR structure, then use `--refresh` for updates."
+2. For each STALE section: re-copy the updated draft into the eSTAR section folder, preserving eSTAR naming conventions
+3. For each MISSING_ESTAR draft: copy into the appropriate section folder (new section added since last assembly)
+4. Regenerate `eSTAR_index.md` with updated timestamps
+5. Skip Steps 2-3 (directory creation and full section mapping)
+6. Proceed to Step 4 (index generation) and Step 5 (report)
+
+**If NOT `--refresh` mode:** Report stale sections in assembly output as warnings, then proceed with full assembly.
+
 ## Step 2: Create eSTAR Directory Structure
 
 The eSTAR (electronic Submission Template and Resource) has a defined section structure:
@@ -134,6 +228,26 @@ For each eSTAR section, check if project data can populate it:
 | Clinical | 16_Clinical | review.json (lit review) | If available |
 | Human Factors | 17_HumanFactors | draft_human-factors.md | If applicable |
 | Other | 18_Other | Remaining documents | As available |
+
+### Form FDA 3881 (Indications for Use) — Section 03
+
+Check for `draft_form-3881.md` in the drafts directory. This is a **CRITICAL RTA item** — every 510(k) submission requires Form 3881.
+
+**If `draft_form-3881.md` exists:**
+1. Copy to `03_510kSummary/form_3881.md`
+2. Verify IFU text consistency: compare the IFU text in Form 3881 against:
+   - `draft_labeling.md` (Section 09) IFU text
+   - `draft_510k-summary.md` (Section 03) IFU text
+   - `device_profile.json` `intended_use` field
+3. If IFU text differs across documents, add a **CRITICAL** warning to the assembly report:
+   `"⚠ CRITICAL: IFU text in Form 3881 does not match labeling/510k-summary. FDA requires identical IFU text across all submission documents."`
+4. Mark as `DRAFT` status in the eSTAR index
+
+**If `draft_form-3881.md` does NOT exist:**
+1. Flag as **CRITICAL** gap in the assembly report:
+   `"✗ CRITICAL GAP: Form FDA 3881 (Indications for Use) missing. This is a mandatory RTA item. Run: /fda:draft form-3881 --project NAME"`
+2. Mark Section 03 entry as `CRITICAL GAP` in the eSTAR index (even if `draft_510k-summary.md` exists)
+3. Add to remediation commands list: `/fda:draft form-3881 --project NAME`
 
 ### Import Data Pre-Population
 
@@ -249,6 +363,39 @@ If cybersecurity is triggered:
 3. Mark as `TEMPLATE — manual completion required`
 4. Note in eSTAR index: "Cybersecurity documentation required — see Section 13"
 
+### Reprocessing Section — Auto-Detection (Section 18)
+
+Auto-detect reusable device and create reprocessing documentation structure:
+
+**Detection logic:** Check device description, se_comparison.md, and device_profile.json for reusable device indicators:
+- Keywords: "reusable", "reprocessing", "autoclave", "multi-use", "non-disposable", "endoscope", "instrument tray"
+- Sterilization method is "steam" for facility-sterilized (not terminal) devices
+
+**If reusable device detected:**
+1. Create `18_Other/reprocessing/` subdirectory
+2. If `draft_reprocessing.md` exists in drafts: copy to `18_Other/reprocessing/reprocessing_validation.md`, mark as `DRAFT`
+3. If `draft_reprocessing.md` does NOT exist: generate `18_Other/reprocessing/README.md` with:
+   ```markdown
+   # Reprocessing Validation — Required
+
+   This device has been identified as a reusable medical device requiring reprocessing documentation.
+
+   ## Required Documentation
+   - Cleaning validation per AAMI TIR30
+   - Disinfection/sterilization validation between uses
+   - Lifecycle/durability testing (repeated reprocessing cycles)
+   - Reprocessing IFU validation
+
+   ## Generate Draft
+   Run: `/fda:draft reprocessing --project {project_name}`
+
+   ## References
+   - AAMI TIR30: Cleaning validation for reusable medical devices
+   - AAMI ST91: Flexible endoscope reprocessing (if applicable)
+   - FDA Guidance: Reprocessing Medical Devices in Health Care Settings
+   ```
+4. Mark as `TEMPLATE` status in eSTAR index
+
 ## Step 4: Generate eSTAR Index
 
 Write `$ESTAR_DIR/eSTAR_index.md`:
@@ -355,6 +502,17 @@ ASSEMBLY SUMMARY
   Submission Readiness: {N}/{total} verified (READY only)
   Pipeline Coverage:    {N}/{total} with content (READY + DRAFT)
 
+SECTION FRESHNESS
+────────────────────────────────────────
+
+  | Section | Draft Date | eSTAR Date | Status |
+  |---------|-----------|-----------|--------|
+  | {section_name} | {draft_mtime} | {estar_mtime} | ✓ Fresh / ⚠ Stale / — No draft |
+
+  {If any STALE sections:}
+  ⚠ {N} sections have newer drafts than eSTAR copies.
+  Run: /fda:assemble --project NAME --refresh
+
 KEY FILES
 ────────────────────────────────────────
 
@@ -409,11 +567,21 @@ Total artwork files: {count}
 Source directory: {artwork_dir}
 ```
 
-If no artwork directory configured, note in assembly report:
+If no artwork directory configured, flag as **CRITICAL** gap in assembly report:
 ```
-Section 09 (Labeling): No artwork files found.
-  → Set artwork directory with /fda:draft labeling --artwork-dir PATH
+✗ CRITICAL GAP: Section 09 (Labeling) — No artwork files found.
+  FDA requires proposed labeling including actual label artwork for RTA acceptance.
+  Required artwork checklist:
+    □ Package label (outer packaging)
+    □ Device label (on-device or immediate container)
+    □ IFU layout (formatted Instructions for Use)
+    □ Sterile barrier label (if sterile device)
+    □ Patient labeling (if patient-facing)
+  → Provide artwork directory: /fda:draft labeling --artwork-dir PATH
+  → Or attach individual files: /fda:assemble --project NAME --attach label.pdf 09
 ```
+
+Include missing artwork in the eSTAR index as `CRITICAL GAP` status for Section 09.
 
 ## Error Handling
 

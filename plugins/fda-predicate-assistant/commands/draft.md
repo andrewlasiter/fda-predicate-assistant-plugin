@@ -43,7 +43,7 @@ You are generating regulatory prose drafts for specific sections of a 510(k) sub
 
 From `$ARGUMENTS`, extract:
 
-- **Section name** (required) — One of: `device-description`, `se-discussion`, `performance-summary`, `testing-rationale`, `predicate-justification`, `510k-summary`, `labeling`, `sterilization`, `shelf-life`, `biocompatibility`, `software`, `emc-electrical`, `clinical`, `cover-letter`, `truthful-accuracy`, `financial-certification`, `doc`, `human-factors`
+- **Section name** (required) — One of: `device-description`, `se-discussion`, `performance-summary`, `testing-rationale`, `predicate-justification`, `510k-summary`, `labeling`, `sterilization`, `shelf-life`, `biocompatibility`, `software`, `emc-electrical`, `clinical`, `cover-letter`, `truthful-accuracy`, `financial-certification`, `doc`, `human-factors`, `form-3881`, `reprocessing`, `combination-product`
 - `--project NAME` (required) — Project with pipeline data
 - `--device-description TEXT` — Description of the user's device
 - `--intended-use TEXT` — Proposed indications for use
@@ -201,6 +201,40 @@ PYEOF
 4. If peer devices are listed in review.json or device_profile.json, reference their device names and applicants to establish the product landscape
 5. Generate more [TODO] placeholders than usual, but still provide structural frameworks (section headings, table templates, standard references) based on the product code and review panel
 
+## Step 0.75: Brand Name Validation
+
+**After loading project data (Step 0.5) and before generating any section**, validate that the applicant's identity is consistent with the device data:
+
+1. Extract the `applicant` (or `applicant_name`, `company_name`) field from `device_profile.json`, `import_data.json`, or `review.json`
+2. Scan the `intended_use`, `device_description`, and `extracted_sections` fields in `device_profile.json` for company/brand names
+3. Compare: if a well-known competitor brand name appears as the *manufacturer* or *applicant* of the subject device (not as a predicate reference), this indicates peer-mode data leakage where predicate device data was incorrectly attributed to the subject device
+
+**Known company name patterns to check:**
+`KARL STORZ`, `Boston Scientific`, `Medtronic`, `Abbott`, `Johnson & Johnson`, `Ethicon`, `Stryker`, `Zimmer Biomet`, `Smith & Nephew`, `B. Braun`, `Cook Medical`, `Edwards Lifesciences`, `Becton Dickinson`, `BD`, `Baxter`, `Philips`, `GE Healthcare`, `Siemens Healthineers`, `Olympus`, `Hologic`, `Intuitive Surgical`, `Teleflex`, `ConvaTec`, `Coloplast`, `3M Health Care`, `Cardinal Health`, `Danaher`, `Integra LifeSciences`, `NuVasive`, `Globus Medical`, `DePuy Synthes`
+
+**Detection logic:**
+```python
+applicant = device_profile.get('applicant', '') or device_profile.get('applicant_name', '') or ''
+ifu_text = device_profile.get('intended_use', '')
+desc_text = device_profile.get('device_description', '') or str(device_profile.get('extracted_sections', {}).get('device_description', ''))
+
+known_companies = ["KARL STORZ", "Boston Scientific", "Medtronic", "Abbott", ...]  # full list above
+
+for company in known_companies:
+    if company.lower() != applicant.lower() and company.lower() in (ifu_text + ' ' + desc_text).lower():
+        # Check if it appears as the subject device manufacturer (not just a predicate reference)
+        # Predicate references are acceptable: "compared to {company}'s K123456"
+        # Subject device claims are NOT: "manufactured by {company}" or "{company} {device_name}"
+        print(f"BRAND_MISMATCH:{company}")
+```
+
+**If brand mismatch detected:**
+- **WARN** the user: `"⚠ BRAND NAME MISMATCH: '{detected_company}' found in device data but applicant is '{applicant}'. This may indicate predicate data was incorrectly attributed to the subject device (peer-mode data leakage)."`
+- In ALL generated sections, replace instances of the mismatched company name with `[TODO: Replace '{detected_company}' with your company name]` when it appears as the subject device manufacturer
+- Do NOT replace company names that appear in predicate device references (e.g., "The predicate device, manufactured by {company}..." is fine)
+
+---
+
 ## Available Sections
 
 ### 1. device-description
@@ -236,6 +270,24 @@ Generates Section 6 of the eSTAR: Device Description.
 
 ### 6.4 Accessories and Packaging
 [TODO: Company-specific — list accessories, packaging components, and sterilization barrier]
+
+### 6.4.1 Compatible Equipment
+
+{Auto-detect: If device description or se_comparison contains keywords "generator", "console", "controller", "power supply", "light source", "camera head", "processor", "power unit", "energy source", generate this subsection. Otherwise omit.}
+
+| # | Equipment | Function | Compatibility Requirements | Specification |
+|---|-----------|----------|---------------------------|---------------|
+| 1 | [TODO: e.g., Electrosurgical Generator] | [TODO: Primary function] | [TODO: Power range, connector type] | [TODO: Model numbers or specifications] |
+
+[TODO: Company-specific — List all equipment required for device operation. For each, specify:
+- Equipment type and model numbers
+- Required power/energy settings
+- Connector compatibility (proprietary vs. universal)
+- Whether the equipment is included or sold separately
+- Regulatory status of each compatible equipment item]
+
+{Cross-reference: If se_comparison.md lists compatible equipment for the predicate, include a comparison note:}
+> **Predicate Reference:** The predicate device ({K-number}) is compatible with {predicate_equipment}. [Source: se_comparison.md]
 
 ### 6.5 Illustrations
 [TODO: Company-specific — attach device photographs, diagrams, and schematics]
@@ -671,6 +723,244 @@ Cross-reference:
 - `/fda:safety` MAUDE data to identify use error patterns for the product code
 - `references/human-factors-framework.md` for IEC 62366-1:2015 process and FDA guidance references
 
+### 19. form-3881
+
+Generates FDA Form 3881 (Indications for Use) — a CRITICAL RTA item required for all 510(k) submissions.
+
+**Required data**: intended_use from device_profile.json, import_data.json, or `--intended-use`
+**Enriched by**: openFDA classification, review.json (predicate IFU for reference)
+
+**Output structure**:
+```markdown
+## FDA Form 3881 — Indications for Use
+
+⚠ DRAFT — AI-generated regulatory document. Review with regulatory affairs team before submission.
+Generated: {date} | Project: {name} | Plugin: fda-predicate-assistant v5.22.0
+
+---
+
+### Device Information
+
+- **510(k) Number:** [TODO: Assigned after submission — leave blank for initial submission]
+- **Device Name:** {trade_name from device_profile.json, else [TODO: Device Trade Name]}
+- **Indications for Use:**
+
+{IFU text from device_profile.json intended_use field, import_data.json, or --intended-use argument}
+
+{If no IFU text available: [TODO: Company-specific — Enter the complete Indications for Use statement. This must match exactly across all submission documents (labeling, 510(k) summary, SE discussion).]}
+
+### Prescription Use and/or Over-The-Counter Use
+
+- [ ] Prescription Use (Part 21 CFR 801 Subpart D)
+- [ ] Over-The-Counter Use (Part 21 CFR 801 Subpart C)
+
+{Auto-detect from UDI data if available: if is_rx=true → check Prescription; if is_otc=true → check OTC}
+{If neither available: [TODO: Check the appropriate box]}
+
+{For combination products (Class U or drug-containing): If OTC, include note about OTC Drug Facts panel requirement}
+
+### Classification
+
+- **Product Code:** {product_code}
+- **Device Class:** {device_class from openFDA}
+- **Regulation Number:** {regulation_number or "Unclassified" for Class U}
+
+### Predicate Device Reference
+
+{For each accepted predicate from review.json:}
+- **Predicate K-Number:** {K-number}
+- **Predicate Device Name:** {device_name}
+- **Predicate IFU:** {predicate IFU text if available from PDF extraction or openFDA}
+
+{If predicate IFU available, add comparison note:}
+> **IFU Consistency Note:** Compare the subject device IFU above with the predicate IFU. Any broadening of intended use beyond the predicate may trigger additional review. [Source: review.json, predicate PDF text]
+
+### Certification
+
+I certify that I am the {[TODO: Title]} of {[TODO: Company Legal Name]} and that the indications for use stated above are accurate and complete.
+
+**Signature:** _________________________________ **Date:** ___________
+**Typed Name:** [TODO: Authorized Representative Name]
+```
+
+**Data threading:**
+- Pull IFU text from `device_profile.json` → `intended_use` field first
+- Fall back to `import_data.json` → `indications_for_use` or `sections.ifu_text`
+- Fall back to `--intended-use` CLI argument
+- If all empty: generate [TODO] placeholder with guidance
+- Cross-reference predicate IFU from `review.json` accepted predicates and PDF text to provide side-by-side comparison
+- Rx/OTC determination from UDI data query (see labeling section UDI Integration)
+
+### 20. reprocessing
+
+Generates reprocessing validation documentation for reusable medical devices.
+
+**Required data**: device description indicating reusable device
+**Enriched by**: guidance_cache, AAMI TIR30/ST91 requirements
+
+**Applicability auto-detection**: Scan device description for keywords: "reusable", "reprocessing", "reprocessed", "autoclave", "multi-use", "non-disposable", "cleaning validation", "endoscope", "instrument tray".
+
+**Output structure**:
+```markdown
+## Reprocessing Validation
+
+⚠ DRAFT — AI-generated regulatory prose. Review with regulatory affairs team before submission.
+Generated: {date} | Project: {name} | Plugin: fda-predicate-assistant v5.22.0
+
+### Reprocessing Overview
+
+The {device_name or [TODO: Device Name]} is a reusable medical device intended for multiple uses following validated reprocessing procedures.
+
+[Source: device_profile.json device_description]
+
+### Cleaning Validation (per AAMI TIR30)
+
+#### Point-of-Use Pre-Cleaning
+[TODO: Company-specific — Describe point-of-use pre-cleaning instructions (e.g., flush lumens, wipe external surfaces)]
+
+#### Manual Cleaning Protocol
+| Step | Action | Agent/Solution | Time | Temperature |
+|------|--------|---------------|------|-------------|
+| 1 | Pre-soak | [TODO: enzymatic detergent] | [TODO: min] | [TODO: °C] |
+| 2 | Manual brush | [TODO: brush type/size] | [TODO: min] | N/A |
+| 3 | Rinse | [TODO: water quality] | [TODO: min] | [TODO: °C] |
+| 4 | Dry | [TODO: method] | [TODO: min] | N/A |
+
+#### Automated Cleaning (if applicable)
+[TODO: Company-specific — Describe automated washer-disinfector cycle parameters]
+
+#### Cleaning Validation Test Results
+| Test | Method | Soil Challenge | Acceptance Criteria | Result |
+|------|--------|---------------|---------------------|--------|
+| Protein residual | [TODO: method] | Worst-case organic load | < 6.4 μg/cm² | [TODO] |
+| Hemoglobin residual | [TODO: method] | Worst-case blood soil | < 2.2 μg/cm² | [TODO] |
+| Endotoxin | [TODO: method] | Post-cleaning | < 20 EU/device | [TODO] |
+| TOC | [TODO: method] | Post-cleaning | [TODO: limit] | [TODO] |
+
+### Disinfection/Sterilization Between Uses
+
+[TODO: Company-specific — Specify the terminal reprocessing step:]
+- High-level disinfection (for semi-critical devices): [TODO: agent, concentration, time, temperature]
+- Steam sterilization (for critical devices): [TODO: cycle parameters per ISO 17665]
+
+### Lifecycle/Durability Testing
+
+| Test | Standard | Cycles | Acceptance Criteria | Result |
+|------|----------|--------|---------------------|--------|
+| Repeated reprocessing | [TODO] | [TODO: N cycles] | No degradation of function | [TODO] |
+| Material compatibility | [TODO] | [TODO: N cycles] | No cracking, discoloration, corrosion | [TODO] |
+| Functional performance | [TODO] | After max cycles | Meets original performance specs | [TODO] |
+
+**Maximum number of reprocessing cycles:** [TODO: specify — typically 100-1000 depending on device]
+
+### Reprocessing IFU Validation
+
+[TODO: Company-specific — Confirm that the reprocessing instructions provided in the IFU have been validated through simulated-use testing with worst-case soil conditions]
+
+### Referenced Standards (Informational)
+
+| Standard | Title | Applicability |
+|----------|-------|---------------|
+| AAMI TIR30 | A compendium of processes, materials, test methods, and acceptance criteria for cleaning reusable medical devices | Cleaning validation |
+| AAMI ST91 | Flexible and semi-rigid endoscope processing in health care facilities | Endoscope reprocessing (if applicable) |
+| ANSI/AAMI ST77 | Containment devices for reusable medical device sterilization | Instrument trays (if applicable) |
+| ISO 17664 | Processing of health care products — Information to be provided by the medical device manufacturer | Reprocessing IFU |
+```
+
+### 21. combination-product
+
+Generates combination product documentation for devices with drug or biological components.
+
+**Required data**: device description indicating drug/biological component
+**Enriched by**: 21 CFR Part 3/4, OCP guidance
+
+**Applicability auto-detection**: Scan for keywords: "drug", "pharmaceutical", "active ingredient", "drug-eluting", "antimicrobial agent", "antibiotic", "medicated", "drug-device", "combination product", "biologic", "drug component", "active pharmaceutical", "OTC drug", "Drug Facts".
+
+**Output structure**:
+```markdown
+## Combination Product Documentation
+
+⚠ DRAFT — AI-generated regulatory prose. Review with regulatory affairs team before submission.
+Generated: {date} | Project: {name} | Plugin: fda-predicate-assistant v5.22.0
+
+### Primary Mode of Action (PMOA) Determination
+
+Per 21 CFR Part 3, the PMOA of this combination product is determined to be:
+
+- [ ] **Device** — The primary mode of action is achieved through the device component
+- [ ] **Drug** — The primary mode of action is achieved through the drug/pharmaceutical component
+- [ ] **Biologic** — The primary mode of action is achieved through the biological component
+
+[TODO: Company-specific — Provide PMOA determination rationale. Reference FDA's "Classification of Products as Drugs and Devices & Additional Product Classification Issues" guidance]
+
+{If PMOA is device: "This product is regulated as a device with a drug component under 21 CFR Part 4. The submission is to CDRH with CDER consultation."}
+{If PMOA is drug: "This product is regulated as a drug with a device component. The primary submission is to CDER, not CDRH."}
+
+### 21 CFR Part 3/4 Compliance
+
+| Requirement | Status | Reference |
+|-------------|--------|-----------|
+| PMOA determination | [TODO: Complete/Pending] | 21 CFR 3.2(m) |
+| Lead center assignment | [TODO: CDRH/CDER/CBER] | 21 CFR 3.4 |
+| Intercenter consultation | [TODO: Required/N/A] | 21 CFR 4.4 |
+| cGMP compliance (device) | [TODO: 21 CFR 820] | 21 CFR 4.4(b) |
+| cGMP compliance (drug) | [TODO: 21 CFR 211] | 21 CFR 4.4(b) |
+
+### Drug Component Characterization
+
+| Property | Value |
+|----------|-------|
+| Drug name (generic) | [TODO: e.g., silver sulfadiazine, chlorhexidine] |
+| Drug name (trade) | [TODO: if applicable] |
+| Drug class | [TODO: e.g., antimicrobial, analgesic, hemostatic] |
+| Concentration/Dose | [TODO: e.g., 1% w/w, 0.5 mg/cm²] |
+| Route of delivery | [TODO: topical, transdermal, implanted] |
+| Release kinetics | [TODO: immediate, sustained, controlled — include elution profile if available] |
+| Pharmacological testing | [TODO: describe drug characterization testing] |
+
+### Drug-Device Interaction Testing
+
+[TODO: Company-specific — Describe testing of drug-device interactions:]
+- Drug stability within the device matrix
+- Drug release profile/elution kinetics
+- Effect of sterilization on drug potency
+- Shelf life impact on drug component
+
+### OTC Drug Facts Panel (if OTC)
+
+{If device_class == "U" or is_otc == true or OTC keywords detected:}
+
+```
+Drug Facts
+Active ingredient(s)                          Purpose
+[TODO: ingredient] [TODO: concentration] .... [TODO: purpose]
+
+Uses
+[TODO: uses/indications]
+
+Warnings
+[TODO: required warnings per 21 CFR 201.66]
+
+Directions
+[TODO: directions for use]
+
+Other information
+[TODO: storage conditions, etc.]
+
+Inactive ingredients
+[TODO: list inactive ingredients]
+```
+
+{If not OTC: "OTC Drug Facts panel not applicable — device is prescription use only."}
+
+### Regulatory Pathway Considerations
+
+[TODO: Company-specific — Address the following:]
+- Is a pre-submission (Q-Sub) meeting with both CDRH and CDER/CBER recommended?
+- Has a Request for Designation (RFD) been filed if PMOA is ambiguous?
+- Are there predicate combination products with established review precedent?
+```
+
 ## Revision Workflow (--revise)
 
 When `--revise` is specified, the command regenerates a section draft while preserving user edits:
@@ -794,16 +1084,28 @@ section marked as not applicable.
 
 When running a multi-section pipeline (not a single section), auto-detect the device type and recommend critical sections:
 
-**SaMD / Software-Only Devices** (detected by: `review_panel` = "PA" or "RA", or `classification_device_name` contains "software", "SaMD", "algorithm", "digital", "AI/ML", or device_profile has no `materials` and no `sterilization_method`):
+**SaMD / Software-Only Devices** (detected by: `review_panel` = "PA" or "RA", or `classification_device_name` contains "software", "SaMD", "algorithm", "digital", "AI/ML", or product_code in [QKQ, NJS, OIR, PEI, QAS, QDQ, QMT, QFM], or device_profile has no `materials` and no `sterilization_method`):
 - **CRITICAL**: `software` section MUST be drafted — this is the primary technical evidence for SaMD
 - **CRITICAL**: `performance-summary` should focus on algorithm validation, not bench testing
 - Mark N/A with rationale: `sterilization`, `biocompatibility`, `emc-electrical`, `shelf-life`
 - `labeling` should include cybersecurity labeling if Section 524B applies
+- **Auto-queue rule**: When `--all` is used and SaMD is detected, automatically include `software` in the section queue without requiring the user to explicitly request it. If `software` would otherwise be omitted, add it with a note: `"Auto-queued: software section required for SaMD device (product code {code})"`
 
-**Combination Products** (detected by: `classification_device_name` contains "drug", or device_profile `device_description` mentions drug/active ingredient):
+**Combination Products** (detected by: `classification_device_name` contains "drug", or device_profile `device_description` mentions drug/active ingredient/pharmaceutical/medicated/drug-eluting/antimicrobial agent/OTC drug, or product_code associated with combination products):
 - Flag 21 CFR Part 3/4 PMOA determination as a required consideration
 - `biocompatibility` must address drug component toxicity/pharmacology
 - `labeling` must address drug labeling requirements (OTC Drug Facts if applicable)
+- **Auto-queue rule**: When `--all` is used and combination product detected, automatically include `combination-product` section. Add note: `"Auto-queued: combination-product section required for device with drug/biological component"`
+
+**Sterile Devices — Shelf Life Auto-Trigger** (detected by: `sterilization_method` is not empty in device_profile/se_comparison/import_data, OR shelf life mentioned in se_comparison.md, OR `calculations/shelf_life_*.json` exists, OR keywords "sterile", "shelf life", "expiration", "expiry" in device description):
+- **Auto-queue rule**: When `--all` is used and sterile/shelf-life indicators detected, automatically include `shelf-life` section without explicit request. Add note: `"Auto-queued: shelf-life section required for sterile device with expiration dating"`
+
+**Reusable Devices — Reprocessing Auto-Trigger** (detected by: keywords "reusable", "reprocessing", "reprocessed", "autoclave", "multi-use", "non-disposable", "endoscope", "instrument tray" in device description, OR sterilization_method is "steam" for facility-sterilized devices):
+- **Auto-queue rule**: When `--all` is used and reusable device detected, automatically include `reprocessing` section. Add note: `"Auto-queued: reprocessing section required for reusable medical device"`
+
+**Surgical/Procedural Devices — Human Factors Auto-Trigger** (detected by: `review_panel` in [SU, GU, OR, HO, AN] AND device is NOT a passive-implant-only device — i.e., device has an active user interface, requires procedural steps, or involves patient interaction beyond simple implantation):
+- **Auto-queue rule**: When `--all` is used and surgical/procedural device detected, automatically include `human-factors` section unless the device is a passive implant with no user interface (e.g., a bone screw, plate, or mesh with no electronic/software component). Add note: `"Auto-queued: human-factors section recommended for surgical device (review panel {panel})"`
+- Passive implant exemption: if `classification_device_name` contains ONLY implant-related terms (screw, plate, rod, cage, mesh, stent, valve, graft) and NO active terms (powered, electronic, software, display, console, generator), skip the auto-queue
 
 **Unclassified Devices (Class U)** (detected by: `device_class` = "U" or regulation_number is empty):
 - Note missing regulation number throughout — do not fabricate one
@@ -875,6 +1177,6 @@ python3 "$FDA_PLUGIN_ROOT/scripts/fda_audit_logger.py" \
 
 ## Error Handling
 
-- **Unknown section name**: "Unknown section '{name}'. Available: device-description, se-discussion, performance-summary, testing-rationale, predicate-justification, 510k-summary, labeling, sterilization, shelf-life, biocompatibility, software, emc-electrical, clinical, cover-letter, truthful-accuracy, financial-certification, doc, human-factors"
+- **Unknown section name**: "Unknown section '{name}'. Available: device-description, se-discussion, performance-summary, testing-rationale, predicate-justification, 510k-summary, labeling, sterilization, shelf-life, biocompatibility, software, emc-electrical, clinical, cover-letter, truthful-accuracy, financial-certification, doc, human-factors, form-3881, reprocessing, combination-product"
 - **No project data**: "Project '{name}' has no pipeline data. Run /fda:pipeline first to generate data for draft generation."
 - **Insufficient data for section**: Generate what's possible, mark rest as [TODO]. Note which commands to run for more complete drafts.

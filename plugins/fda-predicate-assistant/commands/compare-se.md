@@ -292,6 +292,97 @@ After populating the table, add a sourcing comment:
 **Example of INCORRECT behavior (DO NOT DO THIS):**
 - No project data on needle gauge → Subject column: "19G, 22G, and 25G" ← FABRICATED
 
+## Step 1.75: Material Extraction from Source PDFs
+
+After Step 1.5 (sourcing subject device specs), if the `materials` array in `device_profile.json` is empty AND no materials were found in draft_device-description.md, attempt to extract materials from source PDF text:
+
+```python
+import re, os, glob
+
+pdir = os.path.join(projects_dir, project)
+
+# Check if materials are already known
+dp = os.path.join(pdir, 'device_profile.json')
+has_materials = False
+if os.path.exists(dp):
+    import json
+    with open(dp) as f:
+        profile = json.load(f)
+    has_materials = bool(profile.get('materials', []))
+
+if not has_materials:
+    # Scan source_device_text_*.txt for material keywords
+    material_keywords = [
+        r'\bstainless\s+steel\b', r'\btitanium\b', r'\bPEEK\b', r'\bPTFE\b',
+        r'\bsilicone\b', r'\bnitinol\b', r'\bcobalt[- ]?chromium\b', r'\bpolyurethane\b',
+        r'\bpolycarbonate\b', r'\bnylon\b', r'\bpolyethylene\b', r'\bpolypropylene\b',
+        r'\bUHMWPE\b', r'\bHDPE\b', r'\bFEP\b', r'\bacrylic\b', r'\bceramic\b',
+        r'\bhydroxyapatite\b', r'\btungsten\b', r'\bnickel\b', r'\bPVC\b',
+        r'\blatex\b', r'\bepoxy\b', r'\bparylene\b', r'\bhydrogel\b',
+        r'\bcollagen\b', r'\bgold\b', r'\bplatinum\b', r'\biridium\b',
+    ]
+
+    found_materials = set()
+    source_file = None
+
+    for stf in glob.glob(os.path.join(pdir, 'source_device_text_*.txt')):
+        with open(stf) as f:
+            text = f.read()
+        for pattern in material_keywords:
+            matches = re.findall(pattern, text, re.I)
+            for m in matches:
+                found_materials.add(m.strip().title())
+        if found_materials and not source_file:
+            source_file = os.path.basename(stf)
+
+    if found_materials:
+        print(f"EXTRACTED_MATERIALS:{', '.join(sorted(found_materials))}")
+        print(f"MATERIAL_SOURCE:{source_file}")
+        print("NOTE:Materials extracted from source PDF text — present as inferred, not verified specs")
+```
+
+**If materials extracted:**
+- Populate the "Materials" row in the subject device column with: `{material_list} [Inferred from source PDF — verify with manufacturer]`
+- Add footnote: `† Materials extracted from {source_file} — not verified manufacturer specs. Confirm with actual BOM.`
+- Do NOT present extracted materials as confirmed specifications
+
+**If no materials found:** Leave as `[TODO: Specify materials of construction]`
+
+## Step 1.85: Predicate PDF Stub Detection
+
+After fetching or loading predicate PDF text (Step 2 below), classify the quality of each predicate's text data:
+
+```python
+def classify_predicate_text(text, k_number):
+    """Classify predicate PDF text quality."""
+    if not text or len(text.strip()) == 0:
+        return "UNAVAILABLE", "No PDF text available"
+    elif len(text.strip()) < 500:
+        return "STUB", f"Only {len(text.strip())} chars — likely a cover page or corrupted extraction"
+    elif len(text.strip()) < 2000:
+        return "SPARSE", f"{len(text.strip())} chars — limited content, may be missing key sections"
+    else:
+        return "ADEQUATE", f"{len(text.strip())} chars"
+```
+
+**For each predicate, report classification:**
+```
+PREDICATE_QUALITY:{K-number}|{UNAVAILABLE|STUB|SPARSE|ADEQUATE}|{char_count}
+```
+
+**Apply quality-based handling:**
+- **UNAVAILABLE**: Mark ALL predicate column cells as `[Data unavailable — manual entry required]`
+- **STUB** (<500 chars): Mark predicate column cells as `[Inferred from openFDA metadata]` where openFDA data is used. Add footer warning: `"⚠ Predicate {K-number} has minimal PDF text ({N} chars). Predicate data inferred from openFDA database records only — may be incomplete."`
+- **SPARSE** (<2000 chars): Mark specific cells where data was not found as `[Not found in summary — verify manually]`
+- **ADEQUATE** (≥2000 chars): Normal extraction
+
+**If ALL predicates are STUB or UNAVAILABLE**, add a prominent notice at the top of the SE table:
+```markdown
+> ⚠ **Limited Predicate Data**: All predicate device summaries had minimal or no PDF text available.
+> Predicate columns are populated from openFDA database records only and may be incomplete.
+> Manual verification against the actual 510(k) summary documents is strongly recommended.
+```
+
 ## Step 2: Load Predicate & Reference Device Data
 
 ### Check PDF text cache
@@ -548,6 +639,51 @@ def auto_compare(subject_text, predicate_text):
     # Otherwise mark for review
     return '[REVIEW NEEDED]'
 ```
+
+## Step 4a: Conditional Row Injection
+
+After selecting the device-type template rows (Step 1) and before generating the table, inject additional rows based on detected device characteristics:
+
+### Reusable Device Rows
+
+**Detection:** Scan device description, se_comparison, and device_profile for reusable indicators: "reusable", "reprocessing", "autoclave", "multi-use", "non-disposable", "endoscope", "instrument tray".
+
+**If reusable device detected, inject these rows after "Sterilization":**
+
+| Row | What to Extract | Where to Find |
+|-----|----------------|---------------|
+| Reprocessing Method | "Manual cleaning + steam sterilization" | Device Description, Labeling |
+| Maximum Reprocessing Cycles | "Validated for 100 cycles" | Performance Testing |
+| Cleaning Agents | "Enzymatic detergent, neutral pH" | Labeling, Reprocessing IFU |
+
+### Powered Accessory / Equipment-Dependent Device Rows
+
+**Detection:** Scan device description for: "generator", "console", "controller", "power supply", "light source", "camera head", "processor", "power unit", "energy source", "compatible with".
+
+**If compatible equipment detected, inject these rows after "Device Description":**
+
+| Row | What to Extract | Where to Find |
+|-----|----------------|---------------|
+| Compatible Equipment | "Model XYZ Generator" | Device Description, Labeling |
+| Power Requirements | "120V/240V AC, 50-60 Hz" | Device Description, Electrical Safety |
+
+### Shelf Life Row Expansion
+
+**Detection:** Scan se_comparison, device_profile, calculations/ for shelf life claims.
+
+**If shelf life claim detected, expand the single "Shelf Life" row into 4 sub-rows:**
+
+| Row | What to Extract | Where to Find |
+|-----|----------------|---------------|
+| Shelf Life — Claimed Duration | "3 years from date of sterilization" | Labeling, Shelf Life section |
+| Shelf Life — Aging Methodology | "Accelerated per ASTM F1980 + real-time initiated" | Shelf Life section, calculations/ |
+| Shelf Life — Q10 Value | "2.0 (conservative)" | calculations/shelf_life_calc.json |
+| Shelf Life — Package Type | "Tyvek/PETG thermoformed tray, double sterile barrier" | Package Design, Shelf Life section |
+
+**Data threading for shelf life expansion:**
+- If `calculations/shelf_life_calc.json` exists: extract Q10, AAF, claimed duration, ambient/accelerated temperatures
+- If `se_comparison.md` mentions predicate shelf life: extract for predicate column
+- If no shelf life data available: use standard rows with `[TODO: specify]`
 
 ## Step 4b: Materials Comparison (BOM Integration)
 

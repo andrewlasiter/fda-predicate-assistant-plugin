@@ -241,7 +241,7 @@ For each RTA criterion, check project data:
 rta_items = [
     {"id": "RTA-01", "item": "Cover letter", "check": "draft_cover-letter.md in drafts", "required": True},
     {"id": "RTA-02", "item": "FDA Form 3514 (Cover Sheet)", "check": "referenced in cover letter", "required": True},
-    {"id": "RTA-03", "item": "Indications for Use (Form 3881)", "check": "IFU in review.json or --intended-use", "required": True},
+    {"id": "RTA-03", "item": "Indications for Use (Form 3881)", "check": "draft_form-3881.md in drafts OR estar/03_510kSummary/form_3881.md — IFU text in device_profile.json alone is NOT sufficient", "required": True},
     {"id": "RTA-04", "item": "510(k) Summary or Statement", "check": "draft_510k-summary.md in drafts", "required": True},
     {"id": "RTA-05", "item": "Truthful and Accuracy Statement", "check": "draft_truthful-accuracy.md in drafts", "required": True},
     {"id": "RTA-06", "item": "Class III Certification", "check": "only if Class III", "required": "conditional"},
@@ -363,6 +363,51 @@ Flag:
 - IFU broader than classification → CRITICAL deficiency
 - IFU unclear or missing → CRITICAL deficiency (RTA)
 
+### 4d. Brand Name Mismatch Detection
+
+Compare the `applicant` field (from device_profile.json, import_data.json, or review.json) against company/brand names found in `intended_use`, `device_description`, and all draft files.
+
+**Known company names to check:** `KARL STORZ`, `Boston Scientific`, `Medtronic`, `Abbott`, `Johnson & Johnson`, `Ethicon`, `Stryker`, `Zimmer Biomet`, `Smith & Nephew`, `B. Braun`, `Cook Medical`, `Edwards Lifesciences`, `Becton Dickinson`, `BD`, `Baxter`, `Philips`, `GE Healthcare`, `Siemens Healthineers`, `Olympus`, `Hologic`, `Intuitive Surgical`, `Teleflex`, `ConvaTec`, `Coloplast`, `3M Health Care`, `Cardinal Health`, `Danaher`, `Integra LifeSciences`, `NuVasive`, `Globus Medical`, `DePuy Synthes`
+
+**Detection logic:**
+1. Extract applicant name from project data
+2. For each known company name, if it appears in the subject device data AND does not match the applicant:
+   - Check context: predicate reference (acceptable) vs subject device attribution (CRITICAL)
+   - Predicate context: "compared to", "predicate", "reference device", "{K-number}"
+   - Subject context: IFU text, device description without predicate context, labeling body text
+3. Flag:
+   - **CRITICAL**: Competitor brand `{company}` appears as subject device manufacturer in `{file}`. Likely peer-mode data leakage.
+   - Simulated AI request: `"The Indications for Use statement references '{company}' which does not match the applicant '{applicant}'. Please clarify the relationship between the applicant and the device manufacturer."`
+   - Remediation: `"Review all draft files and replace competitor brand references with your company name. Consider re-running /fda:draft with the --device-description and --intended-use flags to override peer data."`
+
+### 4e. Compatible Equipment Check
+
+Detect keywords indicating the device requires compatible equipment: "generator", "console", "controller", "power supply", "light source", "camera head", "processor", "power unit", "energy source".
+
+**If compatible equipment keywords detected in device description or se_comparison:**
+1. Check if the specific equipment is identified (model number, specifications, or at minimum a category)
+2. Check if equipment compatibility is addressed in labeling (`draft_labeling.md`)
+3. Check if performance testing references the compatible equipment
+
+**Flag:**
+- **MAJOR**: Device requires compatible equipment but no specific equipment identified in project data. "Device description references {keyword} but compatible equipment specifications are not documented. FDA will request equipment compatibility information."
+- **MINOR**: Equipment identified in description but missing from labeling or testing
+
+### 4f. Shelf Life Claim Verification
+
+Detect shelf life claims in project data: scan `se_comparison.md`, `device_profile.json`, `draft_labeling.md`, `import_data.json` for patterns like "shelf life", "expiration", "dating", "X years", "X months".
+
+**If shelf life claim detected:**
+1. Check for `drafts/draft_shelf-life.md`:
+   - If missing: **CRITICAL** — "Shelf life of '{claim}' claimed but no shelf life section drafted. Run: /fda:draft shelf-life --project NAME"
+   - If exists but all [TODO]: **MAJOR** — "Shelf life section exists but contains only placeholder content"
+2. Check for `calculations/shelf_life_*.json`:
+   - If missing: **MAJOR** — "No accelerated aging calculation found. Run: /fda:calc shelf-life --project NAME"
+3. Check for ASTM F1980 reference in any draft:
+   - If missing: **MINOR** — "No ASTM F1980 reference found in shelf life documentation"
+
+**If no shelf life claim detected:** No flag (shelf life may not be applicable).
+
 ## Step 5: Specialist Reviewer Evaluations
 
 **For each specialist reviewer identified in Step 2:**
@@ -413,6 +458,53 @@ If Human Factors reviewer assigned:
 - Verify IEC 62366-1 referenced
 - Check for use-related risk analysis
 - Flag missing usability testing as MAJOR deficiency
+
+### Reprocessing Review
+
+If Reprocessing reviewer assigned (auto-trigger: device_description contains "reusable", "reprocessing", "autoclave", "multi-use", "non-disposable", "endoscope", "instrument tray", OR sterilization_method is "steam" for facility-sterilized devices):
+- Check for `draft_reprocessing.md`
+- **Content adequacy**: If file exists, verify it specifies cleaning validation methodology (not just [TODO: method]), lists acceptance criteria, and references AAMI TIR30 or equivalent
+- Check for lifecycle/durability testing documentation (repeated reprocessing cycles)
+- Check for reprocessing IFU in labeling section
+- Flag missing cleaning validation as MAJOR deficiency
+- Flag missing lifecycle testing as MAJOR deficiency
+- Flag file with placeholder-only content as MAJOR deficiency: "Reprocessing section exists but validation methodology not determined"
+
+**Review template:**
+```
+Reprocessing Reviewer Assessment:
+  □ Cleaning validation per AAMI TIR30
+  □ Worst-case soil challenge identified
+  □ Acceptance criteria for protein/hemoglobin/endotoxin residuals
+  □ Disinfection/sterilization between uses validated
+  □ Lifecycle testing (N reprocessing cycles without degradation)
+  □ Reprocessing IFU present in labeling
+  □ Drying validation (if device has lumens/channels)
+```
+
+### Combination Product Review
+
+If Combination Product reviewer assigned (auto-trigger: device_description or classification_device_name contains "drug", "pharmaceutical", "active ingredient", "drug-eluting", "antimicrobial agent", "medicated", "drug-device", "combination product", "OTC drug", "Drug Facts", "active pharmaceutical"):
+- Check for `draft_combination-product.md`
+- **PMOA determination**: Verify Primary Mode of Action is stated. PMOA missing = **CRITICAL** deficiency
+- Check for drug component characterization (drug name, concentration, release kinetics)
+- Check for drug-device interaction testing documentation
+- If OTC device: check for OTC Drug Facts panel in labeling
+- Flag missing PMOA as CRITICAL deficiency: "Combination product identified but no PMOA determination found. This is required per 21 CFR Part 3."
+- Flag missing drug characterization as MAJOR deficiency
+
+**Review template:**
+```
+Combination Product Reviewer Assessment:
+  □ PMOA determination (device/drug/biologic)
+  □ Lead center assignment (CDRH/CDER/CBER)
+  □ Drug component characterized (name, concentration, class)
+  □ Drug-device interaction testing
+  □ Drug release kinetics/elution profile
+  □ 21 CFR Part 3/4 compliance documented
+  □ OTC Drug Facts panel (if OTC)
+  □ cGMP for drug component (21 CFR 211)
+```
 
 ### Clinical Review
 
@@ -589,6 +681,21 @@ def calculate_readiness_score(rta_result, predicate_scores, se_comparison,
     if predicate_scores:
         avg_score = sum(predicate_scores) / len(predicate_scores)
         score += avg_score * 0.2
+
+        # Predicate PDF availability penalty:
+        # If source_device_text_*.txt is missing or <500 bytes for any accepted predicate, apply -5 penalty
+        if project_dir:
+            import glob as g
+            source_texts = g.glob(os.path.join(project_dir, 'source_device_text_*.txt'))
+            has_adequate_source = False
+            for st in source_texts:
+                if os.path.getsize(st) >= 500:
+                    has_adequate_source = True
+                    break
+            if not has_adequate_source and source_texts:
+                score -= 5  # Stub source text penalty
+            elif not source_texts:
+                score -= 5  # No source text at all penalty
     # else: 0 pts
 
     # SE comparison (15 pts)
@@ -597,9 +704,31 @@ def calculate_readiness_score(rta_result, predicate_scores, se_comparison,
     elif se_comparison == "partial":
         score += 8
 
-    # Content Adequacy (15 pts) — NEW: checks actual content quality
+    # Content Adequacy (15 pts) — checks actual content quality
     if project_dir:
-        score += check_content_adequacy(project_dir, drafts)
+        adequacy_pts = check_content_adequacy(project_dir, drafts)
+
+        # [TODO] density penalty: count [TODO] items across all drafts
+        # If >50% of a section is TODO: -1pt; if >80%: -2pt
+        drafts_path = os.path.join(project_dir, 'drafts')
+        todo_penalty = 0
+        if os.path.isdir(drafts_path):
+            for df in os.listdir(drafts_path):
+                if df.startswith('draft_') and df.endswith('.md'):
+                    fpath = os.path.join(drafts_path, df)
+                    with open(fpath) as f:
+                        text = f.read()
+                    lines = [l for l in text.split('\n') if l.strip() and not l.startswith('#') and not l.startswith('⚠') and not l.startswith('Generated')]
+                    if len(lines) > 5:  # Only penalize files with meaningful content
+                        todo_lines = sum(1 for l in lines if '[TODO' in l)
+                        ratio = todo_lines / len(lines) if lines else 0
+                        if ratio > 0.8:
+                            todo_penalty += 2
+                        elif ratio > 0.5:
+                            todo_penalty += 1
+
+        adequacy_pts = max(0, adequacy_pts - min(todo_penalty, 5))  # Cap penalty at 5 pts
+        score += adequacy_pts
     # else: 0 pts
 
     # Deficiency penalty (15 pts)
@@ -717,9 +846,20 @@ SUBMISSION READINESS INDEX (SRI)
   | RTA completeness | {N} | 25 | {N}/{M} required items (capped if TODO-heavy) |
   | Predicate quality | {N} | 20 | Avg confidence: {N}/100 |
   | SE comparison | {N} | 15 | {status} |
-  | Content adequacy | {N} | 15 | SE real data, steril method, DoC coverage, materials, criteria |
+  | Content adequacy | {N} | 15 | SE real data, steril method, DoC coverage, materials, criteria (minus [TODO] penalty) |
   | Deficiency penalty | {N} | 15 | {N} critical, {M} major |
   | Documentation | {N} | 10 | {N}/{M} core sections |
+
+[TODO] DENSITY BY SECTION
+────────────────────────────────────────
+
+  {For each draft file with [TODO] items:}
+  | Section | Total Lines | [TODO] Lines | Density | Status |
+  |---------|-------------|-------------|---------|--------|
+  | {section_name} | {total} | {todo_count} | {%} | ✓ OK / ⚠ High / ✗ Critical |
+
+  Density thresholds: <50% = OK, 50-80% = High (⚠), >80% = Critical (✗)
+  Content adequacy penalty: -{N} pts for high-density sections
 
 REMEDIATION PLAN
 ────────────────────────────────────────
