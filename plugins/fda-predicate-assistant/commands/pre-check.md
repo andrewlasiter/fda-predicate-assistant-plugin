@@ -213,6 +213,20 @@ Analyze the device description and project data to determine which specialists w
 - Check for reusable device → Reprocessing reviewer
 - Check for clinical data → Clinical reviewer
 
+### Device Classification Edge Cases
+
+**Unclassified Devices (Class U)**: If `device_class` = "U" or regulation_number is empty/missing:
+- Do NOT flag missing regulation number as a deficiency — Class U devices legitimately have no 21 CFR regulation number
+- Note "Unclassified" status in the review team section rather than leaving regulation blank
+- Class U devices are typically cleared under general controls only; do not require Class III certification or special controls documentation
+- The RTA check for Class III Certification (RTA-06) should auto-pass as N/A for Class U devices
+
+**Combination Products** (device_description or classification_device_name mentions "drug" or active pharmaceutical ingredient):
+- Flag that 21 CFR Part 3/4 PMOA determination is relevant
+- Note that CDER or CBER may also have review jurisdiction
+- Sterilization reviewer may not apply if product is a non-sterile topical solution
+- Biocompatibility review should include drug component toxicity assessment
+
 ## Step 3: RTA Screening
 
 **This step runs at all `--depth` levels including `quick`.**
@@ -589,6 +603,8 @@ def calculate_readiness_score(rta_result, predicate_scores, se_comparison,
     # else: 0 pts
 
     # Deficiency penalty (15 pts)
+    # NOTE: For Class U (unclassified) devices, do NOT count missing regulation number
+    # as a deficiency. Filter out any deficiency about "missing regulation" if device_class == "U".
     critical_count = sum(1 for d in deficiencies if d["severity"] == "CRITICAL")
     major_count = sum(1 for d in deficiencies if d["severity"] == "MAJOR")
     penalty = min(15, 3 * critical_count + 1 * major_count)

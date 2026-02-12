@@ -150,6 +150,29 @@ if os.path.exists(imp):
         data_sources['import_data'] = json.load(f)
     print("LOADED:import_data.json")
 
+# source_device_text_*.txt → raw PDF text (fallback when extracted_sections is empty)
+for stf in glob.glob(os.path.join(pdir, 'source_device_text_*.txt')):
+    fname = os.path.basename(stf)
+    with open(stf) as f:
+        text = f.read()
+    data_sources[f'source_text_{fname}'] = text
+    k_match = re.search(r'K\d{6}', fname)
+    k_id = k_match.group(0) if k_match else 'unknown'
+    print(f"LOADED:{fname} ({len(text)} chars, source K#{k_id})")
+
+# Check data richness — flag sparse data for fallback handling
+dp_data = data_sources.get('device_profile', {})
+extracted = dp_data.get('extracted_sections', {})
+has_description = bool(extracted.get('device_description', '').strip())
+has_ifu = bool(dp_data.get('intended_use', '').strip()) and '[TODO' not in dp_data.get('intended_use', '')
+has_materials = bool(dp_data.get('materials', []))
+if not has_description and not has_ifu:
+    print("SPARSE_DATA:true — extracted_sections empty, no IFU. Will use classification definition and source text as fallback.")
+    # Try to get classification definition as fallback device description
+    class_name = dp_data.get('classification_device_name', '')
+    if class_name:
+        print(f"FALLBACK_DEVICE_NAME:{class_name}")
+
 # Existing drafts (for cross-referencing)
 drafts_dir = os.path.join(pdir, 'drafts')
 if os.path.isdir(drafts_dir):
@@ -170,6 +193,13 @@ PYEOF
 5. If no data source provides a value → use `[TODO: Company-specific — {description}]`
 
 **CRITICAL**: Never generate a value in one section that contradicts data already stated in another project file. If `se_comparison.md` says "EO sterilized", the sterilization draft MUST say "EO" — not `[TODO: EO or Radiation]`.
+
+**SPARSE DATA FALLBACK**: If `SPARSE_DATA:true` was reported in Step 0.5 (no extracted_sections, no IFU):
+1. Read `source_device_text_*.txt` files — these contain raw 510(k) summary PDF text that may have device descriptions, IFU, and specs even when the regex parser couldn't extract structured sections
+2. Use the `classification_device_name` field from device_profile.json as the device type identifier
+3. Use the FDA classification `definition` text (from openFDA) as a fallback device description foundation
+4. If peer devices are listed in review.json or device_profile.json, reference their device names and applicants to establish the product landscape
+5. Generate more [TODO] placeholders than usual, but still provide structural frameworks (section headings, table templates, standard references) based on the product code and review panel
 
 ## Available Sections
 
@@ -759,6 +789,26 @@ section marked as not applicable.
 4. **Unverified claims**: Anything that cannot be substantiated from project data gets `[CITATION NEEDED]` or `[TODO: Company-specific — verify]`.
 5. **No fabrication**: Never invent test results, clinical data, or device specifications. If data isn't available, say so.
 6. **Standard references**: Use proper CFR/ISO/ASTM citation format (e.g., "per 21 CFR 807.87(f)", "ISO 10993-1:2025").
+
+## Device-Type Adaptive Section Selection
+
+When running a multi-section pipeline (not a single section), auto-detect the device type and recommend critical sections:
+
+**SaMD / Software-Only Devices** (detected by: `review_panel` = "PA" or "RA", or `classification_device_name` contains "software", "SaMD", "algorithm", "digital", "AI/ML", or device_profile has no `materials` and no `sterilization_method`):
+- **CRITICAL**: `software` section MUST be drafted — this is the primary technical evidence for SaMD
+- **CRITICAL**: `performance-summary` should focus on algorithm validation, not bench testing
+- Mark N/A with rationale: `sterilization`, `biocompatibility`, `emc-electrical`, `shelf-life`
+- `labeling` should include cybersecurity labeling if Section 524B applies
+
+**Combination Products** (detected by: `classification_device_name` contains "drug", or device_profile `device_description` mentions drug/active ingredient):
+- Flag 21 CFR Part 3/4 PMOA determination as a required consideration
+- `biocompatibility` must address drug component toxicity/pharmacology
+- `labeling` must address drug labeling requirements (OTC Drug Facts if applicable)
+
+**Unclassified Devices (Class U)** (detected by: `device_class` = "U" or regulation_number is empty):
+- Note missing regulation number throughout — do not fabricate one
+- Pre-check should not penalize for missing regulation (it doesn't exist)
+- DoC should note "Unclassified" rather than leave regulation blank
 
 ## Output
 
