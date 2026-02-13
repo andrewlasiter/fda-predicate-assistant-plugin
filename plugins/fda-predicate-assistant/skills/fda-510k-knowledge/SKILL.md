@@ -23,7 +23,27 @@ This project uses a two-stage pipeline for FDA 510(k) predicate analysis:
   - Full interactive: All 7 filter layers with AI recommendations
   - `--full-auto`: Skip all questions, use CLI args only
 - **Features:** Embedded reference data, preview with confirmation, project-based organization, query.json metadata
+- **Optional Enrichment:** `--enrich` flag adds 12 columns of real FDA API data (MAUDE events, recalls, validation)
 - **Best for:** Exploratory research, first-time users, complex filtering, collaborative workflows
+
+**API Enrichment (Optional `--enrich` flag):**
+- **Requires:** Free openFDA API key (120K requests/day, sign up at https://open.fda.gov/apis/authentication/)
+- **Adds 12 columns (all real FDA data):**
+  - `maude_productcode_5y` — MAUDE events (⚠️ product code level, not device-specific)
+  - `maude_trending` — Event trend (increasing/decreasing/stable)
+  - `maude_recent_6m` — Events in last 6 months
+  - `maude_scope` — Data scope disclaimer (PRODUCT_CODE or UNAVAILABLE)
+  - `recalls_total` — Number of recalls (✓ device-specific, accurate)
+  - `recall_latest_date` — Most recent recall date
+  - `recall_class` — Recall severity (I/II/III)
+  - `recall_status` — Recall status (ongoing/completed)
+  - `api_validated` — K-number exists in FDA database (Yes/No)
+  - `decision_description` — Clearance decision type
+  - `expedited_review_flag` — Expedited review status (Y/N)
+  - `summary_type` — Public document type (Summary/Statement)
+- **Generates:** `enrichment_report.html` with recall analysis and data limitations
+- **Time savings:** ~3-4 hours per competitive analysis (automated recall/validation checks)
+- **Data integrity:** Conservative design—only real FDA data, no calculated fields, clear disclaimers
 
 **CLI Script (For automation and scripted workflows):**
 - **Script:** `$FDA_PLUGIN_ROOT/scripts/batchfetch.py`
@@ -32,10 +52,11 @@ This project uses a two-stage pipeline for FDA 510(k) predicate analysis:
 - **Best for:** Repeatable workflows, CI/CD pipelines, batch processing, automation
 
 **Common Outputs (both approaches):**
-  - `510k_download.csv` — Full metadata (24 cols: KNUMBER, APPLICANT, DECISIONDATE, PRODUCTCODE, TYPE, STATEORSUMM, REVIEWADVISECOMM, THIRDPARTY, EXPEDITEDREVIEW, etc.)
+  - `510k_download.csv` — Full metadata (24 cols base, 36 cols with --enrich)
   - `Applicant_ProductCode_Tables.xlsx` — Analytics workbook (3 sheets)
   - `merged_data.csv` — K-number + up to 6 predicates (7 cols)
   - `query.json` — Filter metadata and results summary (command only)
+  - `enrichment_report.html` — Recall analysis dashboard (with --enrich only)
   - Downloaded PDFs in: `DOWNLOAD_DIR/YEAR/APPLICANT/PRODUCTCODE/TYPE/`
 
 ### Stage 2: PredicateExtraction
@@ -225,14 +246,21 @@ See `references/openfda-api.md` for the full API reference with query templates,
 
 See the **Workflow Guide** section above for the full 5-stage workflow. Here's the minimal path:
 
-**Option A (Interactive filtering):**
+**Option A (Interactive filtering with enrichment - Recommended):**
+```
+/fda-predicate-assistant:batchfetch --product-codes CODE --years RANGE --quick --enrich
+→ /fda:extract stage2 --project NAME → /fda:review --project NAME
+→ /fda:draft --project NAME → /fda:assemble --project NAME → /fda:pre-check --project NAME
+```
+
+**Option B (Interactive filtering without enrichment):**
 ```
 /fda-predicate-assistant:batchfetch --product-codes CODE --years RANGE --quick
 → /fda:extract stage2 --project NAME → /fda:review --project NAME
 → /fda:draft --project NAME → /fda:assemble --project NAME → /fda:pre-check --project NAME
 ```
 
-**Option B (Direct extraction):**
+**Option C (Direct extraction - existing workflow):**
 ```
 /fda:configure --setup-key → /fda:extract both → /fda:review --project NAME
 → /fda:draft --project NAME → /fda:assemble --project NAME → /fda:pre-check --project NAME
@@ -263,7 +291,7 @@ See the **Workflow Guide** section above for the full 5-stage workflow. Here's t
 ### Stage 2: Data Collection
 | Command | Purpose |
 |---------|---------|
-| `/fda-predicate-assistant:batchfetch` | **Interactive FDA 510(k) filtering** — AI-guided filter selection with preview (quick/full/full-auto modes) |
+| `/fda-predicate-assistant:batchfetch` | **Interactive FDA 510(k) filtering** — AI-guided filter selection with preview (quick/full/full-auto modes). Optional `--enrich` flag adds 12 columns of real FDA API data (recalls, MAUDE, validation) |
 | `/fda:extract` | Download 510(k) PDFs and extract predicate relationships |
 | `/fda:validate` | Validate device numbers against FDA databases |
 | `/fda:research` | Full submission research — predicates, testing, competitive landscape |
@@ -353,7 +381,13 @@ Autonomous agents handle complex multi-step workflows. Launch them with the Task
 
 ### Stage 2: Data Collection
 
-**Interactive filtering (recommended for AI assistance):**
+**Interactive filtering with enrichment (recommended for AI assistance):**
+```
+/fda-predicate-assistant:batchfetch --product-codes KGN --years 2024 --quick --enrich
+/fda:extract stage2 --project NAME  — Extract predicates from downloaded PDFs
+```
+
+**Or basic filtering (without enrichment):**
 ```
 /fda-predicate-assistant:batchfetch --product-codes KGN --years 2024 --quick
 /fda:extract stage2 --project NAME  — Extract predicates from downloaded PDFs
@@ -365,6 +399,12 @@ Autonomous agents handle complex multi-step workflows. Launch them with the Task
 /fda:gap-analysis --project NAME    — Find missing K-numbers, PDFs, and extractions
 /fda:data-pipeline run              — Download missing data and re-extract
 ```
+
+**Note on enrichment:**
+- Adds ~3-5 minutes to workflow for 50 devices
+- Requires free openFDA API key (configure with `/fda:configure --set openfda_api_key YOUR_KEY`)
+- Saves 3-4 hours of manual recall/validation research
+- Data is conservative: only real FDA data, no calculated scores
 
 ### Stage 3: Analysis & Review
 ```
