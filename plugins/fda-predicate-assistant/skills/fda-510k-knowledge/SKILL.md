@@ -14,13 +14,28 @@ For focused workflows, prefer the specialized skills: `fda-predicate-assessment`
 This project uses a two-stage pipeline for FDA 510(k) predicate analysis:
 
 ### Stage 1: BatchFetch
+
+**Interactive Command (Recommended for AI-assisted workflows):**
+- **Command:** `/fda-predicate-assistant:batchfetch`
+- **Purpose:** AI-guided filter selection through Claude Code's native interface with preview before download
+- **Modes:**
+  - `--quick`: Express mode (2 questions: product codes + years)
+  - Full interactive: All 7 filter layers with AI recommendations
+  - `--full-auto`: Skip all questions, use CLI args only
+- **Features:** Embedded reference data, preview with confirmation, project-based organization, query.json metadata
+- **Best for:** Exploratory research, first-time users, complex filtering, collaborative workflows
+
+**CLI Script (For automation and scripted workflows):**
 - **Script:** `$FDA_PLUGIN_ROOT/scripts/batchfetch.py`
-- **Purpose:** Filter the FDA device catalog by year, product code, applicant, etc., then download 510(k) PDF documents
+- **Purpose:** Direct command-line filtering and download without interactive prompts
 - **CLI flags:** `--date-range`, `--years`, `--product-codes`, `--applicants`, `--committees`, `--decision-codes`, `--output-dir`, `--download-dir`, `--data-dir`, `--save-excel`, `--no-download`, `--interactive`
-- **Outputs:**
+- **Best for:** Repeatable workflows, CI/CD pipelines, batch processing, automation
+
+**Common Outputs (both approaches):**
   - `510k_download.csv` — Full metadata (24 cols: KNUMBER, APPLICANT, DECISIONDATE, PRODUCTCODE, TYPE, STATEORSUMM, REVIEWADVISECOMM, THIRDPARTY, EXPEDITEDREVIEW, etc.)
   - `Applicant_ProductCode_Tables.xlsx` — Analytics workbook (3 sheets)
   - `merged_data.csv` — K-number + up to 6 predicates (7 cols)
+  - `query.json` — Filter metadata and results summary (command only)
   - Downloaded PDFs in: `DOWNLOAD_DIR/YEAR/APPLICANT/PRODUCTCODE/TYPE/`
 
 ### Stage 2: PredicateExtraction
@@ -210,9 +225,17 @@ See `references/openfda-api.md` for the full API reference with query templates,
 
 See the **Workflow Guide** section above for the full 5-stage workflow. Here's the minimal path:
 
+**Option A (Interactive filtering):**
 ```
-/fda:configure --setup-key    → /fda:extract both → /fda:review --project NAME
-→ /fda:draft --project NAME   → /fda:assemble --project NAME → /fda:pre-check --project NAME
+/fda-predicate-assistant:batchfetch --product-codes CODE --years RANGE --quick
+→ /fda:extract stage2 --project NAME → /fda:review --project NAME
+→ /fda:draft --project NAME → /fda:assemble --project NAME → /fda:pre-check --project NAME
+```
+
+**Option B (Direct extraction):**
+```
+/fda:configure --setup-key → /fda:extract both → /fda:review --project NAME
+→ /fda:draft --project NAME → /fda:assemble --project NAME → /fda:pre-check --project NAME
 ```
 
 **Supporting commands** (use anytime):
@@ -240,6 +263,7 @@ See the **Workflow Guide** section above for the full 5-stage workflow. Here's t
 ### Stage 2: Data Collection
 | Command | Purpose |
 |---------|---------|
+| `/fda-predicate-assistant:batchfetch` | **Interactive FDA 510(k) filtering** — AI-guided filter selection with preview (quick/full/full-auto modes) |
 | `/fda:extract` | Download 510(k) PDFs and extract predicate relationships |
 | `/fda:validate` | Validate device numbers against FDA databases |
 | `/fda:research` | Full submission research — predicates, testing, competitive landscape |
@@ -328,6 +352,14 @@ Autonomous agents handle complex multi-step workflows. Launch them with the Task
 ```
 
 ### Stage 2: Data Collection
+
+**Interactive filtering (recommended for AI assistance):**
+```
+/fda-predicate-assistant:batchfetch --product-codes KGN --years 2024 --quick
+/fda:extract stage2 --project NAME  — Extract predicates from downloaded PDFs
+```
+
+**Or direct extraction (existing workflow):**
 ```
 /fda:extract both                   — Download PDFs + extract predicates
 /fda:gap-analysis --project NAME    — Find missing K-numbers, PDFs, and extractions
