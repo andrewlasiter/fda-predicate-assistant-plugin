@@ -954,8 +954,10 @@ except ImportError as e:
 # Banner
 print("━" * 60)
 print("  FDA API Enrichment - Production Ready")
-print("  Using fda_enrichment.py v2.0.1")
-print("  Phase 1: Data Integrity + Phase 2: Intelligence")
+print("  Using fda_enrichment.py v3.0.0")
+print("  Phase 1: Data Integrity")
+print("  Phase 2: Intelligence Layer")
+print("  Phase 3: Advanced Analytics")
 print("━" * 60)
 print("")
 
