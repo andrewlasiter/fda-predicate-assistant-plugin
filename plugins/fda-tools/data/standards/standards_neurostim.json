@@ -1,0 +1,60 @@
+{
+  "category": "Neurostimulators and Neuromodulation Devices",
+  "product_codes": ["GZB", "OLO", "LWV"],
+  "applicable_standards": [
+    {
+      "number": "IEC 60601-2-10:2012",
+      "title": "Medical electrical equipment — Part 2-10: Particular requirements for the basic safety and essential performance of nerve and muscle stimulators",
+      "applicability": "Neurostimulator-specific safety requirements",
+      "sections": ["Output characteristics", "Safety against hazards", "Performance requirements"]
+    },
+    {
+      "number": "ISO 14708-3:2017",
+      "title": "Implants for surgery — Active implantable medical devices — Part 3: Implantable neurostimulators",
+      "applicability": "Implantable neurostimulator requirements",
+      "sections": ["Implant design", "Lead design", "Battery requirements"]
+    },
+    {
+      "number": "IEC 62304:2006/AMD1:2015",
+      "title": "Medical device software — Software life cycle processes",
+      "applicability": "Software validation for programmable neurostimulators",
+      "sections": ["Software design", "Verification", "Risk management"]
+    },
+    {
+      "number": "IEC 60601-1:2005/AMD1:2012",
+      "title": "Medical electrical equipment — Part 1: General requirements for basic safety and essential performance",
+      "applicability": "Electrical safety",
+      "sections": ["Electrical safety", "EMC", "Mechanical safety"]
+    },
+    {
+      "number": "IEC 60601-1-2:2014",
+      "title": "Medical electrical equipment — Part 1-2: Electromagnetic disturbances",
+      "applicability": "EMC for neurostimulators (critical to prevent interference)",
+      "sections": ["Radiated emissions", "Immunity", "ESD"]
+    },
+    {
+      "number": "ISO 14708-1:2014",
+      "title": "Implants for surgery — Active implantable medical devices — Part 1: General requirements for safety, marking and for information to be provided by the manufacturer",
+      "applicability": "General requirements for active implants",
+      "sections": ["Labeling", "Safety requirements", "Packaging"]
+    },
+    {
+      "number": "ISO 10993-1:2018",
+      "title": "Biological evaluation of medical devices — Part 1: Evaluation and testing within a risk management process",
+      "applicability": "Biocompatibility for implantable leads and electrodes",
+      "sections": ["Biocompatibility evaluation", "Test selection"]
+    },
+    {
+      "number": "ASTM F2182:2011a",
+      "title": "Standard Test Method for Measurement of Radio Frequency Induced Heating On or Near Passive Implants During Magnetic Resonance Imaging",
+      "applicability": "MRI safety testing for implantable neurostimulators",
+      "sections": ["RF heating", "MRI compatibility"]
+    },
+    {
+      "number": "ISO 14971:2019",
+      "title": "Medical devices — Application of risk management to medical devices",
+      "applicability": "Risk management",
+      "sections": ["Risk analysis", "Risk evaluation", "Risk control"]
+    }
+  ]
+}

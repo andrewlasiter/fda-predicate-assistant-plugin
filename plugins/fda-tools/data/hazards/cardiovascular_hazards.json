@@ -1,0 +1,241 @@
+{
+  "version": "1.0",
+  "source": "ISO 14971:2019 + FDA Cardiovascular Device Guidance",
+  "device_types": ["Stents", "Catheters", "Vascular Grafts", "Heart Valves", "Pacemakers", "Defibrillators"],
+  "hazards": [
+    {
+      "id": "CV-001",
+      "category": "Thrombosis",
+      "description": "Formation of blood clots on device surface or in contact area",
+      "typical_severity": 5,
+      "typical_probability": 3,
+      "harm": "Vessel occlusion, stroke, myocardial infarction, death",
+      "iso14971_reference": "Annex E - Biological and chemical hazards",
+      "common_causes": [
+        "Inadequate anticoagulation therapy",
+        "Non-biocompatible materials",
+        "Stagnant blood flow zones",
+        "Device surface roughness"
+      ],
+      "typical_controls": [
+        "Material biocompatibility testing (ISO 10993)",
+        "In vitro thrombogenicity testing",
+        "Clinical anticoagulation protocol",
+        "Surface finish specifications",
+        "Instructions for anticoagulation management"
+      ]
+    },
+    {
+      "id": "CV-002",
+      "category": "Embolism",
+      "description": "Dislodged thrombus or device fragment travels to distal vessels",
+      "typical_severity": 5,
+      "typical_probability": 2,
+      "harm": "Stroke, limb ischemia, organ infarction, death",
+      "iso14971_reference": "Annex E - Mechanical hazards",
+      "common_causes": [
+        "Device fracture or fragmentation",
+        "Thrombus formation and detachment",
+        "Improper deployment technique",
+        "Inadequate device fixation"
+      ],
+      "typical_controls": [
+        "Fatigue testing to prevent fracture",
+        "Particulate testing per ISO 10993-12",
+        "Clinical imaging protocols (angiography, ultrasound)",
+        "Physician training on deployment technique",
+        "Post-market surveillance for fracture events"
+      ]
+    },
+    {
+      "id": "CV-003",
+      "category": "Vessel Perforation",
+      "description": "Device penetrates vessel wall during insertion or use",
+      "typical_severity": 5,
+      "typical_probability": 2,
+      "harm": "Hemorrhage, cardiac tamponade, pseudoaneurysm, death",
+      "iso14971_reference": "Annex E - Operational hazards",
+      "common_causes": [
+        "Sharp or rigid device tip",
+        "Excessive force during insertion",
+        "Incorrect device sizing",
+        "Operator inexperience"
+      ],
+      "typical_controls": [
+        "Atraumatic tip design (rounded, flexible)",
+        "Insertion force testing",
+        "Physician training and credentialing",
+        "Warnings for tortuous anatomy",
+        "Imaging guidance requirements"
+      ]
+    },
+    {
+      "id": "CV-004",
+      "category": "Restenosis",
+      "description": "Re-narrowing of vessel after treatment due to neointimal hyperplasia",
+      "typical_severity": 4,
+      "typical_probability": 3,
+      "harm": "Recurrent symptoms, repeat intervention required",
+      "iso14971_reference": "Annex E - Biological hazards",
+      "common_causes": [
+        "Vascular injury from device deployment",
+        "Inflammatory response to device materials",
+        "Lack of drug-eluting coating effectiveness",
+        "Patient biological factors"
+      ],
+      "typical_controls": [
+        "Drug-eluting coating (if applicable)",
+        "Biocompatibility testing per ISO 10993 series",
+        "Clinical follow-up imaging (6 months, 1 year)",
+        "Instructions for dual antiplatelet therapy",
+        "Target lesion revascularization endpoint in clinical studies"
+      ]
+    },
+    {
+      "id": "CV-005",
+      "category": "Infection/Endocarditis",
+      "description": "Bacterial colonization of implanted device",
+      "typical_severity": 5,
+      "typical_probability": 2,
+      "harm": "Sepsis, valve dysfunction, device removal, death",
+      "iso14971_reference": "Annex E - Biological hazards",
+      "common_causes": [
+        "Non-sterile device",
+        "Contamination during implantation",
+        "Biofilm formation on device surface",
+        "Patient immunocompromise"
+      ],
+      "typical_controls": [
+        "Terminal sterilization (EO, radiation, steam per ISO 11135/11137)",
+        "Sterility testing per ISO 11737",
+        "Antimicrobial coatings (if applicable)",
+        "Instructions for aseptic implantation technique",
+        "Post-market surveillance for infection rates"
+      ]
+    },
+    {
+      "id": "CV-006",
+      "category": "Electrical Shock",
+      "description": "Leakage current or applied part contact causes patient shock",
+      "typical_severity": 5,
+      "typical_probability": 1,
+      "harm": "Ventricular fibrillation, cardiac arrest, death",
+      "iso14971_reference": "Annex E - Energy hazards - Electrical",
+      "common_causes": [
+        "Insulation breakdown",
+        "Excessive leakage current",
+        "Loss of protective earth",
+        "Patient connection to multiple devices"
+      ],
+      "typical_controls": [
+        "IEC 60601-1 compliance testing (leakage current limits)",
+        "Type BF or CF applied part classification",
+        "Redundant insulation or reinforced insulation",
+        "Electrical safety testing during manufacturing",
+        "Warnings for use with electrosurgical units"
+      ]
+    },
+    {
+      "id": "CV-007",
+      "category": "Device Migration",
+      "description": "Implant moves from intended anatomical position",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "Loss of therapy, vessel occlusion, perforation, embolization",
+      "iso14971_reference": "Annex E - Mechanical hazards",
+      "common_causes": [
+        "Inadequate fixation mechanism",
+        "Undersizing of device",
+        "Pulsatile blood flow forces",
+        "Anatomical changes over time"
+      ],
+      "typical_controls": [
+        "Radial force testing for self-expanding stents",
+        "Anchorage testing for implants",
+        "Sizing guidelines based on vessel diameter",
+        "Clinical imaging follow-up protocols",
+        "Instructions for proper sizing"
+      ]
+    },
+    {
+      "id": "CV-008",
+      "category": "Contrast Media Reaction",
+      "description": "Allergic or nephrotoxic reaction to contrast agent used during procedure",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "Anaphylaxis, acute kidney injury, contrast-induced nephropathy",
+      "iso14971_reference": "Annex E - Biological hazards - Allergic reactions",
+      "common_causes": [
+        "Patient allergy to iodinated contrast",
+        "Pre-existing renal impairment",
+        "Excessive contrast volume",
+        "Dehydration"
+      ],
+      "typical_controls": [
+        "Pre-procedure patient screening for allergies and renal function",
+        "Instructions to use minimum contrast volume necessary",
+        "Warnings about contrast-induced complications",
+        "Alternative imaging modalities (IVUS, OCT) when appropriate",
+        "Hydration protocols"
+      ]
+    },
+    {
+      "id": "CV-009",
+      "category": "Arrhythmia",
+      "description": "Device induces abnormal heart rhythm during or after implantation",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "Hemodynamic instability, syncope, sudden cardiac death",
+      "iso14971_reference": "Annex E - Functional failure - Incorrect output",
+      "common_causes": [
+        "Myocardial irritation from catheter/lead",
+        "Inappropriate pacing/defibrillation parameters",
+        "Lead dislodgement",
+        "Device-device interaction"
+      ],
+      "typical_controls": [
+        "Intraoperative electrophysiology monitoring",
+        "Atraumatic catheter/lead design",
+        "Algorithm validation for arrhythmia detection",
+        "Post-implant device interrogation",
+        "Instructions for parameter programming"
+      ]
+    },
+    {
+      "id": "CV-010",
+      "category": "Hemocompatibility Failure",
+      "description": "Device causes hemolysis, platelet activation, or complement activation",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "Anemia, thrombocytopenia, inflammatory response",
+      "iso14971_reference": "Annex E - Biological hazards - Blood contact",
+      "common_causes": [
+        "Turbulent blood flow across device",
+        "Material incompatibility with blood",
+        "Mechanical stress on red blood cells",
+        "Rough surface finish"
+      ],
+      "typical_controls": [
+        "ISO 10993-4 hemocompatibility testing",
+        "Computational fluid dynamics analysis",
+        "Material selection with proven blood compatibility",
+        "Surface finish specifications and inspection",
+        "Clinical hemolysis monitoring protocols"
+      ]
+    }
+  ],
+  "severity_scale": {
+    "1": "Negligible - No injury or health effect",
+    "2": "Minor - Temporary injury requiring first aid",
+    "3": "Serious - Injury requiring medical intervention",
+    "4": "Critical - Permanent impairment or life-threatening injury",
+    "5": "Catastrophic - Death or irreversible severe injury"
+  },
+  "probability_scale": {
+    "1": "Remote - <0.01% (1 in 10,000)",
+    "2": "Unlikely - 0.01-0.1% (1 in 1,000 to 1 in 10,000)",
+    "3": "Possible - 0.1-1% (1 in 100 to 1 in 1,000)",
+    "4": "Probable - 1-10% (1 in 10 to 1 in 100)",
+    "5": "Frequent - >10% (>1 in 10)"
+  }
+}

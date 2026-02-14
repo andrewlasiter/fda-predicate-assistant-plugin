@@ -1,0 +1,72 @@
+{
+  "category": "In Vitro Diagnostic (IVD) Devices",
+  "product_codes": ["JJE", "LCX", "OBP"],
+  "applicable_standards": [
+    {
+      "number": "CLSI EP05-A3:2014",
+      "title": "Evaluation of Precision of Quantitative Measurement Procedures",
+      "applicability": "Precision/repeatability studies for IVDs",
+      "sections": ["Within-run precision", "Between-run precision", "Total precision"]
+    },
+    {
+      "number": "CLSI EP06-A:1997",
+      "title": "Evaluation of the Linearity of Quantitative Measurement Procedures: A Statistical Approach",
+      "applicability": "Linearity studies for IVD assays",
+      "sections": ["Linearity assessment", "Reportable range"]
+    },
+    {
+      "number": "CLSI EP07-A2:2005",
+      "title": "Interference Testing in Clinical Chemistry",
+      "applicability": "Interference/specificity studies",
+      "sections": ["Endogenous interferents", "Exogenous interferents"]
+    },
+    {
+      "number": "CLSI EP09c:2018",
+      "title": "Measurement Procedure Comparison and Bias Estimation Using Patient Samples",
+      "applicability": "Method comparison studies vs. predicate/gold standard",
+      "sections": ["Correlation", "Bias estimation", "Passing-Bablok"]
+    },
+    {
+      "number": "CLSI EP10-A3:2006",
+      "title": "Preliminary Evaluation of Quantitative Clinical Laboratory Measurement Procedures",
+      "applicability": "Initial performance verification",
+      "sections": ["Precision", "Accuracy", "Reportable range"]
+    },
+    {
+      "number": "CLSI EP15-A3:2014",
+      "title": "User Verification of Precision and Estimation of Bias",
+      "applicability": "User site verification protocols",
+      "sections": ["Within-lab precision", "Bias verification"]
+    },
+    {
+      "number": "CLSI EP17-A2:2012",
+      "title": "Evaluation of Detection Capability for Clinical Laboratory Measurement Procedures",
+      "applicability": "Limit of detection (LoD) and limit of quantitation (LoQ)",
+      "sections": ["LoD determination", "LoQ determination", "LoB"]
+    },
+    {
+      "number": "ISO 18113-1:2009",
+      "title": "In vitro diagnostic medical devices — Information supplied by the manufacturer (labelling) — Part 1: Terms, definitions and general requirements",
+      "applicability": "IVD labeling requirements",
+      "sections": ["Labeling", "Instructions for use", "Storage conditions"]
+    },
+    {
+      "number": "ISO 15189:2012",
+      "title": "Medical laboratories — Requirements for quality and competence",
+      "applicability": "Laboratory quality management",
+      "sections": ["Quality management system", "Technical requirements"]
+    },
+    {
+      "number": "ISO 13485:2016",
+      "title": "Medical devices — Quality management systems — Requirements for regulatory purposes",
+      "applicability": "QMS for IVD manufacturers",
+      "sections": ["Quality management", "Design controls", "Process validation"]
+    },
+    {
+      "number": "ISO 14971:2019",
+      "title": "Medical devices — Application of risk management to medical devices",
+      "applicability": "Risk management",
+      "sections": ["Risk analysis", "Risk evaluation", "Risk control"]
+    }
+  ]
+}

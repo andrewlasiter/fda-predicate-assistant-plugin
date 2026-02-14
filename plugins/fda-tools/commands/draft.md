@@ -181,8 +181,231 @@ if os.path.isdir(drafts_dir):
         print(f"EXISTING_DRAFT:{fname}")
 
 print(f"TOTAL_SOURCES:{len(data_sources)}")
+
+# ═══════════════════════════════════════════════════════════════
+# STERILIZATION METHOD AUTO-TRIGGER DETECTION
+# ═══════════════════════════════════════════════════════════════
+# Scan loaded data for sterilization methods and auto-add applicable standards
+
+standards_triggered = []
+
+# Collect all text to scan
+scan_texts = []
+dp_data = data_sources.get('device_profile', {})
+scan_texts.append(dp_data.get('sterilization_method', ''))
+scan_texts.append(dp_data.get('device_description', ''))
+scan_texts.append(str(dp_data.get('extracted_sections', {}).get('device_description', '')))
+scan_texts.append(data_sources.get('se_comparison', ''))
+for k, v in data_sources.items():
+    if k.startswith('source_text_'):
+        scan_texts.append(v)
+
+combined_text = ' '.join(str(t) for t in scan_texts).lower()
+
+# EO Sterilization Detection
+eo_patterns = ['ethylene oxide', 'eo sterilized', 'eto', 'eo validation', 'eo sterile', 'ethylene-oxide']
+if any(pattern in combined_text for pattern in eo_patterns):
+    standards_triggered.append('ISO 11135:2014 - Sterilization of health care products - Ethylene oxide')
+    print("STERILIZATION_DETECTED:EO → ISO 11135:2014")
+
+# Radiation Sterilization Detection
+radiation_patterns = ['gamma radiation', 'gamma irradiation', 'e-beam', 'electron beam', 'radiation steril', 'gamma steril']
+if any(pattern in combined_text for pattern in radiation_patterns):
+    standards_triggered.append('ISO 11137-1:2006/A2:2019 - Sterilization of health care products - Radiation (NOTE: Superseded by ISO 11137-1:2025; transition deadline 2027-06-01. Verify current FDA-recognized edition.)')
+    print("STERILIZATION_DETECTED:Radiation → ISO 11137-1:2006/A2:2019 (superseded by ISO 11137-1:2025)")
+
+# Steam Sterilization Detection
+steam_patterns = ['steam sterilization', 'autoclave', 'moist heat', 'steam sterilized', 'steam sterile']
+if any(pattern in combined_text for pattern in steam_patterns):
+    standards_triggered.append('ISO 17665-1:2006 - Sterilization of health-care products - Moist heat (NOTE: Superseded by ISO 17665:2024; transition deadline 2026-12-01. Verify current FDA-recognized edition.)')
+    print("STERILIZATION_DETECTED:Steam → ISO 17665-1:2006 (superseded by ISO 17665:2024)")
+
+if standards_triggered:
+    print(f"STANDARDS_AUTO_TRIGGERED:{len(standards_triggered)}")
+    for std in standards_triggered:
+        print(f"  + {std}")
+else:
+    print("STERILIZATION_DETECTED:none")
+
+# ═══════════════════════════════════════════════════════════════
+# AI/ML DEVICE AUTO-DETECTION AND SECTION TRIGGERING
+# ═══════════════════════════════════════════════════════════════
+# Detect AI/ML devices and auto-trigger software section with AI/ML validation template
+
+aiml_detected = False
+aiml_keywords = [
+    'machine learning', 'ml algorithm', 'neural network', 'deep learning',
+    'ai-powered', 'artificial intelligence', 'ai algorithm', 'computer-aided detection',
+    'cad system', 'convolutional neural network', 'cnn', 'random forest', 'logistic regression',
+    'support vector machine', 'svm', 'decision tree', 'ensemble model',
+    'predictive model', 'risk score algorithm', 'clinical decision support with ml',
+    'automated image analysis', 'automated diagnosis', 'pattern recognition algorithm',
+    'trained on dataset', 'training data', 'validation dataset', 'test dataset',
+    'tensorflow', 'pytorch', 'keras', 'scikit-learn'
+]
+
+# Scan combined text for AI/ML keywords
+if any(keyword in combined_text for keyword in aiml_keywords):
+    aiml_detected = True
+    print("AIML_DETECTED:true")
+    print("AIML_AUTO_TRIGGER:software_section → Use AI/ML validation template")
+    print("AIML_TEMPLATE:templates/aiml_validation.md")
+
+    # Auto-trigger AI/ML specific standards
+    aiml_standards = [
+        'IEC 62304:2006+A1:2015 - Medical device software - Software life cycle processes (Class B or C for AI/ML)',
+        'IEC 82304-1:2016 - Health software - Part 1: General requirements for product safety',
+        'IEC 62366-1:2015 - Medical devices - Application of usability engineering to medical devices',
+        'ISO 14971:2019 - Medical devices - Application of risk management (software hazard analysis)',
+        'IMDRF/SaMD WG/N41 FINAL:2017 - Software as a Medical Device (SaMD): Clinical Evaluation',
+        'FDA Guidance: Artificial Intelligence/Machine Learning-Based Software as a Medical Device (2021)',
+        'FDA Guidance: Good Machine Learning Practice for Medical Device Development (2021)',
+        'FDA Draft Guidance: Marketing Submission Recommendations for Predetermined Change Control Plan (2023)'
+    ]
+    for std in aiml_standards:
+        standards_triggered.append(std)
+    print(f"AIML_STANDARDS_TRIGGERED:{len(aiml_standards)}")
+
+    # Provide guidance for dataset documentation
+    print("AIML_DATA_REQUIREMENTS:")
+    print("  - Training dataset characteristics (size, demographics, ground truth labeling)")
+    print("  - Validation and test dataset independence verification")
+    print("  - Algorithm architecture and hyperparameters documentation")
+    print("  - Performance metrics (sensitivity, specificity, AUC) with 95% CI")
+    print("  - Subgroup performance analysis for bias and fairness")
+    print("  - Comparison to reference standard or predicate device")
+    print("  - SBOM (Software Bill of Materials) per FDA 2023 cybersecurity guidance")
+    print("  - Explainability methods (saliency maps, SHAP values) if applicable")
+    print("  - Post-market performance monitoring plan")
+else:
+    print("AIML_DETECTED:false")
+
 PYEOF
 ```
+
+**IMPORTANT:** ISO standards for sterilization are periodically updated. The standards listed above may reference superseded editions. Before using these standards in your 510(k) submission, consult the FDA Recognized Consensus Standards Database and the project's `references/standards-tracking.md` file to verify the current FDA-recognized edition and any transition deadlines. Using a superseded edition after its transition deadline may require additional justification.
+
+### Device-Type Specific Standards Detection
+
+Based on the product code in device_profile.json, auto-load applicable standards from device-type libraries:
+
+**Product Code Detection:**
+
+```bash
+python3 <<'PYEOF'
+import json
+import os
+
+# Load device profile to get product code
+device_profile_path = os.path.join(project_dir, "device_profile.json")
+product_code = ""
+if os.path.exists(device_profile_path):
+    with open(device_profile_path) as f:
+        device_profile = json.load(f)
+        product_code = device_profile.get("product_code", "")
+
+if not product_code:
+    print("DEVICE_TYPE_DETECTION:no_product_code")
+else:
+    print(f"DEVICE_TYPE_DETECTION:product_code={product_code}")
+
+    # Map product codes to device-type standards databases
+    device_type_mapping = {
+        # Robotics/Surgical Robotics
+        "QBH": ("standards_robotics.json", "Robotics and Robotic-Assisted Surgical Devices"),
+        "OZO": ("standards_robotics.json", "Robotics and Robotic-Assisted Surgical Devices"),
+        "QPA": ("standards_robotics.json", "Robotics and Robotic-Assisted Surgical Devices"),
+
+        # Neurostimulators
+        "GZB": ("standards_neurostim.json", "Neurostimulators and Neuromodulation Devices"),
+        "OLO": ("standards_neurostim.json", "Neurostimulators and Neuromodulation Devices"),
+        "LWV": ("standards_neurostim.json", "Neurostimulators and Neuromodulation Devices"),
+
+        # IVD Devices
+        "JJE": ("standards_ivd.json", "In Vitro Diagnostic (IVD) Devices"),
+        "LCX": ("standards_ivd.json", "In Vitro Diagnostic (IVD) Devices"),
+        "OBP": ("standards_ivd.json", "In Vitro Diagnostic (IVD) Devices"),
+
+        # SaMD (Software)
+        "QIH": ("standards_samd.json", "Software as a Medical Device (SaMD)"),
+        "QJT": ("standards_samd.json", "Software as a Medical Device (SaMD)"),
+        "POJ": ("standards_samd.json", "Software as a Medical Device (SaMD)")
+    }
+
+    if product_code in device_type_mapping:
+        standards_file, category = device_type_mapping[product_code]
+
+        # Construct path to standards JSON file
+        # Use FDA_PLUGIN_ROOT which should be set earlier in the command
+        plugin_root = os.environ.get('FDA_PLUGIN_ROOT', '')
+        if not plugin_root:
+            # Fallback: try to find plugin root from installed_plugins.json
+            installed_plugins_path = os.path.expanduser('~/.claude/plugins/installed_plugins.json')
+            if os.path.exists(installed_plugins_path):
+                with open(installed_plugins_path) as ipf:
+                    installed_data = json.load(ipf)
+                    for key, value in installed_data.get('plugins', {}).items():
+                        if key.startswith('fda-tools@') or key.startswith('fda-predicate-assistant@'):
+                            for entry in value:
+                                install_path = entry.get('installPath', '')
+                                if os.path.isdir(install_path):
+                                    plugin_root = install_path
+                                    break
+                        if plugin_root:
+                            break
+
+        if plugin_root:
+            standards_path = os.path.join(plugin_root, "data", "standards", standards_file)
+        else:
+            print(f"DEVICE_TYPE_STANDARDS:plugin_root_not_found")
+            standards_path = ""
+
+        if standards_path and os.path.exists(standards_path):
+            with open(standards_path) as f:
+                standards_db = json.load(f)
+
+            device_type_standards = []
+            for std in standards_db.get("applicable_standards", []):
+                standard_entry = f"{std['number']} - {std['title']} (Applicability: {std['applicability']})"
+                device_type_standards.append(standard_entry)
+                standards_triggered.append(standard_entry)
+
+            print(f"DEVICE_TYPE_STANDARDS_LOADED:{category}, COUNT:{len(device_type_standards)}")
+            for std in device_type_standards:
+                print(f"  + {std}")
+        elif standards_path:
+            print(f"DEVICE_TYPE_STANDARDS:file_not_found:{standards_path}")
+        else:
+            print(f"DEVICE_TYPE_STANDARDS:path_resolution_failed")
+    else:
+        print(f"DEVICE_TYPE_STANDARDS:no_mapping_for:{product_code}")
+
+PYEOF
+```
+
+**Standards Loading Process:**
+1. If product code matches a device type, load the corresponding JSON file from `data/standards/`
+2. Extract all standards from the `applicable_standards` array
+3. Add each standard to `standards_triggered` list with format: `{number} - {title} (Applicability: {applicability})`
+4. Log: `DEVICE_TYPE_STANDARDS_LOADED:{category}, COUNT:{n}`
+
+**Example:**
+```
+Product code: QBH (Robotic surgical system)
+→ Load standards_robotics.json
+→ Add 8 robotics-specific standards including:
+   - ISO 13482:2014 (Robotics safety)
+   - IEC 80601-2-77:2019 (Robotically assisted surgical equipment)
+   - IEC 62304:2006 (Software validation)
+   - IEC 62366-1:2015 (Human factors)
+DEVICE_TYPE_STANDARDS_LOADED:Robotics and Robotic-Assisted Surgical Devices, COUNT:8
+```
+
+**Important Notes:**
+- If product code doesn't match any device type, skip this detection (no error)
+- If standards JSON file is missing, log warning but continue
+- Device-type standards are ADDED to (not replace) standards from standards_lookup.json
+- Some standards may appear in multiple device-type databases (e.g., ISO 14971, IEC 62304)
 
 **Data Threading Rules**: When generating any section, use the loaded project data according to these priority rules:
 
@@ -200,6 +423,164 @@ PYEOF
 3. Use the FDA classification `definition` text (from openFDA) as a fallback device description foundation
 4. If peer devices are listed in review.json or device_profile.json, reference their device names and applicants to establish the product landscape
 5. Generate more [TODO] placeholders than usual, but still provide structural frameworks (section headings, table templates, standard references) based on the product code and review panel
+
+## Step 0.6: Combination Product Detection
+
+**After loading all project data (Step 0.5) and before generating any section**, detect if this is a combination product (drug-device, device-biologic, or drug-device-biologic) and determine RHO assignment.
+
+### Detection Process
+
+Use the `combination_detector.py` module to analyze device descriptions for drug or biologic components:
+
+```bash
+python3 << 'PYEOF'
+import json
+import os
+import sys
+import re
+
+# Add lib directory to Python path
+plugin_root = os.environ.get('FDA_PLUGIN_ROOT', '')
+if not plugin_root:
+    installed_plugins_path = os.path.expanduser('~/.claude/plugins/installed_plugins.json')
+    if os.path.exists(installed_plugins_path):
+        with open(installed_plugins_path) as ipf:
+            installed_data = json.load(ipf)
+            for key, value in installed_data.get('plugins', {}).items():
+                if key.startswith('fda-tools@') or key.startswith('fda-predicate-assistant@'):
+                    for entry in value:
+                        install_path = entry.get('installPath', '')
+                        if os.path.isdir(install_path):
+                            plugin_root = install_path
+                            break
+                if plugin_root:
+                    break
+
+if plugin_root:
+    sys.path.insert(0, os.path.join(plugin_root, 'lib'))
+
+from combination_detector import CombinationProductDetector
+
+# Load device data from project
+settings_path = os.path.expanduser('~/.claude/fda-predicate-assistant.local.md')
+projects_dir = os.path.expanduser('~/fda-510k-data/projects')
+if os.path.exists(settings_path):
+    with open(settings_path) as f:
+        m = re.search(r'projects_dir:\s*(.+)', f.read())
+        if m:
+            projects_dir = os.path.expanduser(m.group(1).strip())
+
+project = "PROJECT"  # Replace with actual project name
+pdir = os.path.join(projects_dir, project)
+
+# Load device_profile.json
+device_profile_path = os.path.join(pdir, 'device_profile.json')
+device_data = {}
+
+if os.path.exists(device_profile_path):
+    with open(device_profile_path) as f:
+        device_profile = json.load(f)
+        device_data = {
+            'device_description': device_profile.get('device_description', ''),
+            'trade_name': device_profile.get('trade_name', ''),
+            'intended_use': device_profile.get('intended_use', '')
+        }
+
+# Run combination product detection
+detector = CombinationProductDetector(device_data)
+result = detector.detect()
+
+# Store results in device_profile.json
+if os.path.exists(device_profile_path):
+    with open(device_profile_path) as f:
+        device_profile = json.load(f)
+
+    device_profile['combination_product'] = {
+        'is_combination': result['is_combination'],
+        'combination_type': result['combination_type'],
+        'confidence': result['confidence'],
+        'detected_components': result['detected_components'],
+        'rho_assignment': result['rho_assignment'],
+        'rho_rationale': result['rho_rationale'],
+        'consultation_required': result['consultation_required'],
+        'regulatory_pathway': result['regulatory_pathway'],
+        'recommendations': result['recommendations']
+    }
+
+    with open(device_profile_path, 'w') as f:
+        json.dump(device_profile, f, indent=2)
+
+# Log detection results
+print("COMBINATION_PRODUCT_DETECTION:")
+print(f"  Status: {result['is_combination']}")
+print(f"  Type: {result['combination_type']}")
+print(f"  Confidence: {result['confidence']}")
+print(f"  RHO: {result['rho_assignment']}")
+print(f"  Components Detected: {len(result['detected_components'])}")
+
+if result['is_combination']:
+    print("\nCOMBINATION_PRODUCT_COMPONENTS:")
+    for comp in result['detected_components'][:10]:  # Show first 10
+        print(f"  - {comp}")
+
+    print("\nCOMBINATION_PRODUCT_RECOMMENDATIONS:")
+    for rec in result['recommendations']:
+        print(f"  - {rec}")
+
+    print(f"\nAUTO_TRIGGER: Section 15 (Combination Product Information) generation REQUIRED")
+
+PYEOF
+```
+
+### Auto-Trigger Rules
+
+**Mandatory Section 15 Generation:**
+- Drug-Device detected with HIGH or MEDIUM confidence → Auto-generate Section 15
+- Device-Biologic detected with HIGH or MEDIUM confidence → Auto-generate Section 15
+- Drug-Device-Biologic detected at any confidence → Auto-generate Section 15 + OCP RFD recommendation
+
+**Optional Section 15 (manual review needed):**
+- LOW confidence detection → Log warning, ask user to verify combination product status
+
+**If Combination Product Detected (is_combination=True):**
+
+1. **Auto-generate Section 15** using `templates/combination_product_section.md`
+2. **Modify Cover Letter** to include:
+   - "This submission is for a {combination_type} combination product."
+   - "Per 21 CFR Part 3, {rho_assignment} is the Responsible Health Organization (RHO)."
+   - "Consultation with {consultation_required} has been/will be conducted on the {drug/biologic} component."
+3. **Flag for pre-check**: `COMBINATION_PRODUCT_REQUIRES_RHO_CONSULTATION`
+4. **Add to device description**: PMOA statement (Primary Mode of Action)
+
+**If NOT a Combination Product:**
+- Skip Section 15
+- No additional actions required
+
+### Example Detection Output
+
+```
+COMBINATION_PRODUCT_DETECTION:
+  Status: True
+  Type: drug-device
+  Confidence: HIGH
+  RHO: CDRH
+  Components Detected: 3
+
+COMBINATION_PRODUCT_COMPONENTS:
+  - drug-eluting
+  - paclitaxel
+  - controlled release
+
+COMBINATION_PRODUCT_RECOMMENDATIONS:
+  - CRITICAL: Identify and clearly state the Primary Mode of Action (PMOA) in Section 4 (Device Description)
+  - Include combination product rationale in cover letter
+  - Address both device and drug/biologic components in risk analysis (ISO 14971)
+  - Provide drug component specifications: active ingredient, concentration, elution profile
+  - Include biocompatibility testing per ISO 10993 for drug-device interface
+  - Address drug stability and shelf life separately from device shelf life
+
+AUTO_TRIGGER: Section 15 (Combination Product Information) generation REQUIRED
+```
 
 ## Step 0.75: Brand Name Validation
 
@@ -475,6 +856,7 @@ Auto-detect if sterilization is applicable from device description keywords: "st
 - Check `se_comparison.md` — if predicate sterilization method is stated (e.g., "EO sterilized", "gamma irradiation"), default to that method for the subject device instead of writing `[TODO: EO or Radiation]`
 - Check `standards_lookup.json` — if ISO 11135 is listed, default to EO; if ISO 11137, default to radiation; if ISO 17665, default to steam
 - Check `import_data.json` for `sterilization_method` field
+- **Use auto-triggered standards** from Step 0.5 sterilization detection — if sterilization method was detected, the applicable ISO standard (11135/11137/17665) has already been added to standards_triggered list
 - If multiple sources agree → use the agreed method
 - If sources conflict → flag the conflict and use `[TODO: Resolve sterilization method — SE comparison says {X}, standards lookup implies {Y}]`
 

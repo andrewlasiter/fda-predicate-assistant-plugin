@@ -1,0 +1,300 @@
+{
+  "version": "1.0",
+  "source": "ISO 14971:2019 + FDA General Surgical Device Guidance",
+  "device_types": ["Surgical Instruments", "Electrosurgical Devices", "Endoscopes", "Trocars", "Staplers", "Energy-Based Devices"],
+  "hazards": [
+    {
+      "id": "SU-001",
+      "category": "Tissue Damage",
+      "description": "Unintended damage to tissue adjacent to surgical site",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "Perforation, laceration, necrosis of adjacent organs or structures",
+      "iso14971_reference": "Annex E - Mechanical hazards",
+      "common_causes": [
+        "Sharp edges or burrs on instrument",
+        "Excessive force application",
+        "Poor visualization of anatomy",
+        "Operator inexperience",
+        "Instrument malfunction"
+      ],
+      "typical_controls": [
+        "Atraumatic tip design with rounded edges",
+        "Sharpness testing and specifications",
+        "Visual inspection for burrs and defects",
+        "Instructions for proper surgical technique",
+        "Warnings about anatomical hazards",
+        "Surgeon training and credentialing requirements"
+      ]
+    },
+    {
+      "id": "SU-002",
+      "category": "Bleeding",
+      "description": "Excessive or uncontrolled hemorrhage during or after surgery",
+      "typical_severity": 5,
+      "typical_probability": 2,
+      "harm": "Hypovolemic shock, need for transfusion, reoperation, death",
+      "iso14971_reference": "Annex E - Mechanical hazards",
+      "common_causes": [
+        "Vessel laceration or puncture",
+        "Inadequate hemostasis",
+        "Coagulation device failure",
+        "Anticoagulant medications",
+        "Patient coagulopathy"
+      ],
+      "typical_controls": [
+        "Vessel sealing validation testing (burst pressure, thermal spread)",
+        "Instructions for identification of vascular structures",
+        "Warnings about use in patients on anticoagulants",
+        "Backup hemostatic methods availability",
+        "Visual indicators for proper device activation",
+        "Clinical monitoring protocols for postoperative bleeding"
+      ]
+    },
+    {
+      "id": "SU-003",
+      "category": "Thermal Injury",
+      "description": "Burn injury to tissue from heat-generating devices",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "Full-thickness burns, organ perforation, fistula formation, chronic pain",
+      "iso14971_reference": "Annex E - Energy hazards - Thermal",
+      "common_causes": [
+        "Direct contact with active electrode",
+        "Capacitive coupling in laparoscopic surgery",
+        "Direct coupling to other instruments",
+        "Excessive power settings",
+        "Prolonged activation time"
+      ],
+      "typical_controls": [
+        "Thermal testing per IEC 60601-2-2 (electrosurgical equipment)",
+        "Insulation integrity testing",
+        "Active electrode monitoring systems",
+        "Instructions for appropriate power settings by tissue type",
+        "Warnings about capacitive coupling risk",
+        "Visual/audible feedback during activation",
+        "Maximum activation time specifications"
+      ]
+    },
+    {
+      "id": "SU-004",
+      "category": "Organ Perforation",
+      "description": "Unintended puncture of hollow viscus or organ",
+      "typical_severity": 5,
+      "typical_probability": 2,
+      "harm": "Peritonitis, sepsis, fistula, reoperation, death",
+      "iso14971_reference": "Annex E - Operational hazards",
+      "common_causes": [
+        "Trocar insertion in laparoscopic surgery",
+        "Sharp instrument advancement without visualization",
+        "Adhesions obscuring anatomy",
+        "Excessive force",
+        "Device tip sharpness"
+      ],
+      "typical_controls": [
+        "Optical or dilating trocar designs to reduce perforation risk",
+        "Insertion force testing and specifications",
+        "Instructions for use of Veress needle or Hasson technique",
+        "Warnings about anatomical landmarks",
+        "Visual confirmation before advancement",
+        "Surgeon training on entry techniques"
+      ]
+    },
+    {
+      "id": "SU-005",
+      "category": "Smoke/Plume Inhalation",
+      "description": "Exposure to surgical smoke containing particulates and chemicals",
+      "typical_severity": 3,
+      "typical_probability": 4,
+      "harm": "Respiratory irritation, potential carcinogenic exposure, vision obstruction",
+      "iso14971_reference": "Annex E - Biological hazards - Infectious agents",
+      "common_causes": [
+        "Tissue vaporization from electrosurgery or laser",
+        "Inadequate smoke evacuation",
+        "Lack of filtration system",
+        "Prolonged surgical time"
+      ],
+      "typical_controls": [
+        "Smoke evacuation system requirements in IFU",
+        "Warnings about plume hazards (particulates, chemicals, viruses)",
+        "Instructions for use with ULPA-filtered evacuation",
+        "Personal protective equipment recommendations (N95 masks)",
+        "Ventilation requirements for operating room"
+      ]
+    },
+    {
+      "id": "SU-006",
+      "category": "Electrical Shock",
+      "description": "Patient or operator exposure to electrical current",
+      "typical_severity": 5,
+      "typical_probability": 1,
+      "harm": "Ventricular fibrillation, cardiac arrest, burns, death",
+      "iso14971_reference": "Annex E - Energy hazards - Electrical",
+      "common_causes": [
+        "Insulation failure",
+        "Improper grounding",
+        "Liquid ingress into electrical components",
+        "Damaged power cord",
+        "Leakage current"
+      ],
+      "typical_controls": [
+        "IEC 60601-1 compliance (leakage current limits, protective earth)",
+        "Type BF or CF applied part classification",
+        "IPX rating for liquid ingress protection (if applicable)",
+        "Dielectric strength testing",
+        "Instructions for pre-use inspection",
+        "Warnings about use with flammable anesthetics",
+        "Ground fault circuit interrupters (if applicable)"
+      ]
+    },
+    {
+      "id": "SU-007",
+      "category": "Infection Transmission",
+      "description": "Cross-contamination between patients from reusable devices",
+      "typical_severity": 5,
+      "typical_probability": 2,
+      "harm": "Surgical site infection, transmission of CJD, hepatitis, HIV",
+      "iso14971_reference": "Annex E - Biological hazards - Infectious agents",
+      "common_causes": [
+        "Inadequate reprocessing of reusable instruments",
+        "Biofilm formation in device lumens",
+        "Prion contamination (CJD)",
+        "User error in cleaning protocol"
+      ],
+      "typical_controls": [
+        "Validated reprocessing instructions per AAMI TIR30/ST91",
+        "Device design to facilitate cleaning (no blind holes, removable parts)",
+        "Compatibility testing with cleaning agents and sterilization methods",
+        "Single-use designation (if device cannot be adequately reprocessed)",
+        "Instructions for disassembly and inspection",
+        "Warnings about prion risk for neurosurgical instruments"
+      ]
+    },
+    {
+      "id": "SU-008",
+      "category": "Instrument Breakage",
+      "description": "Fracture or separation of surgical instrument during use",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "Retained foreign body, reoperation for retrieval, tissue injury",
+      "iso14971_reference": "Annex E - Mechanical hazards",
+      "common_causes": [
+        "Material fatigue from repeated use",
+        "Excessive force application",
+        "Manufacturing defects",
+        "Corrosion from reprocessing",
+        "Exceeding device lifespan"
+      ],
+      "typical_controls": [
+        "Fatigue testing per ASTM standards (device-specific)",
+        "Material specifications (surgical stainless steel per ASTM F899)",
+        "Instructions for inspection before use (cracks, deformation)",
+        "Defined useful life or reprocessing cycle limit",
+        "Warnings about excessive force",
+        "Post-market surveillance for fracture events"
+      ]
+    },
+    {
+      "id": "SU-009",
+      "category": "Staple/Clip Malformation",
+      "description": "Surgical staples or clips fail to form properly, causing inadequate closure",
+      "typical_severity": 5,
+      "typical_probability": 2,
+      "harm": "Anastomotic leak, bleeding, peritonitis, reoperation",
+      "iso14971_reference": "Annex E - Functional failure - Incorrect output",
+      "common_causes": [
+        "Tissue thickness exceeds device specifications",
+        "Improper device firing technique",
+        "Device malfunction or jamming",
+        "Staple cartridge expiration or damage"
+      ],
+      "typical_controls": [
+        "Staple formation testing across tissue thickness range",
+        "Tissue thickness gauges in surgical kit",
+        "Instructions for proper firing technique and tissue alignment",
+        "Visual/tactile feedback for complete firing",
+        "Warnings about tissue thickness limits",
+        "Clinical leak rate monitoring (target <5% for GI anastomoses)"
+      ]
+    },
+    {
+      "id": "SU-010",
+      "category": "Gas Embolism",
+      "description": "Air or CO2 enters vasculature during insufflation or laparoscopic surgery",
+      "typical_severity": 5,
+      "typical_probability": 1,
+      "harm": "Cardiovascular collapse, stroke, death",
+      "iso14971_reference": "Annex E - Operational hazards",
+      "common_causes": [
+        "Veress needle or trocar directly enters vessel",
+        "Excessive insufflation pressure",
+        "Open vascular access during insufflation",
+        "Patient positioning (head-up increases risk)"
+      ],
+      "typical_controls": [
+        "Pressure limiting in insufflator (max 15-20 mmHg for adults)",
+        "Flow rate limiting during initial insufflation",
+        "Instructions for entry technique and pressure monitoring",
+        "Warnings about vascular injury risk",
+        "Use of CO2 (more soluble than air) instead of room air",
+        "Clinical monitoring protocols (end-tidal CO2, hemodynamics)"
+      ]
+    },
+    {
+      "id": "SU-011",
+      "category": "Vision Obstruction (Lens Fogging)",
+      "description": "Endoscope lens fogging obscures surgical field visualization",
+      "typical_severity": 3,
+      "typical_probability": 4,
+      "harm": "Increased procedure time, potential for injury from poor visualization",
+      "iso14971_reference": "Annex E - Operational hazards",
+      "common_causes": [
+        "Temperature differential between scope and body cavity",
+        "Inadequate anti-fog treatment",
+        "Lens contamination with blood or tissue"
+      ],
+      "typical_controls": [
+        "Anti-fog coating on lens",
+        "Instructions for pre-warming scope or anti-fog solution use",
+        "Lens cleaning sheaths or wipes in surgical kit",
+        "Instructions for removal and cleaning if fogging occurs"
+      ]
+    },
+    {
+      "id": "SU-012",
+      "category": "Port Site Hernia",
+      "description": "Fascial defect at trocar site allows bowel herniation postoperatively",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "Bowel incarceration, strangulation, reoperation",
+      "iso14971_reference": "Annex E - Operational hazards",
+      "common_causes": [
+        "Large trocar diameter (≥10mm)",
+        "Inadequate fascial closure",
+        "Trocar design prevents fascial visualization",
+        "Patient factors (obesity, prior surgery)"
+      ],
+      "typical_controls": [
+        "Instructions for fascial closure for ports ≥10mm",
+        "Trocar designs that facilitate closure (bladeless, radially expanding)",
+        "Sizing options to use smallest effective diameter",
+        "Warnings about hernia risk",
+        "Clinical surveillance for port site hernias"
+      ]
+    }
+  ],
+  "severity_scale": {
+    "1": "Negligible - No injury or health effect",
+    "2": "Minor - Temporary injury requiring first aid",
+    "3": "Serious - Injury requiring medical intervention",
+    "4": "Critical - Permanent impairment or life-threatening injury",
+    "5": "Catastrophic - Death or irreversible severe injury"
+  },
+  "probability_scale": {
+    "1": "Remote - <0.01% (1 in 10,000)",
+    "2": "Unlikely - 0.01-0.1% (1 in 1,000 to 1 in 10,000)",
+    "3": "Possible - 0.1-1% (1 in 100 to 1 in 1,000)",
+    "4": "Probable - 1-10% (1 in 10 to 1 in 100)",
+    "5": "Frequent - >10% (>1 in 10)"
+  }
+}

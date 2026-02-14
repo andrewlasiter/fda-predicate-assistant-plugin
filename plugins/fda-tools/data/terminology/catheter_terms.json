@@ -1,0 +1,190 @@
+{
+  "version": "1.0",
+  "source": "FDA Cardiovascular Device Terminology + ISO 11070 + Medical Device Nomenclature",
+  "device_types": ["Balloon Catheters", "Guide Catheters", "Diagnostic Catheters", "Drug-Coated Balloons", "Atherectomy Catheters"],
+  "terminology": {
+    "device_characteristics": {
+      "balloon_compliance": {
+        "term": "Balloon Compliance",
+        "definition": "Change in balloon diameter per unit change in inflation pressure; classified as compliant (>0.02 mm/atm), semi-compliant (0.01-0.02 mm/atm), or non-compliant (<0.01 mm/atm)",
+        "regulatory_context": "Must report compliance curve (diameter vs. pressure) in device master file; affects vessel sizing accuracy",
+        "test_method": "ISO 25539-1 Annex C - inflate balloon in 37°C water bath; measure diameter at 2 atm increments using optical comparator",
+        "typical_values": "Non-compliant: 0.005-0.01 mm/atm; Semi-compliant: 0.01-0.02 mm/atm; Compliant: 0.02-0.10 mm/atm",
+        "clinical_significance": "Non-compliant balloons preferred for precise dilation; compliant for vessel apposition in tortuous anatomy"
+      },
+      "rated_burst_pressure": {
+        "term": "Rated Burst Pressure (RBP)",
+        "definition": "Maximum pressure at which balloon can be inflated without rupture, as specified by manufacturer; typically 95% of burst pressure from testing",
+        "regulatory_context": "FDA requires verification testing per ISO 25539-1; label must state RBP and nominal pressure",
+        "test_method": "ISO 25539-1 Section 7.5.2 - inflate balloon to failure; RBP = mean burst pressure - 2SD",
+        "typical_values": "Angioplasty balloons: 12-20 atm RBP; Non-compliant balloons: 18-35 atm RBP",
+        "clinical_significance": "Operator must not exceed RBP to avoid balloon rupture and potential vessel injury"
+      },
+      "nominal_pressure": {
+        "term": "Nominal Pressure",
+        "definition": "Inflation pressure at which balloon achieves labeled diameter in free air at 37°C",
+        "regulatory_context": "Labeled on device; typically 6-10 atm for angioplasty balloons",
+        "test_method": "ISO 25539-1 - inflate balloon in 37°C water bath to specified pressure; measure diameter with optical comparator (±0.1 mm tolerance)",
+        "typical_values": "Coronary balloons: 6-10 atm nominal; Peripheral balloons: 8-12 atm nominal",
+        "clinical_significance": "Starting pressure for dilation; vessel sizing accuracy depends on achieving nominal pressure"
+      },
+      "trackability": {
+        "term": "Trackability",
+        "definition": "Ability of catheter to navigate tortuous vascular anatomy without prolapsing or failing to advance",
+        "regulatory_context": "Assessed in benchtop testing (simulated anatomy models) and clinical evaluation",
+        "test_method": "Push catheter through tortuous mock vessel (multiple 90° bends); measure push force and success rate",
+        "typical_values": "Guidewire support force <1 N for successful tracking; failure = catheter prolapse or guidewire buckling",
+        "clinical_significance": "Poor trackability increases procedure time and risk of vessel trauma from excessive force"
+      },
+      "crossability": {
+        "term": "Crossability",
+        "definition": "Ability of catheter to cross a tight stenosis or total occlusion without device damage or dislodgement",
+        "regulatory_context": "Assessed in benchtop stenosis model and clinical studies (crossing success rate)",
+        "test_method": "Push catheter through calibrated stenosis model (e.g., 0.5 mm lumen); measure crossing force and damage",
+        "typical_values": "Crossing force <0.5 N for lesion access; profile ≤0.017\" (0.43 mm) for severe stenosis",
+        "clinical_significance": "Low-profile designs (thin balloon, low crossing profile) improve crossability in complex lesions"
+      },
+      "pushability": {
+        "term": "Pushability",
+        "definition": "Longitudinal stiffness of catheter shaft enabling forward force transmission from proximal to distal end",
+        "regulatory_context": "Relates to catheter column strength; must balance with flexibility for tracking",
+        "test_method": "Measure column strength - axial load at buckling when catheter pushed in straight tube",
+        "typical_values": "Column strength 0.3-0.8 N for coronary catheters; higher for peripheral/support catheters",
+        "clinical_significance": "Inadequate pushability causes catheter prolapse; excessive stiffness impairs trackability"
+      },
+      "kink_resistance": {
+        "term": "Kink Resistance",
+        "definition": "Ability of catheter to withstand sharp bends without lumen collapse or permanent deformation",
+        "regulatory_context": "Test per device-specific protocol; ensure lumen patency after 90° bend",
+        "test_method": "Bend catheter 90° around mandrel of specified radius; verify lumen patency (fluid flow or wire passage)",
+        "typical_values": "Minimum bend radius 5-10 mm for coronary catheters without kinking",
+        "clinical_significance": "Kinked catheter obstructs guidewire, contrast, or drug delivery; may require device removal"
+      },
+      "guidewire_compatibility": {
+        "term": "Guidewire Compatibility",
+        "definition": "Range of guidewire diameters that catheter lumen accommodates for over-the-wire or rapid-exchange delivery",
+        "regulatory_context": "Must specify in IFU; verify that catheter tracks over labeled guidewire sizes",
+        "test_method": "Advance catheter over guidewires at lower and upper specification limits; assess tracking smoothness",
+        "typical_values": "Coronary catheters: 0.014\" (0.36 mm) guidewire; Peripheral: 0.018\"-0.035\" (0.46-0.89 mm)",
+        "clinical_significance": "Incompatible guidewire causes excessive friction or catheter damage"
+      },
+      "radiopacity": {
+        "term": "Radiopacity",
+        "definition": "Visibility of catheter markers under fluoroscopy to enable positioning and deployment verification",
+        "regulatory_context": "Radiopaque markers (platinum, gold, tantalum) required at balloon ends and catheter tip",
+        "test_method": "Fluoroscopic imaging per ASTM F640; measure contrast ratio (marker to background)",
+        "typical_values": "Marker bands 0.05-0.15 mm thick; platinum-iridium alloy (90/10) provides optimal radiopacity without artifact",
+        "clinical_significance": "Poor marker visibility leads to imprecise positioning and suboptimal outcomes"
+      },
+      "tip_design": {
+        "term": "Tip Design (Atraumatic vs. Tapered)",
+        "definition": "Catheter distal tip geometry; atraumatic (rounded, soft) for safety; tapered for lesion entry; tip length typically 1-5 mm",
+        "regulatory_context": "Assess tip flexibility and profile in benchtop testing; clinical evaluation of vessel trauma",
+        "test_method": "Penetration force test - measure force to penetrate membrane (low force = atraumatic)",
+        "typical_values": "Penetration force <0.1 N for atraumatic tips; tip outer diameter ≤catheter shaft diameter",
+        "clinical_significance": "Atraumatic tip reduces perforation risk; tapered tip facilitates crossing tight lesions"
+      }
+    },
+    "performance_metrics": {
+      "rewrap_reliability": {
+        "term": "Rewrap Reliability",
+        "definition": "Ability of balloon to deflate and rewrap compactly for withdrawal through deployed stent or lesion",
+        "regulatory_context": "Assess in benchtop and clinical studies; document rewrap profile in DMR",
+        "test_method": "Inflate balloon to RBP, deflate using vacuum syringe, measure rewrapped profile with laser micrometer",
+        "typical_values": "Rewrap profile <110% of pre-inflation profile (e.g., 0.040\" → 0.044\")",
+        "clinical_significance": "Poor rewrap causes difficult withdrawal, stent dislodgement, or vessel trauma"
+      },
+      "inflation_deflation_time": {
+        "term": "Inflation/Deflation Time",
+        "definition": "Time for balloon to reach nominal pressure (inflation) or return to ambient pressure (deflation)",
+        "regulatory_context": "Document in device master file; affects procedure duration",
+        "test_method": "Connect balloon to indeflator; measure time from 0 to nominal pressure (inflation) and nominal to 0 (deflation)",
+        "typical_values": "Inflation: 3-10 seconds; Deflation: 5-15 seconds (shorter with active vacuum)",
+        "clinical_significance": "Rapid inflation/deflation reduces ischemia time during coronary dilation"
+      },
+      "particulate_generation": {
+        "term": "Particulate Generation",
+        "definition": "Particles released from device surface or coating during simulated use (inflation, tracking, withdrawal)",
+        "regulatory_context": "Test per ISO 10993-12; critical for drug-coated balloons and stent delivery systems",
+        "test_method": "ISO 10993-12 - simulate use in closed fluid system; filter eluate; count particles >10 μm by light obscuration or microscopy",
+        "typical_values": "Acceptance: <100 particles >25 μm per device (ISO 10993-12 baseline); <10 particles >50 μm",
+        "clinical_significance": "Particulate embolization may cause distal vessel occlusion (no-reflow phenomenon)"
+      },
+      "drug_coating_integrity": {
+        "term": "Drug Coating Integrity",
+        "definition": "For drug-coated balloons: uniformity, adhesion, and retention of drug coating during handling and delivery",
+        "regulatory_context": "FDA requires coating characterization and loss during simulated use; elution profile documentation",
+        "test_method": "Measure coating thickness (SEM), drug content (HPLC), and loss after tracking through stenosis model",
+        "typical_values": "Coating thickness 2-10 μm; drug retention ≥70% after tracking through tortuous model",
+        "clinical_significance": "Coating loss during delivery reduces drug transfer to vessel wall and efficacy"
+      },
+      "tip_entry_profile": {
+        "term": "Tip Entry Profile",
+        "definition": "Maximum outer diameter of catheter distal end (tip + folded balloon); critical for crossing tight lesions",
+        "regulatory_context": "Measure and report in labeling; affects crossability",
+        "test_method": "Measure with laser micrometer or optical comparator at narrowest point patient vessel encounters",
+        "typical_values": "Coronary balloon catheters: 0.016\"-0.020\" (0.41-0.51 mm); Peripheral: 0.030\"-0.060\" (0.76-1.52 mm)",
+        "clinical_significance": "Lower profile enables access to distal, tortuous, or calcified lesions"
+      }
+    },
+    "material_specifications": {
+      "balloon_material": {
+        "term": "Balloon Material",
+        "definition": "Polymer used for balloon membrane; affects compliance, strength, and fatigue resistance",
+        "regulatory_context": "Common materials: PET (polyethylene terephthalate), nylon (polyamide), Pebax (polyether block amide)",
+        "test_method": "Material identification by FTIR; mechanical testing per ISO 25539-1",
+        "typical_values": "PET: non-compliant, high strength; Nylon: semi-compliant, moderate strength; Pebax: compliant, lower strength",
+        "clinical_significance": "Material selection balances compliance needs with burst resistance and rewrap capability"
+      },
+      "shaft_construction": {
+        "term": "Shaft Construction",
+        "definition": "Multilayer catheter shaft with inner liner (PTFE, HDPE), reinforcement (stainless steel braid/coil), and outer jacket (Pebax, polyurethane)",
+        "regulatory_context": "Document materials and bond strength in DMR; ensure no layer separation",
+        "test_method": "Bond strength per ISO 10555-1; delamination resistance via peel test",
+        "typical_values": "Inner liner: PTFE (low friction); Reinforcement: 304V stainless steel braid (torque transmission); Outer jacket: Pebax (flex gradient)",
+        "clinical_significance": "Shaft integrity critical for pushability, torqueability, and kink resistance"
+      },
+      "hydrophilic_coating": {
+        "term": "Hydrophilic Coating",
+        "definition": "Lubricious surface coating (typically polyvinylpyrrolidone or polyacrylamide) to reduce friction in wet state",
+        "regulatory_context": "Test coating durability, particulate, and biocompatibility per ISO 10993 series",
+        "test_method": "Measure static and kinetic friction coefficient before and after simulated use",
+        "typical_values": "Uncoated catheter: friction coefficient 0.3-0.5; Hydrophilic coated: 0.02-0.10 (wet)",
+        "clinical_significance": "Reduces tracking force and vessel trauma; coating must withstand delivery without delamination"
+      }
+    },
+    "regulatory_testing": {
+      "biocompatibility": {
+        "term": "Biocompatibility Testing",
+        "definition": "ISO 10993 series testing for blood-contacting devices with limited duration (<24 hours) or prolonged (24 hours to 30 days) contact",
+        "regulatory_context": "Typical tests: cytotoxicity (ISO 10993-5), sensitization (10993-10), irritation (10993-10), systemic toxicity (10993-11), hemocompatibility (10993-4), pyrogenicity (10993-11)",
+        "test_method": "Follow ISO 10993-1 risk-based approach; extract device in saline or polar solvent for in vitro tests",
+        "typical_values": "Cytotoxicity: no Zone 1 effect; Hemolysis: <5%; Sensitization/Irritation: no reaction",
+        "clinical_significance": "Ensures device materials do not cause adverse tissue or blood reactions"
+      },
+      "sterilization_validation": {
+        "term": "Sterilization Validation",
+        "definition": "Demonstration of sterility assurance level (SAL) 10^-6 via ethylene oxide (EO), gamma irradiation, or e-beam per ISO 11135/11137",
+        "regulatory_context": "Provide sterilization validation report in 510(k); include dose mapping (radiation) or load pattern (EO)",
+        "test_method": "ISO 11135 (EO): half-cycle, overkill, or bioburden-based approach. ISO 11137 (radiation): VDmax or dose substantiation",
+        "typical_values": "EO: 600 mg·L^-1·h exposure; Gamma: 25 kGy dose; E-beam: 25-50 kGy dose",
+        "clinical_significance": "Sterile device required for intravascular use; residual EO limits: <10 ppm EO, <250 ppm ECH, <250 ppm EG"
+      },
+      "shelf_life": {
+        "term": "Shelf Life",
+        "definition": "Duration device maintains sterility and performance from manufacture to expiration date",
+        "regulatory_context": "Real-time aging (preferred) or accelerated aging per ASTM F1980; minimum 2-year claim typical",
+        "test_method": "Accelerated aging at 55°C (2× aging factor per Arrhenius); test sterile barrier integrity (ASTM F1980), device performance",
+        "typical_values": "Typical shelf life claims: 2-3 years for catheters; test at T0, T6mo, T12mo, T24mo (real-time) or equivalent accelerated",
+        "clinical_significance": "Expired devices may have compromised sterility or degraded performance (e.g., balloon burst pressure decline)"
+      }
+    }
+  },
+  "usage_notes": {
+    "french_size": "Catheter outer diameter in French (1 Fr = 0.33 mm = 0.013\"). Coronary catheters typically 5-7 Fr; peripheral 4-12 Fr",
+    "over_the_wire_vs_rapid_exchange": "OTW = full-length guidewire lumen; RX = short distal guidewire lumen (~25 cm). RX allows single-operator technique",
+    "working_length": "Usable catheter length from hub to distal tip; typically 135-150 cm for coronary, 40-260 cm for peripheral based on access site",
+    "pressure_units": "Atmospheres (atm) = standard; 1 atm = 14.7 psi = 101.3 kPa. Inflation devices (indeflators) graduated in atm",
+    "contrast_media": "Non-ionic low-osmolar contrast (iohexol, iopamidol) recommended; avoid air bubbles (embolism risk)"
+  }
+}

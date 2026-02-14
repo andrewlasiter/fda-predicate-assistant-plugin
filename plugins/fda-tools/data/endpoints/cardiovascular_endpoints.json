@@ -1,0 +1,219 @@
+{
+  "version": "1.0",
+  "source": "FDA Cardiovascular Device Guidance + ACC/AHA Clinical Trial Standards + SCAI Guidelines",
+  "device_types": ["Stents", "Heart Valves", "Vascular Grafts", "Atherectomy Devices", "Embolic Protection"],
+  "endpoints": {
+    "primary_efficacy": [
+      {
+        "id": "CV-E001",
+        "name": "Target Lesion Revascularization (TLR)",
+        "definition": "Any repeat percutaneous or surgical revascularization of the target lesion due to restenosis or other complication",
+        "measurement_timepoint": "6 months, 12 months, annually to 5 years",
+        "success_criteria": "TLR rate <10% at 12 months (for coronary stents)",
+        "source": "ARC-2 definitions (Academic Research Consortium)",
+        "clinical_significance": "Clinically-driven TLR indicates inadequate initial treatment or restenosis",
+        "typical_analysis": "Kaplan-Meier time-to-event analysis with log-rank test",
+        "regulatory_notes": "FDA accepts TLR as co-primary endpoint with MACE for coronary stents"
+      },
+      {
+        "id": "CV-E002",
+        "name": "Target Vessel Revascularization (TVR)",
+        "definition": "Any repeat revascularization of the target vessel (not just target lesion)",
+        "measurement_timepoint": "6 months, 12 months, annually to 5 years",
+        "success_criteria": "TVR rate <15% at 12 months",
+        "source": "ARC-2 definitions",
+        "clinical_significance": "Broader measure than TLR; includes progression of disease in treated vessel",
+        "typical_analysis": "Kaplan-Meier survival analysis",
+        "regulatory_notes": "Less specific than TLR; may be influenced by non-device factors"
+      },
+      {
+        "id": "CV-E003",
+        "name": "Major Adverse Cardiac Events (MACE)",
+        "definition": "Composite of death, myocardial infarction (MI), and target lesion revascularization",
+        "measurement_timepoint": "30 days, 6 months, 12 months, annually to 5 years",
+        "success_criteria": "MACE rate <15% at 12 months for coronary stents (non-inferiority to predicate)",
+        "source": "ARC definitions; FDA PCI device guidance",
+        "clinical_significance": "Gold standard composite endpoint for coronary interventions",
+        "typical_analysis": "Time-to-first-event with Kaplan-Meier and Cox proportional hazards",
+        "regulatory_notes": "FDA requires MACE as primary endpoint for most coronary devices; 12-month non-inferiority margin typically 3-5%"
+      },
+      {
+        "id": "CV-E004",
+        "name": "Acute Lumen Gain",
+        "definition": "Increase in minimum lumen diameter (MLD) immediately post-procedure compared to baseline",
+        "measurement_timepoint": "Immediately post-procedure (quantitative coronary angiography)",
+        "success_criteria": "Acute lumen gain ≥1.0 mm for atherectomy devices",
+        "source": "QCA core lab standards",
+        "clinical_significance": "Immediate mechanical efficacy of debulking or dilation device",
+        "typical_analysis": "Mean ± SD, paired t-test vs. baseline",
+        "regulatory_notes": "Acute gain alone insufficient for approval; must demonstrate durability"
+      },
+      {
+        "id": "CV-E005",
+        "name": "Late Lumen Loss (LLL)",
+        "definition": "Decrease in minimum lumen diameter from post-procedure to follow-up angiography",
+        "measurement_timepoint": "6-9 months follow-up angiography",
+        "success_criteria": "In-stent LLL <0.5 mm for drug-eluting stents",
+        "source": "QCA core lab standards; ARC definitions",
+        "clinical_significance": "Surrogate for restenosis; lower LLL correlates with lower TLR rates",
+        "typical_analysis": "Mean ± SD with 95% CI; non-inferiority testing to predicate",
+        "regulatory_notes": "FDA accepts LLL as surrogate endpoint if correlation with TLR demonstrated; margin typically 0.2-0.3 mm"
+      },
+      {
+        "id": "CV-E006",
+        "name": "Binary Restenosis",
+        "definition": "≥50% diameter stenosis at target lesion on follow-up angiography",
+        "measurement_timepoint": "6-9 months follow-up angiography",
+        "success_criteria": "In-stent binary restenosis <10% for drug-eluting stents",
+        "source": "QCA core lab standards",
+        "clinical_significance": "Dichotomous outcome for restenosis; clinically relevant threshold",
+        "typical_analysis": "Proportion with 95% exact CI; chi-square test vs. control",
+        "regulatory_notes": "Core lab adjudicated QCA required"
+      },
+      {
+        "id": "CV-E007",
+        "name": "TIMI Flow Grade",
+        "definition": "Angiographic assessment of coronary blood flow (0=no flow, 1=minimal, 2=partial, 3=normal)",
+        "measurement_timepoint": "Pre-procedure, post-procedure, follow-up",
+        "success_criteria": "TIMI 3 flow achieved in ≥95% of cases post-procedure",
+        "source": "TIMI Study Group definitions",
+        "clinical_significance": "Normal TIMI 3 flow associated with better outcomes post-MI",
+        "typical_analysis": "Proportion achieving TIMI 3, ordinal logistic regression",
+        "regulatory_notes": "Core lab adjudication recommended for consistency"
+      },
+      {
+        "id": "CV-E008",
+        "name": "Procedural Success",
+        "definition": "Successful device deployment with <30% residual stenosis and TIMI 3 flow, without in-hospital MACE",
+        "measurement_timepoint": "Index procedure through hospital discharge",
+        "success_criteria": "Procedural success ≥95%",
+        "source": "Device-specific protocol definitions",
+        "clinical_significance": "Composite measure of acute device performance and early safety",
+        "typical_analysis": "Proportion with exact 95% CI; superiority or non-inferiority test",
+        "regulatory_notes": "Definition must be pre-specified; typically assessed by independent core lab"
+      }
+    ],
+    "primary_safety": [
+      {
+        "id": "CV-S001",
+        "name": "Cardiac Death",
+        "definition": "Death due to cardiac cause (MI, heart failure, arrhythmia) or unknown cause",
+        "measurement_timepoint": "30 days, 12 months, annually to 5 years",
+        "success_criteria": "Cardiac death <2% at 30 days",
+        "source": "ARC-2 definitions",
+        "clinical_significance": "Most severe adverse outcome; requires adjudication",
+        "typical_analysis": "Kaplan-Meier cumulative incidence with competing risk for non-cardiac death",
+        "regulatory_notes": "Clinical Events Committee (CEC) adjudication required"
+      },
+      {
+        "id": "CV-S002",
+        "name": "Myocardial Infarction (MI)",
+        "definition": "Periprocedural MI: CK-MB >3× ULN or troponin >5× ULN + symptoms/ECG changes. Spontaneous MI: Universal Definition",
+        "measurement_timepoint": "Periprocedural (48 hours), 30 days, 12 months, annually",
+        "success_criteria": "Periprocedural MI <5%, spontaneous MI <3% at 12 months",
+        "source": "Fourth Universal Definition of MI (ARC-4a for periprocedural)",
+        "clinical_significance": "Surrogate for device thrombosis or embolization; requires biomarker elevation",
+        "typical_analysis": "Proportion with 95% CI; time-to-event for spontaneous MI",
+        "regulatory_notes": "Must distinguish periprocedural from spontaneous; CEC adjudication required"
+      },
+      {
+        "id": "CV-S003",
+        "name": "Stroke",
+        "definition": "New neurological deficit lasting >24 hours with imaging confirmation (ischemic or hemorrhagic)",
+        "measurement_timepoint": "30 days, 12 months, annually to 5 years",
+        "success_criteria": "Stroke <2% at 30 days for structural heart interventions",
+        "source": "Valve Academic Research Consortium (VARC-3) definitions",
+        "clinical_significance": "Devastating complication; requires neurologist assessment and imaging",
+        "typical_analysis": "Kaplan-Meier cumulative incidence with competing risk for death",
+        "regulatory_notes": "Distinguish disabling vs. non-disabling stroke; independent neurologist evaluation recommended"
+      },
+      {
+        "id": "CV-S004",
+        "name": "Stent Thrombosis",
+        "definition": "ARC definite/probable thrombosis: acute coronary syndrome + angiographic/pathologic confirmation of thrombus",
+        "measurement_timepoint": "Acute (0-24 hrs), subacute (1-30 days), late (31-365 days), very late (>365 days)",
+        "success_criteria": "Definite/probable stent thrombosis <1% at 12 months",
+        "source": "ARC-2 definitions",
+        "clinical_significance": "Catastrophic complication often presenting as MI or death",
+        "typical_analysis": "Kaplan-Meier time-to-event with landmark analysis (early vs. late)",
+        "regulatory_notes": "FDA focuses on definite/probable ST; CEC adjudication required; dual antiplatelet therapy duration affects late/very late ST"
+      },
+      {
+        "id": "CV-S005",
+        "name": "Major Bleeding",
+        "definition": "BARC Type 3-5: Overt bleeding with Hb drop ≥3 g/dL, transfusion, cardiac tamponade, ICH, or fatal bleeding",
+        "measurement_timepoint": "Index hospitalization, 30 days, 12 months",
+        "success_criteria": "BARC 3-5 bleeding <5% at 30 days",
+        "source": "Bleeding Academic Research Consortium (BARC) definitions",
+        "clinical_significance": "Balance efficacy (antithrombotic therapy) with bleeding risk",
+        "typical_analysis": "Cumulative incidence with competing risk for death",
+        "regulatory_notes": "Must report access site and non-access site bleeding separately"
+      },
+      {
+        "id": "CV-S006",
+        "name": "Vascular Complications",
+        "definition": "Access site hematoma requiring intervention, pseudoaneurysm, AV fistula, dissection, distal embolization",
+        "measurement_timepoint": "Index hospitalization, 30 days",
+        "success_criteria": "Major vascular complications <3% at discharge",
+        "source": "VARC-3 definitions",
+        "clinical_significance": "Device size/profile and operator technique influence risk",
+        "typical_analysis": "Proportion with 95% CI; subgroup analysis by access site (femoral vs. radial)",
+        "regulatory_notes": "Ultrasound assessment recommended for large-bore devices"
+      }
+    ],
+    "secondary_endpoints": [
+      {
+        "id": "CV-SE001",
+        "name": "Quality of Life (Angina Frequency)",
+        "definition": "Change in Seattle Angina Questionnaire (SAQ) angina frequency score from baseline",
+        "measurement_timepoint": "Baseline, 1 month, 6 months, 12 months",
+        "success_criteria": "Mean improvement ≥10 points (clinically meaningful difference)",
+        "source": "Seattle Angina Questionnaire validated instrument",
+        "clinical_significance": "Patient-reported outcome measure for symptomatic benefit",
+        "typical_analysis": "Mixed effects model for change from baseline; responder analysis (≥10 point improvement)",
+        "regulatory_notes": "FDA accepts SAQ for symptomatic endpoints; pre-specified in protocol"
+      },
+      {
+        "id": "CV-SE002",
+        "name": "Exercise Tolerance (6-Minute Walk Test)",
+        "definition": "Distance walked in 6 minutes on flat surface",
+        "measurement_timepoint": "Baseline, 1 month, 6 months, 12 months",
+        "success_criteria": "Mean improvement ≥30 meters from baseline",
+        "source": "ATS Guidelines for 6MWT",
+        "clinical_significance": "Objective functional capacity measure; correlates with NYHA class",
+        "typical_analysis": "Paired t-test or Wilcoxon for change from baseline",
+        "regulatory_notes": "Useful for heart failure and PAD devices; training effect must be controlled"
+      },
+      {
+        "id": "CV-SE003",
+        "name": "Patency (Primary, Assisted Primary, Secondary)",
+        "definition": "Vessel remains open without occlusion. Primary=no reintervention, Assisted Primary=intervention before occlusion, Secondary=after occlusion",
+        "measurement_timepoint": "1, 6, 12, 24 months (duplex ultrasound)",
+        "success_criteria": "Primary patency >70% at 12 months for peripheral stents",
+        "source": "SVS reporting standards for PAD",
+        "clinical_significance": "Gold standard for peripheral vascular device durability",
+        "typical_analysis": "Kaplan-Meier survival analysis; competing risk of death or amputation",
+        "regulatory_notes": "Core lab duplex adjudication required; peak systolic velocity ratio >2.4 defines occlusion"
+      },
+      {
+        "id": "CV-SE004",
+        "name": "Hemodynamic Improvement (ABI, Toe Pressure)",
+        "definition": "Ankle-brachial index (ABI) increase ≥0.10 or toe pressure increase ≥10 mmHg",
+        "measurement_timepoint": "Post-procedure, 1 month, 6 months, 12 months",
+        "success_criteria": "ABI improvement ≥0.10 in ≥70% of patients",
+        "source": "SVS reporting standards",
+        "clinical_significance": "Objective hemodynamic measure of revascularization success",
+        "typical_analysis": "Proportion achieving threshold improvement; change from baseline analysis",
+        "regulatory_notes": "Supplement to clinical endpoints (walking distance, ulcer healing)"
+      }
+    ]
+  },
+  "notes": {
+    "core_lab_requirements": "FDA typically requires independent core labs for angiographic (QCA, IVUS, OCT), ECG, and echocardiographic assessments",
+    "clinical_events_committee": "CEC adjudication required for MACE components (death, MI, stroke, revascularization) using pre-specified definitions",
+    "non_inferiority_margins": "For MACE: 3-5% absolute margin or 1.3-1.5 relative risk margin. For LLL: 0.2-0.3 mm margin",
+    "follow_up_duration": "Minimum 12 months for most devices; 5 years for new chemical entities (drug-eluting stents/balloons); lifetime for permanent implants (valves)",
+    "imaging_modalities": "QCA for lumen diameter, IVUS/OCT for vessel wall assessment, angiography for flow (TIMI grade)",
+    "statistical_considerations": "Sample size calculations must account for primary endpoint event rates, non-inferiority margins, Type I/II error rates, and anticipated loss to follow-up (typically 10-15%)"
+  }
+}

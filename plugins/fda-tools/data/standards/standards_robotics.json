@@ -1,0 +1,54 @@
+{
+  "category": "Robotics and Robotic-Assisted Surgical Devices",
+  "product_codes": ["QBH", "OZO", "QPA"],
+  "applicable_standards": [
+    {
+      "number": "ISO 13482:2014",
+      "title": "Robots and robotic devices — Safety requirements for personal care robots",
+      "applicability": "Robotics safety framework",
+      "sections": ["Design verification", "Risk analysis", "Protective measures"]
+    },
+    {
+      "number": "IEC 80601-2-77:2019",
+      "title": "Medical electrical equipment - Part 2-77: Particular requirements for the basic safety and essential performance of robotically assisted surgical equipment",
+      "applicability": "Surgical robotics specific",
+      "sections": ["EMC", "Electrical safety", "Performance requirements"]
+    },
+    {
+      "number": "IEC 62304:2006/AMD1:2015",
+      "title": "Medical device software — Software life cycle processes",
+      "applicability": "Software validation (all robotic systems have software)",
+      "sections": ["Software design", "Verification", "Risk management"]
+    },
+    {
+      "number": "IEC 62366-1:2015",
+      "title": "Medical devices — Application of usability engineering to medical devices",
+      "applicability": "Human factors for complex robotic interfaces",
+      "sections": ["User interface design", "Use error analysis", "Formative evaluation"]
+    },
+    {
+      "number": "ISO 14971:2019",
+      "title": "Medical devices — Application of risk management to medical devices",
+      "applicability": "Risk management (required for all devices)",
+      "sections": ["Risk analysis", "Risk evaluation", "Risk control"]
+    },
+    {
+      "number": "ISO 10993-1:2018",
+      "title": "Biological evaluation of medical devices — Part 1: Evaluation and testing within a risk management process",
+      "applicability": "Biocompatibility for patient-contacting components",
+      "sections": ["Biocompatibility evaluation", "Test selection"]
+    },
+    {
+      "number": "IEC 60601-1:2005/AMD1:2012",
+      "title": "Medical electrical equipment — Part 1: General requirements for basic safety and essential performance",
+      "applicability": "Electrical safety (robotic systems are powered)",
+      "sections": ["Electrical safety", "EMC", "Mechanical safety"]
+    },
+    {
+      "number": "IEC 60601-1-2:2014",
+      "title": "Medical electrical equipment — Part 1-2: General requirements for basic safety and essential performance — Collateral standard: Electromagnetic disturbances — Requirements and tests",
+      "applicability": "EMC for robotic electrical systems",
+      "sections": ["Radiated emissions", "Immunity testing"]
+    }
+  ]
+}

@@ -1,0 +1,241 @@
+{
+  "version": "1.0",
+  "source": "FDA Orthopedic Device Guidance + AAOS Clinical Outcomes + ISO 14243/14242",
+  "device_types": ["Hip Implants", "Knee Implants", "Spinal Implants", "Trauma Fixation", "Sports Medicine"],
+  "endpoints": {
+    "primary_efficacy": [
+      {
+        "id": "OR-E001",
+        "name": "Harris Hip Score (HHS)",
+        "definition": "Composite score (0-100) assessing pain, function, range of motion, and absence of deformity in hip arthroplasty patients",
+        "measurement_timepoint": "Baseline (pre-op), 6 weeks, 3 months, 6 months, 12 months, annually to 10 years",
+        "success_criteria": "Mean HHS ≥80 at 12 months (excellent outcome); improvement ≥20 points from baseline (clinically meaningful)",
+        "source": "Harris WH. J Bone Joint Surg Am 1969;51:737-755",
+        "clinical_significance": "Most widely used hip outcome score; >80 = excellent, 70-80 = good, 60-70 = fair, <60 = poor",
+        "typical_analysis": "Mean change from baseline with paired t-test; responder analysis (≥20 point improvement)",
+        "regulatory_notes": "FDA accepts HHS as primary efficacy endpoint for THA devices; 10-year data required for PMA"
+      },
+      {
+        "id": "OR-E002",
+        "name": "WOMAC (Western Ontario McMaster Universities Osteoarthritis Index)",
+        "definition": "24-item questionnaire assessing pain (5 items), stiffness (2 items), physical function (17 items) on Likert scale",
+        "measurement_timepoint": "Baseline, 6 weeks, 3 months, 6 months, 12 months, annually",
+        "success_criteria": "≥50% reduction in total WOMAC score from baseline at 12 months",
+        "source": "Bellamy N. J Rheumatol 1988;15:1833-40",
+        "clinical_significance": "Gold standard for knee and hip OA; lower score = better outcome; responsive to change",
+        "typical_analysis": "Percentage change from baseline; minimal clinically important difference (MCID) = 12% reduction",
+        "regulatory_notes": "FDA accepts WOMAC for TKA devices; normalized to 0-100 scale for reporting"
+      },
+      {
+        "id": "OR-E003",
+        "name": "Range of Motion (ROM)",
+        "definition": "Active and passive joint range measured with goniometer (degrees): Hip (flexion, extension, abduction, adduction, rotation), Knee (flexion, extension)",
+        "measurement_timepoint": "Baseline, 6 weeks, 3 months, 6 months, 12 months, annually",
+        "success_criteria": "Knee flexion ≥110° at 12 months; Hip flexion ≥90° at 12 months",
+        "source": "AAOS clinical practice guidelines",
+        "clinical_significance": "Functional ROM required for activities of daily living: knee 110° (stairs), hip 90° (sitting)",
+        "typical_analysis": "Mean ± SD with change from baseline; proportion achieving functional thresholds",
+        "regulatory_notes": "Objective measure to supplement patient-reported outcomes"
+      },
+      {
+        "id": "OR-E004",
+        "name": "Revision Rate (Implant Survival)",
+        "definition": "Proportion of implants requiring surgical removal or replacement for any reason (aseptic loosening, infection, fracture, instability)",
+        "measurement_timepoint": "Annually to 10+ years",
+        "success_criteria": "Survival ≥95% at 10 years for primary THA/TKA (per registry data)",
+        "source": "National Joint Registry (UK), AJRR (US), Australian Registry",
+        "clinical_significance": "Gold standard for long-term implant performance; revision is objective, unambiguous endpoint",
+        "typical_analysis": "Kaplan-Meier survival analysis with 95% CI; Cox proportional hazards for risk factors",
+        "regulatory_notes": "FDA requires minimum 2-year data for 510(k), 5-10 year data for PMA; competitive to registry benchmarks"
+      },
+      {
+        "id": "OR-E005",
+        "name": "Radiographic Loosening",
+        "definition": "Presence of progressive radiolucent lines (>2mm), component migration (>2mm subsidence or >5° change in angle), or cement mantle fracture",
+        "measurement_timepoint": "6 weeks (baseline), 6 months, 12 months, annually to 10 years",
+        "success_criteria": "Radiographic loosening <5% at 2 years, <10% at 5 years",
+        "source": "Gruen zones (hip stem), Knee Society radiographic criteria",
+        "clinical_significance": "Surrogate endpoint for future revision; may precede clinical symptoms by years",
+        "typical_analysis": "Proportion with loosening at each timepoint; radiographic review by independent assessors",
+        "regulatory_notes": "AP and lateral radiographs required; independent blinded review by 2+ radiologists; inter-observer agreement (kappa >0.6)"
+      },
+      {
+        "id": "OR-E006",
+        "name": "Oswestry Disability Index (ODI)",
+        "definition": "10-item questionnaire (0-100 scale) assessing back pain disability: pain intensity, personal care, lifting, walking, sitting, standing, sleeping, social life, travel, employment",
+        "measurement_timepoint": "Baseline, 6 weeks, 3 months, 6 months, 12 months, 24 months",
+        "success_criteria": "≥15 point improvement from baseline at 12 months (MCID)",
+        "source": "Fairbank JC. Spine 2000;25:2940-53",
+        "clinical_significance": "Most widely used spine disability measure; 0-20% = minimal, 21-40% = moderate, 41-60% = severe, 61-80% = crippled, 81-100% = bedbound",
+        "typical_analysis": "Mean change from baseline; responder analysis (≥15 point improvement = success)",
+        "regulatory_notes": "FDA accepts ODI as primary endpoint for lumbar fusion devices; typically paired with radiographic fusion assessment"
+      },
+      {
+        "id": "OR-E007",
+        "name": "Fusion Success (Radiographic and CT)",
+        "definition": "Bridging bone across fusion site with <5° angular motion on flexion-extension radiographs OR continuous trabecular bone on CT (Lenke Grade A or B)",
+        "measurement_timepoint": "6 months, 12 months, 24 months",
+        "success_criteria": "Fusion rate ≥75% at 24 months for single-level lumbar fusion",
+        "source": "Lenke classification for CT fusion grading; FDA spine guidance",
+        "clinical_significance": "Anatomic endpoint; fusion does not always correlate with clinical improvement, but non-union correlates with poor outcomes",
+        "typical_analysis": "Proportion achieving fusion with exact 95% CI; independent assessment by 2+ radiologists",
+        "regulatory_notes": "FDA requires both radiographic and CT assessment; fine-cut CT (1-2mm slices) with multiplanar reconstruction; blinded independent review"
+      },
+      {
+        "id": "OR-E008",
+        "name": "Fracture Healing (Union)",
+        "definition": "Bridging callus on ≥3 cortices (AP and lateral radiographs) AND absence of pain/motion at fracture site",
+        "measurement_timepoint": "6 weeks, 12 weeks, 6 months, 12 months",
+        "success_criteria": "Union rate ≥90% at 6 months for closed femoral shaft fractures; ≥85% for open fractures",
+        "source": "FDA/OTA fracture healing criteria",
+        "clinical_significance": "Primary endpoint for trauma fixation devices; delayed union (>6 months) or non-union (>9 months) requires intervention",
+        "typical_analysis": "Proportion achieving union; time-to-union Kaplan-Meier analysis",
+        "regulatory_notes": "Independent radiographic review required; clinical exam to confirm absence of motion/pain at fracture site"
+      }
+    ],
+    "primary_safety": [
+      {
+        "id": "OR-S001",
+        "name": "Infection (Superficial and Deep)",
+        "definition": "Superficial: incision site infection within 30 days. Deep: Periprosthetic joint infection (PJI) requiring antibiotics ± revision surgery",
+        "measurement_timepoint": "30 days (superficial), continuously to 2+ years (deep PJI)",
+        "success_criteria": "Superficial infection <2%, deep PJI <1% at 2 years for primary THA/TKA",
+        "source": "Musculoskeletal Infection Society (MSIS) PJI criteria",
+        "clinical_significance": "Deep PJI is catastrophic complication often requiring implant removal, antibiotic spacer, and 2-stage revision",
+        "typical_analysis": "Kaplan-Meier cumulative incidence with competing risk for death or revision for other causes",
+        "regulatory_notes": "Must distinguish superficial from deep infection; microbiologic culture and ESR/CRP required for deep infection diagnosis"
+      },
+      {
+        "id": "OR-S002",
+        "name": "Dislocation (Hip)",
+        "definition": "Separation of femoral head from acetabular component requiring closed or open reduction",
+        "measurement_timepoint": "Continuously to 2+ years",
+        "success_criteria": "Dislocation rate <3% at 2 years for primary THA",
+        "source": "AJRR benchmarks, registry data",
+        "clinical_significance": "Leading cause of early revision; recurrent dislocation (≥2 events) often requires revision to constrained liner or dual-mobility",
+        "typical_analysis": "Kaplan-Meier time-to-first-dislocation; recurrent dislocation rate (≥2 events)",
+        "regulatory_notes": "Report first dislocation and recurrent dislocations separately; document reduction method (closed vs. open)"
+      },
+      {
+        "id": "OR-S003",
+        "name": "Periprosthetic Fracture",
+        "definition": "Fracture of bone adjacent to or involving the implant, classified by Vancouver (hip), Rorabeck (knee), or similar systems",
+        "measurement_timepoint": "Intraoperative, postoperative to 2+ years",
+        "success_criteria": "Periprosthetic fracture <2% at 2 years",
+        "source": "Vancouver classification (proximal femur), Rorabeck (distal femur)",
+        "clinical_significance": "Serious complication often requiring revision surgery; risk factors include osteoporosis, trauma, osteolysis",
+        "typical_analysis": "Cumulative incidence with competing risks; classification of fracture type and treatment",
+        "regulatory_notes": "Distinguish intraoperative from postoperative fractures; report treatment (ORIF vs. revision)"
+      },
+      {
+        "id": "OR-S004",
+        "name": "Nerve Injury",
+        "definition": "New postoperative sensory or motor deficit in anatomically relevant nerve distribution (sciatic, femoral, peroneal, tibial)",
+        "measurement_timepoint": "Immediately postoperative, 6 weeks, 3 months, 12 months",
+        "success_criteria": "Permanent (>12 months) nerve injury <0.5%",
+        "source": "Clinical examination, EMG/NCS if persistent >6 weeks",
+        "clinical_significance": "Most nerve injuries are transient (neuropraxia) and resolve within 3-6 months; permanent injury is disabling",
+        "typical_analysis": "Proportion with nerve injury; classification as transient (<3 months), prolonged (3-12 months), or permanent (>12 months)",
+        "regulatory_notes": "Independent neurologist evaluation for persistent deficits; EMG/NCS at 6 weeks and 3 months if no improvement"
+      },
+      {
+        "id": "OR-S005",
+        "name": "Venous Thromboembolism (VTE)",
+        "definition": "Deep vein thrombosis (DVT) confirmed by duplex ultrasound OR pulmonary embolism (PE) confirmed by CT angiography",
+        "measurement_timepoint": "Index hospitalization, 30 days, 90 days",
+        "success_criteria": "Symptomatic VTE <2% at 90 days with chemoprophylaxis",
+        "source": "ACCP anticoagulation guidelines for orthopedic surgery",
+        "clinical_significance": "Major cause of morbidity/mortality post-THA/TKA; requires anticoagulation for 3-6 months",
+        "typical_analysis": "Cumulative incidence; distinguish DVT from PE; fatal PE rate",
+        "regulatory_notes": "Report chemoprophylaxis regimen (LMWH, warfarin, DOAC, aspirin); objective testing required for diagnosis"
+      },
+      {
+        "id": "OR-S006",
+        "name": "Osteolysis",
+        "definition": "Progressive bone resorption (radiolucency) >2mm adjacent to implant, attributed to wear debris-induced inflammatory response",
+        "measurement_timepoint": "Annually starting at 2 years through 10+ years",
+        "success_criteria": "Osteolysis <10% at 5 years, <20% at 10 years",
+        "source": "Radiographic assessment per Gruen zones (hip), AAOS criteria (knee)",
+        "clinical_significance": "Precursor to aseptic loosening and revision; polyethylene wear debris is primary etiology",
+        "typical_analysis": "Cumulative incidence over time; location and volume quantification if CT performed",
+        "regulatory_notes": "Independent blinded radiographic review; correlation with wear measurements from explant analysis if revision performed"
+      },
+      {
+        "id": "OR-S007",
+        "name": "Subsidence (Spinal Implants)",
+        "definition": "Settling of interbody cage into adjacent vertebral endplate, measured as >3mm loss of disc height on lateral radiograph",
+        "measurement_timepoint": "6 weeks (baseline), 6 months, 12 months, 24 months",
+        "success_criteria": "Clinically significant subsidence (>5mm) <10% at 24 months",
+        "source": "Marchi et al. J Neurosurg Spine 2013;19:110-8",
+        "clinical_significance": "May lead to loss of lordosis, foraminal stenosis, non-union; risk factors include osteoporosis, oversized cage",
+        "typical_analysis": "Mean subsidence with SD; proportion with clinically significant subsidence (>3mm or >5mm thresholds)",
+        "regulatory_notes": "Standing lateral radiographs required for accurate measurement; independent radiographic review"
+      }
+    ],
+    "secondary_endpoints": [
+      {
+        "id": "OR-SE001",
+        "name": "EQ-5D (EuroQol 5-Dimension)",
+        "definition": "Generic health status measure (5 dimensions: mobility, self-care, usual activities, pain/discomfort, anxiety/depression) with utility score 0-1",
+        "measurement_timepoint": "Baseline, 6 months, 12 months, annually",
+        "success_criteria": "Mean utility improvement ≥0.10 from baseline (MCID)",
+        "source": "EuroQol Group; EQ-5D-5L version (5 levels per dimension)",
+        "clinical_significance": "Allows cost-effectiveness analysis (QALY); generic measure permits comparison across disease states",
+        "typical_analysis": "Mean change in utility score; QALY calculation for economic evaluation",
+        "regulatory_notes": "FDA does not typically require but useful for CMS coverage decisions and international submissions"
+      },
+      {
+        "id": "OR-SE002",
+        "name": "Oxford Hip/Knee Score",
+        "definition": "12-item joint-specific outcome measure (0-48 scale, higher = better); Oxford Hip Score for THA, Oxford Knee Score for TKA",
+        "measurement_timepoint": "Baseline, 6 months, 12 months, annually",
+        "success_criteria": "Mean score ≥35 at 12 months (good outcome); improvement ≥8 points from baseline (MCID)",
+        "source": "Dawson J. J Bone Joint Surg Br 1996;78:185-90 (hip), 1998;80:63-9 (knee)",
+        "clinical_significance": "Simpler than HHS/KSS; patient-reported; widely used in UK/Europe",
+        "typical_analysis": "Mean score and change from baseline; responder analysis (≥8 point improvement)",
+        "regulatory_notes": "Less commonly used than HHS/WOMAC in FDA submissions but gaining acceptance"
+      },
+      {
+        "id": "OR-SE003",
+        "name": "Polyethylene Wear Rate",
+        "definition": "Linear wear (mm/year) or volumetric wear (mm³/year) measured from serial radiographs using validated software (e.g., PolyWare, EBRA)",
+        "measurement_timepoint": "6 months (baseline), annually to 10 years",
+        "success_criteria": "Linear wear <0.1 mm/year for highly cross-linked polyethylene (HXLPE)",
+        "source": "ISO 14242 (knee wear testing), ISO 14243 (hip wear testing); radiographic measurement per Dorr et al.",
+        "clinical_significance": "Surrogate for long-term osteolysis risk; conventional PE ~0.2 mm/yr, HXLPE ~0.05 mm/yr",
+        "typical_analysis": "Linear regression of head penetration over time; wear rate with 95% CI",
+        "regulatory_notes": "Requires annual radiographs with standardized technique; specialized software and trained readers; correlate with explant wear analysis if available"
+      },
+      {
+        "id": "OR-SE004",
+        "name": "Patient Satisfaction",
+        "definition": "Single-item or multi-item questionnaire assessing satisfaction with surgery outcome (e.g., 5-point Likert: very satisfied to very dissatisfied)",
+        "measurement_timepoint": "6 months, 12 months, annually",
+        "success_criteria": "≥80% very satisfied or satisfied at 12 months",
+        "source": "Various validated instruments (e.g., HSS Hip Replacement Expectations Survey)",
+        "clinical_significance": "Correlates imperfectly with objective outcomes; influenced by expectations and psychological factors",
+        "typical_analysis": "Proportion satisfied/very satisfied; correlation with HHS/WOMAC scores",
+        "regulatory_notes": "Not typically primary endpoint but useful patient-centered outcome; pre/post expectations influence satisfaction"
+      },
+      {
+        "id": "OR-SE005",
+        "name": "Return to Work/Activities",
+        "definition": "Time to return to previous employment or recreational activities; proportion returning by 6 months and 12 months",
+        "measurement_timepoint": "6 weeks, 3 months, 6 months, 12 months",
+        "success_criteria": "≥70% return to work by 6 months (age <65 and employed pre-injury)",
+        "source": "Patient questionnaire or telephone interview",
+        "clinical_significance": "Functional outcome relevant to younger, active patients; influenced by job demands and socioeconomic factors",
+        "typical_analysis": "Time-to-return Kaplan-Meier analysis; proportion returning by timepoint",
+        "regulatory_notes": "Confounded by non-device factors (workers' compensation, disability claims); useful secondary endpoint for sports medicine devices"
+      }
+    ]
+  },
+  "notes": {
+    "registry_benchmarks": "Compare outcomes to national registry data (AJRR, UK NJR, Australian Registry) for context; 95% survival at 10 years is benchmark for THA/TKA",
+    "follow_up_duration": "Minimum 2 years for 510(k); 5-10 years for PMA; lifetime surveillance for registries",
+    "radiographic_standards": "Standardized AP and lateral radiographs; weight-bearing for lower extremity; independent blinded review by 2+ assessors; inter-observer agreement (kappa >0.6)",
+    "patient_reported_outcomes": "PROMIS (Patient-Reported Outcomes Measurement Information System) increasingly used as alternative to legacy scores; computerized adaptive testing reduces burden",
+    "minimal_clinically_important_difference": "HHS ≥20 points, WOMAC ≥12%, ODI ≥15 points, Oxford ≥8 points; use for responder analyses",
+    "statistical_considerations": "Sample size based on primary endpoint non-inferiority to predicate; adjust for multiple comparisons if multiple primary endpoints; intention-to-treat analysis for clinical outcomes; per-protocol for radiographic outcomes"
+  }
+}

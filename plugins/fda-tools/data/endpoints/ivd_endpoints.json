@@ -1,0 +1,220 @@
+{
+  "version": "1.0",
+  "source": "FDA IVD Guidance + CLSI Standards + CAP/CLIA Requirements",
+  "device_types": ["Immunoassays", "Molecular Diagnostics", "Clinical Chemistry", "Hematology", "Microbiology"],
+  "endpoints": {
+    "analytical_performance": [
+      {
+        "id": "IVD-A001",
+        "name": "Analytical Sensitivity (Limit of Detection, LoD)",
+        "definition": "Lowest analyte concentration that can be reliably detected (e.g., 95% hit rate) above blank/negative control",
+        "measurement_method": "Serial dilution testing near expected limit; CLSI EP17-A2 protocol; probit or logit regression analysis",
+        "success_criteria": "LoD ≤claimed cutoff in IFU; consistent across 3+ lots and instruments",
+        "source": "CLSI EP17-A2 (Evaluation of Detection Capability)",
+        "clinical_significance": "Determines minimum reportable value; critical for infectious disease tests (HIV viral load, HCV RNA)",
+        "typical_analysis": "Probit analysis with 95% hit rate; 95% CI for LoD; verification with ≥20 replicates at LoD",
+        "regulatory_notes": "FDA requires LoD verification in premarket study; must be validated for each specimen type (serum, plasma, whole blood)"
+      },
+      {
+        "id": "IVD-A002",
+        "name": "Analytical Specificity (Cross-Reactivity and Interference)",
+        "definition": "Cross-reactivity: Reactivity with non-target analytes. Interference: Effect of endogenous (hemolysis, lipemia, icterus) or exogenous substances on results",
+        "measurement_method": "Test structurally similar compounds at physiologic concentrations; test hemolyzed, lipemic, icteric samples per CLSI EP7",
+        "success_criteria": "No cross-reactivity with structurally similar analytes at 10× expected concentration; No interference at clinically relevant hemolysis/lipemia/icterus levels",
+        "source": "CLSI EP7-A3 (Interference Testing), FDA IVD Guidance",
+        "clinical_significance": "Prevents false positives (cross-reactivity) and false results (interference); critical for point-of-care and emergency tests",
+        "typical_analysis": "Percent bias from expected value; acceptance if bias <±10% or within total allowable error",
+        "regulatory_notes": "Test ≥20 potentially cross-reactive substances for immunoassays; test hemolysis (500 mg/dL Hb), lipemia (2000 mg/dL triglycerides), icterus (20 mg/dL bilirubin)"
+      },
+      {
+        "id": "IVD-A003",
+        "name": "Precision (Repeatability and Reproducibility)",
+        "definition": "Repeatability: Within-run precision (same operator, reagent lot, instrument, run). Reproducibility: Between-run, between-day, between-lot, between-site precision",
+        "measurement_method": "CLSI EP05-A3 protocol: 2+ levels, 2 replicates/run, 2 runs/day, 20 days; calculate within-run, between-run, between-day, total CV",
+        "success_criteria": "CV ≤claimed precision in IFU; CV ≤50% of total allowable error (TEa)",
+        "source": "CLSI EP05-A3 (Evaluation of Precision)",
+        "clinical_significance": "Low precision leads to false changes in serial monitoring (e.g., HbA1c, troponin); precision component of total error budget",
+        "typical_analysis": "ANOVA to partition variance components; report CV% for within-run, between-run, total; calculate repeatability and reproducibility SD",
+        "regulatory_notes": "Test at 3 levels (low, mid, high across reportable range); minimum 20 days for reproducibility; multi-site study (3 sites) for PMA devices"
+      },
+      {
+        "id": "IVD-A004",
+        "name": "Linearity and Reportable Range",
+        "definition": "Linearity: Proportional response across concentration range. Reportable Range: Span of results that meet accuracy, precision, and bias requirements",
+        "measurement_method": "CLSI EP06 protocol: Dilute high sample and mix with low sample to create 9-11 levels; linear regression; calculate %deviation from linearity",
+        "success_criteria": "R² ≥0.95 across claimed range; polynomial regression not superior to linear; %deviation ≤±10% across range",
+        "source": "CLSI EP06-A (Linearity)",
+        "clinical_significance": "Ensures accurate results across physiologic and pathologic concentrations; determines need for dilution at high values",
+        "typical_analysis": "Linear regression with 95% CI for slope/intercept; polynomial fit comparison; plot residuals; calculate allowable nonlinearity",
+        "regulatory_notes": "If nonlinear, use polynomial regression or spline; verify at limits of reportable range; document dilution protocol if specimens exceed upper limit"
+      },
+      {
+        "id": "IVD-A005",
+        "name": "Accuracy (Method Comparison)",
+        "definition": "Agreement with comparative method (predicate device or reference standard) or recovery of spiked/certified reference material",
+        "measurement_method": "CLSI EP09-A3: Test ≥40 patient samples spanning range on new and comparative method; Deming or Passing-Bablok regression",
+        "success_criteria": "Slope 0.9-1.1, intercept near 0; bias ≤allowable bias from CLIA PT criteria or Ricos biologic variation database",
+        "source": "CLSI EP09-A3 (Method Comparison), CLSI EP15-A3 (User Verification)",
+        "clinical_significance": "Ensures new test produces clinically equivalent results to established test; critical for treatment thresholds (glucose, INR)",
+        "typical_analysis": "Deming regression (accounts for error in both methods); Bland-Altman plot for bias assessment; calculate mean bias and 95% limits of agreement",
+        "regulatory_notes": "Comparative method must be FDA-cleared or clinical reference standard; if no comparator, use certified reference materials (NIST, CAP); document traceability chain"
+      },
+      {
+        "id": "IVD-A006",
+        "name": "Analytical Measuring Interval (AMI)",
+        "definition": "Concentration range over which device measures analyte directly without dilution or concentration",
+        "measurement_method": "Combine linearity (EP06) and precision (EP05) data; AMI = range where CV ≤specified limit AND linearity met",
+        "success_criteria": "AMI encompasses 95% of expected patient values; extension beyond AMI requires validated dilution protocol",
+        "source": "CLSI C28-A3 (Defining, Establishing, and Verifying Reference Intervals)",
+        "clinical_significance": "Defines range of direct measurement; values outside AMI require dilution (high) or concentration (low)",
+        "typical_analysis": "Verify LoD (lower limit), verify linearity and precision at upper limit; document dilution verification if applicable",
+        "regulatory_notes": "AMI different from reportable range (reportable range may include diluted specimens)"
+      },
+      {
+        "id": "IVD-A007",
+        "name": "Stability (Specimen, On-Board, Reagent)",
+        "definition": "Specimen stability: Time/temperature limits for specimens before testing. On-board: Loaded specimen stability on analyzer. Reagent: Unopened and opened reagent expiration",
+        "measurement_method": "Test specimens at T0, then after storage at claimed conditions (e.g., 2-8°C for 24h, RT for 4h); bias ≤±10% or TEa",
+        "success_criteria": "Claimed stability supported by data; bias ≤±10% at stability limit timepoint vs. fresh specimen",
+        "source": "CLSI H18-A4 (Blood collection), device-specific FDA guidance",
+        "clinical_significance": "Defines specimen handling requirements; unstable analytes (ammonia, lactic acid) require immediate testing or stabilizers",
+        "typical_analysis": "Paired t-test or Wilcoxon for fresh vs. stored; calculate %bias; test at 3 levels (low, mid, high)",
+        "regulatory_notes": "Test worst-case storage (highest temp, longest time); include freeze-thaw cycles if applicable; on-board stability critical for random-access analyzers"
+      }
+    ],
+    "clinical_performance": [
+      {
+        "id": "IVD-C001",
+        "name": "Clinical Sensitivity (True Positive Rate, Recall)",
+        "definition": "Proportion of specimens from patients with disease/condition that test positive",
+        "measurement_method": "Test prospective or retrospective specimens from diseased patients (defined by reference standard); calculate TP/(TP+FN)",
+        "success_criteria": "Sensitivity ≥claimed in IFU; typically ≥95% for screening tests (HIV, HCV), ≥80% for diagnostic tests",
+        "source": "CLSI EP12-A2 (User Protocol for Evaluation of Qualitative Test Performance)",
+        "clinical_significance": "High sensitivity needed for screening tests (rule out disease); low sensitivity leads to false negatives and missed diagnoses",
+        "typical_analysis": "Calculate sensitivity with exact 95% CI (Clopper-Pearson); stratify by disease severity, time since onset, demographics",
+        "regulatory_notes": "Reference standard must be validated (culture, PCR, adjudication by expert panel); minimum 100-200 positive specimens for pivotal study; include early/late disease stages"
+      },
+      {
+        "id": "IVD-C002",
+        "name": "Clinical Specificity (True Negative Rate)",
+        "definition": "Proportion of specimens from patients without disease/condition that test negative",
+        "measurement_method": "Test specimens from healthy individuals or patients with other conditions; calculate TN/(TN+FP)",
+        "success_criteria": "Specificity ≥claimed in IFU; typically ≥95-99% for most diagnostic tests",
+        "source": "CLSI EP12-A2",
+        "clinical_significance": "High specificity needed for confirmatory tests (rule in disease); low specificity leads to false positives, unnecessary treatments, patient anxiety",
+        "typical_analysis": "Calculate specificity with exact 95% CI; stratify by cross-reactive conditions, demographics",
+        "regulatory_notes": "Include healthy controls AND patients with related conditions (e.g., flu test should test patients with other respiratory viruses); minimum 100-300 negative specimens"
+      },
+      {
+        "id": "IVD-C003",
+        "name": "Positive Predictive Value (PPV)",
+        "definition": "Proportion of positive test results that are true positives; depends on disease prevalence",
+        "measurement_method": "Calculate from sensitivity, specificity, and disease prevalence: PPV = (Sens × Prev) / [(Sens × Prev) + ((1-Spec) × (1-Prev))]",
+        "success_criteria": "PPV ≥50% for screening tests at population prevalence; report for multiple prevalence scenarios",
+        "source": "Bayesian probability; report in IFU per FDA IVD guidance",
+        "clinical_significance": "Clinically meaningful metric for positive results; low PPV means many false positives, requiring confirmatory testing",
+        "typical_analysis": "Calculate PPV for low (screening), moderate, and high (symptomatic) prevalence scenarios; sensitivity analysis",
+        "regulatory_notes": "FDA requires PPV/NPV reporting for home-use and OTC tests; use population prevalence estimates from CDC, literature"
+      },
+      {
+        "id": "IVD-C004",
+        "name": "Negative Predictive Value (NPV)",
+        "definition": "Proportion of negative test results that are true negatives",
+        "measurement_method": "Calculate from sensitivity, specificity, and prevalence: NPV = (Spec × (1-Prev)) / [(Spec × (1-Prev)) + ((1-Sens) × Prev)]",
+        "success_criteria": "NPV ≥95% for tests used to rule out disease",
+        "source": "Bayesian probability",
+        "clinical_significance": "Critical for ruling out disease; low NPV means negative results not reassuring",
+        "typical_analysis": "Calculate for multiple prevalence scenarios; highest in low-prevalence populations",
+        "regulatory_notes": "Report in IFU with prevalence assumptions clearly stated"
+      },
+      {
+        "id": "IVD-C005",
+        "name": "Area Under ROC Curve (AUC)",
+        "definition": "Summary measure of diagnostic accuracy across all cutoff thresholds; ranges 0.5 (no discrimination) to 1.0 (perfect)",
+        "measurement_method": "For quantitative tests, plot sensitivity vs. (1-specificity) across range of cutoffs; calculate area under curve (trapezoid rule or nonparametric)",
+        "success_criteria": "AUC ≥0.80 (fair), ≥0.90 (excellent); compare to predicate device or clinical standard",
+        "source": "Hanley JA, McNeil BJ. Radiology 1982;143:29-36; FDA IVD statistical guidance",
+        "clinical_significance": "AUC represents probability that test ranks random disease patient higher than random healthy patient; useful for cutoff optimization",
+        "typical_analysis": "Nonparametric AUC with DeLong 95% CI; compare AUCs between devices or markers using DeLong test; plot ROC curve with optimal cutoff",
+        "regulatory_notes": "Include ROC analysis for novel biomarkers or when optimizing cutoff; document justification for chosen cutoff (Youden index, cost-benefit)"
+      },
+      {
+        "id": "IVD-C006",
+        "name": "Agreement (Qualitative Tests)",
+        "definition": "Overall percent agreement (positive and negative) between new and comparative method",
+        "measurement_method": "Test same specimens on both devices; construct 2×2 table; calculate PPA, NPA, OPA with 95% CI",
+        "success_criteria": "PPA and NPA ≥95%; overall agreement ≥95%; lower limit of 95% CI >90%",
+        "source": "CLSI EP12-A2; FDA Statistical Guidance on Reporting Results from Studies Evaluating Diagnostic Tests",
+        "clinical_significance": "For qualitative tests without gold standard, agreement to predicate demonstrates equivalence",
+        "typical_analysis": "2×2 table with PPA = TP/(TP+FN), NPA = TN/(TN+FP), OPA = (TP+TN)/Total; exact 95% CI; kappa statistic for chance-corrected agreement",
+        "regulatory_notes": "PPA/NPA preferred over sensitivity/specificity when comparative method is not gold standard; minimum 100+ positive and 100+ negative by comparator"
+      },
+      {
+        "id": "IVD-C007",
+        "name": "Accuracy (Quantitative Tests with Reference Material)",
+        "definition": "Bias between measured value and certified reference material true value",
+        "measurement_method": "Test certified reference materials (NIST SRMs, CAP/AACC standards) at 3+ levels; calculate %bias = [(Measured - True)/True] × 100",
+        "success_criteria": "Bias ≤±10% or within CLIA PT limits across range",
+        "source": "ISO 17511 (Traceability of values assigned to calibrators and controls), CLSI C62-A",
+        "clinical_significance": "Ensures traceability to higher-order reference systems; critical for tests with treatment thresholds (glucose, cholesterol, INR)",
+        "typical_analysis": "Mean %bias with 95% CI at each level; compare to CLIA PT acceptance limits or biologic variation TEa",
+        "regulatory_notes": "Document full traceability chain: device → calibrator → reference material → primary reference (SI units if available); use JCTLM-listed reference materials"
+      }
+    ],
+    "usability_and_real_world": [
+      {
+        "id": "IVD-U001",
+        "name": "Untrained User Study (Home/OTC Devices)",
+        "definition": "Evaluation of device use by intended users (patients, caregivers) in intended environment without training",
+        "measurement_method": "Recruit ≥100 untrained users representative of population; observe device use; assess critical steps, errors, and result interpretation",
+        "success_criteria": "≥95% successfully perform all critical steps; ≥90% correctly interpret results; agreement with lab method ≥90% (PPA/NPA)",
+        "source": "FDA Self-Test IVD Guidance (2020), FDA Home-Use IVD Guidance",
+        "clinical_significance": "Demonstrates device is safe and effective when used by untrained laypersons in home environment",
+        "typical_analysis": "Proportion completing each critical step correctly; proportion with correct result interpretation; agreement (PPA/NPA) to lab comparator; stratify by demographics (age, education, health literacy)",
+        "regulatory_notes": "Required for all home-use and OTC IVDs; must include diverse population (age, education, health literacy, tech savvy); observe in simulated home environment; assess labeling comprehension"
+      },
+      {
+        "id": "IVD-U002",
+        "name": "Healthcare Provider Study (Point-of-Care)",
+        "definition": "Evaluation of device use by intended HCP users (nurses, MAs, pharmacists) in intended care setting",
+        "measurement_method": "Recruit ≥10-30 HCPs at ≥3 sites; provide IFU-only training; observe use on patient specimens or simulated specimens",
+        "success_criteria": "≥95% successful results; agreement with lab comparator ≥95%; no critical use errors",
+        "source": "CLSI POCT07 (Point-of-Care Connectivity), FDA CLIA Waiver Guidance",
+        "clinical_significance": "Demonstrates device is suitable for use at point-of-care by non-laboratory personnel with minimal training",
+        "typical_analysis": "Task analysis with proportion completing critical steps correctly; agreement (PPA/NPA/OPA) to central lab; invalid rate <5%; turnaround time",
+        "regulatory_notes": "Required for CLIA-waived devices; must demonstrate simple operation with minimal training; assess error handling and QC compliance"
+      },
+      {
+        "id": "IVD-U003",
+        "name": "Specimen Type Comparison",
+        "definition": "Agreement between new specimen type (e.g., fingerstick whole blood) and standard specimen type (venipuncture plasma)",
+        "measurement_method": "Collect paired specimens from ≥100 patients; test both on device; calculate PPA/NPA/OPA or correlation",
+        "success_criteria": "PPA and NPA ≥90-95%; correlation R² ≥0.90 for quantitative tests",
+        "source": "CLSI H04 (Procedures for Collection of Capillary Blood), device-specific FDA guidance",
+        "clinical_significance": "Allows convenient specimen collection (fingerstick, oral fluid) for patient-facing tests",
+        "typical_analysis": "For qualitative: 2×2 table with PPA/NPA. For quantitative: Deming regression, Bland-Altman plot; assess bias and 95% limits of agreement",
+        "regulatory_notes": "FDA requires separate validation for each specimen type claimed; document collection procedure in IFU; assess impact of hematocrit for whole blood"
+      },
+      {
+        "id": "IVD-U004",
+        "name": "Invalid/Error Rate (Real-World)",
+        "definition": "Proportion of tests producing invalid result, error message, or no result in hands of intended users",
+        "measurement_method": "Track all attempted tests in usability or clinical study; categorize outcomes: valid result, invalid result, error code, user error",
+        "success_criteria": "Invalid rate <5% for professional use, <10% for home use",
+        "source": "Device-specific data from usability and clinical studies",
+        "clinical_significance": "High invalid rate wastes specimens, delays diagnosis, and erodes user confidence",
+        "typical_analysis": "Proportion invalid with 95% CI; categorize reasons (insufficient sample, QC failure, user error); assess if re-testing successful",
+        "regulatory_notes": "Report in clinical study; assess if invalid rate differs by user type, specimen type, or site; document troubleshooting procedures in IFU"
+      }
+    ]
+  },
+  "notes": {
+    "clsi_standards": "CLSI (Clinical and Laboratory Standards Institute) publishes guidelines for IVD validation (EP series for analytical, C series for clinical chemistry, M series for microbiology)",
+    "clia_requirements": "Clinical Laboratory Improvement Amendments (CLIA) PT criteria define acceptable performance for lab certification; often used as regulatory benchmark",
+    "reference_standards": "Gold standard may be culture (microbiology), PCR (molecular), clinical diagnosis (symptoms + imaging), or expert adjudication",
+    "sample_size": "Analytical studies: 20-100 specimens per level. Clinical studies: ≥100-200 positive and ≥100-300 negative specimens for sensitivity/specificity claims; larger for rare diseases",
+    "statistical_analysis": "Use exact methods for proportions (Clopper-Pearson CI for sensitivity/specificity); Deming regression for method comparison (not OLS); stratify by relevant subgroups",
+    "regulatory_pathways": "Class I/II: 510(k) with predicate comparison; Class III or novel: PMA with clinical validation; CLIA waiver requires usability study demonstrating simple operation",
+    "traceability": "ISO 17511 and ISO 18113 series describe traceability and calibration requirements; document chain from device to primary reference material/method"
+  }
+}

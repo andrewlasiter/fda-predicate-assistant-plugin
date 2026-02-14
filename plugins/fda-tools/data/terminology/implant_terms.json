@@ -1,0 +1,171 @@
+{
+  "version": "1.0",
+  "source": "FDA Orthopedic Device Terminology + ASTM Standards + ISO 21534/5832/5833",
+  "device_types": ["Hip Implants", "Knee Implants", "Spinal Implants", "Shoulder Implants"],
+  "terminology": {
+    "materials": {
+      "titanium_alloy": {
+        "term": "Ti-6Al-4V (Titanium Alloy)",
+        "definition": "Titanium alloy containing 6% aluminum and 4% vanadium; most common orthopedic implant material",
+        "standard": "ASTM F136 (wrought), ASTM F1472 (cast), ISO 5832-3",
+        "properties": "Density 4.43 g/cm³; Ultimate tensile strength ≥860 MPa; Yield strength ≥795 MPa; Elongation ≥10%; Modulus 110 GPa",
+        "applications": "Femoral stems, acetabular shells, spinal rods/screws, trauma plates",
+        "advantages": "Excellent biocompatibility, corrosion resistance, osseointegration with porous coatings",
+        "disadvantages": "Lower wear resistance than CoCr; modulus mismatch with bone (stress shielding)"
+      },
+      "cobalt_chromium": {
+        "term": "CoCrMo (Cobalt-Chromium-Molybdenum Alloy)",
+        "definition": "Cobalt-based alloy with chromium (27-30%) and molybdenum (5-7%); high strength and wear resistance",
+        "standard": "ASTM F75 (cast), ASTM F1537 (wrought), ASTM F799 (HIPed), ISO 5832-4, 5832-12",
+        "properties": "Density 8.3-9.2 g/cm³; Ultimate tensile strength 655-1790 MPa (depending on processing); Modulus 210-253 GPa",
+        "applications": "Femoral heads, femoral knee components, modular neck/heads, bearing surfaces",
+        "advantages": "Superior wear resistance, high fatigue strength, can be polished to smooth finish (Ra <0.05 μm)",
+        "disadvantages": "Metal ion release (Co, Cr) in MoM bearings; higher modulus than bone"
+      },
+      "ultra_high_molecular_weight_polyethylene": {
+        "term": "UHMWPE (Ultra-High Molecular Weight Polyethylene)",
+        "definition": "Polyethylene with molecular weight 2-6 million g/mol; bearing surface material for articulation",
+        "standard": "ASTM F648 (compression molded), ASTM F1046 (ram extruded), ISO 5834-1, 5834-2",
+        "properties": "Density 0.93-0.94 g/cm³; Tensile yield strength ≥21 MPa; Elongation at break ≥300%",
+        "types": "Conventional UHMWPE, Highly Cross-Linked (HXLPE) via gamma/e-beam irradiation (50-100 kGy), Vitamin E stabilized",
+        "applications": "Acetabular liners (hip), tibial inserts (knee), glenoid components (shoulder)",
+        "wear_performance": "Conventional: ~0.1-0.2 mm/year linear wear; HXLPE: ~0.02-0.05 mm/year (50-80% reduction)"
+      },
+      "ceramic": {
+        "term": "Alumina and Zirconia-Toughened Alumina (Ceramic Bearings)",
+        "definition": "Bioceramics for low-friction, low-wear bearing surfaces in total joint arthroplasty",
+        "standard": "ISO 6474-1 (alumina), ISO 6474-2 (zirconia-toughened alumina, BIOLOX delta)",
+        "properties": "Alumina density 3.98 g/cm³; Grain size <2 μm; Hardness >2000 HV; Modulus 380 GPa",
+        "applications": "Femoral heads (28-40 mm diameter), acetabular liners (ceramic-on-ceramic bearings)",
+        "advantages": "Ultra-low wear (0.001-0.005 mm/year), no metal ions, scratch-resistant",
+        "disadvantages": "Brittle (fracture risk ~0.01-0.05%), sensitive to edge loading, squeaking in CoC bearings (~1-10%)"
+      },
+      "porous_coating": {
+        "term": "Porous Coating for Bone Ingrowth",
+        "definition": "Surface modification with interconnected pores (50-400 μm) to allow bone infiltration (osseointegration)",
+        "standard": "ASTM F1854 (testing methods), ASTM F1147 (titanium fiber metal)",
+        "types": "Sintered beads (CoCr, Ti), plasma spray (Ti, HA), fiber metal (Trabecular Metal, Tritanium)",
+        "properties": "Pore size 100-400 μm optimal; Porosity 30-60%; Interconnectivity >95%; Shear strength >20 MPa (ASTM F1044)",
+        "applications": "Acetabular cups, femoral stems (proximal 1/3 or fully coated), tibial baseplates",
+        "biological_fixation": "Bone ingrowth occurs at 50-200 μm pore size; smaller pores allow ongrowth, larger pores allow through-growth"
+      },
+      "hydroxyapatite_coating": {
+        "term": "Hydroxyapatite (HA) Coating",
+        "definition": "Calcium phosphate ceramic coating (Ca10(PO4)6(OH)2) to enhance osseointegration",
+        "standard": "ISO 13779-1, ASTM F1609 (thickness/uniformity), ASTM F1044 (bond strength)",
+        "properties": "Coating thickness 50-200 μm; Crystallinity >62%; Ca/P ratio 1.65-1.76; Tensile bond strength ≥22 MPa",
+        "applications": "Plasma-sprayed on Ti or CoCr implant surfaces; femoral stems, acetabular cups, dental implants",
+        "advantages": "Osteoconductive (bone apposition), faster fixation than porous coating alone",
+        "disadvantages": "Coating delamination risk if improper processing; resorbs over 5-10 years in vivo"
+      }
+    },
+    "performance_characteristics": {
+      "osseointegration": {
+        "term": "Osseointegration",
+        "definition": "Direct structural and functional connection between living bone and implant surface without intervening soft tissue",
+        "measurement": "Histomorphometry: bone-implant contact (BIC) percentage; Push-out/pull-out testing: interfacial shear strength",
+        "success_criteria": "BIC ≥40% at 12 weeks (animal studies); Shear strength ≥10 MPa indicates stable fixation",
+        "clinical_significance": "Cementless fixation requires osseointegration for long-term stability; enhanced by porous coatings and HA",
+        "time_course": "Initial mechanical interlock (0-6 weeks), bone apposition and ingrowth (6-12 weeks), remodeling (3-6 months)"
+      },
+      "articulating_surface": {
+        "term": "Articulating Surface Quality",
+        "definition": "Bearing surface finish and geometry affecting wear, friction, and range of motion",
+        "measurement": "Surface roughness Ra (arithmetic average); Sphericity/roundness deviation from ideal geometry",
+        "specifications": "CoCr femoral head: Ra <0.05 μm, sphericity <5 μm; Polyethylene liner: Ra <3 μm",
+        "test_methods": "Profilometry per ISO 4287/4288; CMM (coordinate measuring machine) for geometry",
+        "clinical_significance": "Rough surfaces accelerate polyethylene wear; sphericity deviations cause edge loading"
+      },
+      "wear_characteristics": {
+        "term": "Wear Performance (Simulator Testing)",
+        "definition": "Volumetric or linear wear measured in joint simulator per ISO 14243 (knee) or ISO 14242 (hip)",
+        "test_protocol": "ISO 14242-1 (hip): 5 million cycles minimum, 1 Hz, Paul load curve, 23° flexion/extension, serum lubricant; ISO 14243-1 (knee): 5 million cycles, displacement control, ISO load curve",
+        "success_criteria": "Hip: <10 mm³/million cycles (HXLPE on CoCr); Knee: <5 mm³/million cycles (HXLPE on CoCr)",
+        "wear_mechanisms": "Adhesive wear (polymer transfer), abrasive wear (third-body particles), fatigue wear (surface/subsurface cracking)",
+        "clinical_correlation": "1 million cycles ≈ 1 year normal activity; simulator wear predicts osteolysis risk"
+      },
+      "modularity": {
+        "term": "Modular Junction (Taper Connection)",
+        "definition": "Mechanical interlock between implant components (e.g., femoral head-stem, body-neck in modular stems)",
+        "standards": "ISO 7206-10 (hip stem taper testing), ASTM F2009 (taper dimensional requirements)",
+        "taper_geometry": "12/14 taper (head-neck): 5° 43' included angle; V40 taper (trunnion): 11° included angle",
+        "failure_modes": "Fretting corrosion (mechanically assisted crevice corrosion), dissociation (separation), wear debris",
+        "clinical_significance": "Mixed-metal couples (CoCr head on Ti stem) at higher corrosion risk; impaction force affects fixation strength"
+      },
+      "fatigue_resistance": {
+        "term": "Fatigue Strength and Endurance Limit",
+        "definition": "Ability to withstand cyclic loading without fracture over device lifetime (10 million cycles = ~10 years)",
+        "test_standards": "ASTM F1717 (spinal constructs), ASTM F1800 (femoral stems), ASTM F1801 (fretting corrosion), ISO 7206-4 (hip stem fatigue)",
+        "test_conditions": "Simulated worst-case physiologic loading; saline environment (corrosion); 10 million cycles minimum for indefinite life",
+        "acceptance_criteria": "No fracture at 10 million cycles under specified load; S-N curve with runouts at design load",
+        "clinical_significance": "Fatigue fracture is catastrophic failure; smaller stems, notches, and corrosion increase risk"
+      },
+      "range_of_motion": {
+        "term": "Range of Motion (ROM) and Impingement",
+        "definition": "Angular motion before component-component contact (impingement) or dislocation",
+        "test_method": "Physical testing or CAD analysis; articulate components to impingement in flexion, extension, adduction, abduction, rotation",
+        "clinical_targets": "Hip: ≥120° flexion, ≥30° extension, ≥40° abduction, ≥80° internal rotation (sitting position); Knee: ≥120° flexion",
+        "impingement_consequences": "Bearing dislocation (hip), accelerated wear, osteolysis, instability",
+        "design_factors": "Head:neck ratio (hip), head size (larger = greater ROM), liner design (elevated rim, neutral/10° anteversion)"
+      }
+    },
+    "surgical_technique": {
+      "cemented_fixation": {
+        "term": "Cemented Fixation (PMMA Bone Cement)",
+        "definition": "Polymethyl methacrylate cement provides immediate mechanical interlock between implant and bone",
+        "cement_standards": "ISO 5833 (acrylic bone cement), ASTM F451 (test methods)",
+        "cement_properties": "Compressive strength ≥70 MPa; Bending strength ≥50 MPa; Polymerization temp <90°C; Setting time 5-15 minutes",
+        "technique_considerations": "Cement mantle 2-4 mm thick optimal; pressurization improves penetration; vacuum mixing reduces porosity",
+        "clinical_use": "Preferred for elderly/osteoporotic bone; immediate weight-bearing; long-term aseptic loosening risk"
+      },
+      "cementless_fixation": {
+        "term": "Cementless (Biological) Fixation",
+        "definition": "Press-fit mechanical stability followed by bone ingrowth/ongrowth into porous coating for long-term fixation",
+        "design_requirements": "Porous coating or HA; interference fit (0.5-2 mm); macro-geometry (fins, splines) for rotational stability",
+        "initial_stability": "Press-fit achieves <40 μm micromotion threshold for bone ingrowth; undersizing reamer by 1-2 mm",
+        "weight_bearing": "Protected weight-bearing (6 weeks) or toe-touch (3 months) until bone ingrowth",
+        "clinical_use": "Younger, active patients; bone stock preservation; revision more difficult (ingrown bone removal)"
+      },
+      "cup_positioning": {
+        "term": "Acetabular Cup Positioning (Inclination and Anteversion)",
+        "definition": "Spatial orientation of acetabular component affecting ROM, wear, and dislocation risk",
+        "target_angles": "Inclination 40-45° (lateral opening angle); Anteversion 15-25° (anterior opening angle)",
+        "measurement": "Intraoperative: mechanical alignment guides; Postoperative: AP pelvis radiograph (inclination), CT (anteversion)",
+        "safe_zone": "Lewinnek safe zone (1978): 40° ± 10° inclination, 15° ± 10° anteversion (dislocation rate <4%)",
+        "consequences_of_malposition": "Steep inclination (>50°): increased wear, edge loading; High anteversion (>35°): posterior instability"
+      }
+    },
+    "complications": {
+      "periprosthetic_osteolysis": {
+        "term": "Periprosthetic Osteolysis",
+        "definition": "Inflammatory bone resorption due to wear debris (polyethylene, metal, ceramic particles)",
+        "pathophysiology": "Macrophage phagocytosis of particles → cytokine release (TNF-α, IL-1, IL-6) → osteoclast activation → bone resorption",
+        "particle_threshold": "Polyethylene: 0.1-1 μm particles most biologically active; Volume >50 mm³/year correlates with osteolysis",
+        "radiographic_criteria": "Progressive radiolucency >2 mm in Gruen/DeLee-Charnley zones; endosteal scalloping; cortical thinning",
+        "prevention": "HXLPE reduces wear by 50-80%; ceramic bearings eliminate polyethylene; regular radiographic surveillance"
+      },
+      "aseptic_loosening": {
+        "term": "Aseptic Loosening",
+        "definition": "Loss of implant-bone fixation without infection; leading cause of revision arthroplasty",
+        "mechanisms": "Osteolysis-driven (wear debris), inadequate initial fixation (cementless), cement mantle failure (cemented), stress shielding",
+        "radiographic_signs": "Cemented: cement-bone radiolucency >2 mm, cement fracture; Cementless: progressive subsidence >5 mm, change in alignment >5°",
+        "clinical_presentation": "Pain (groin pain in hip, knee pain with weight-bearing), reduced function, instability",
+        "revision_surgery": "Remove loose implant and cement; revise with larger/longer implant or bone graft; outcome worse than primary"
+      },
+      "adverse_local_tissue_reaction": {
+        "term": "Adverse Local Tissue Reaction (ALTR) / Pseudotumor",
+        "definition": "Soft tissue mass or fluid collection adjacent to implant, associated with metal-on-metal bearings or corrosion",
+        "etiology": "Metal ion hypersensitivity (Type IV delayed hypersensitivity to Cr, Co, Ni); tribocorrosion at modular junctions",
+        "diagnosis": "MRI (MARS protocol for metal artifact reduction); elevated serum Cr/Co (>7 ppb concerning); ultrasound",
+        "pathology": "Aseptic lymphocytic vasculitis-associated lesion (ALVAL); necrosis, macrophage infiltration",
+        "management": "Revision surgery to remove metal bearing and/or corroding junction; ceramic or polyethylene bearing"
+      }
+    }
+  },
+  "usage_notes": {
+    "joint_classifications": "Primary = first arthroplasty; Revision = replacement of failed primary; Hemiarthroplasty = replace one side (femoral head only)",
+    "bearing_couples": "MoP (metal-on-polyethylene) = standard; CoC (ceramic-on-ceramic) = low wear but squeak risk; MoM (metal-on-metal) = largely abandoned due to ALTR",
+    "cement_antibiotics": "Gentamicin or tobramycin added to cement (1-2 g per 40 g cement) for infection prophylaxis",
+    "size_specifications": "Femoral head diameter: 22-44 mm (larger = greater ROM, higher volumetric wear); Stem offset: standard, high, extra-high (restore leg length/offset)"
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "version": "1.0",
+  "source": "FDA IVD Guidance + CLSI Standards + CAP Glossary",
+  "device_types": ["Immunoassays", "Molecular Diagnostics", "Clinical Chemistry", "Point-of-Care"],
+  "terminology": {
+    "analytical_parameters": {
+      "limit_of_detection": {
+        "term": "Limit of Detection (LoD) / Analytical Sensitivity",
+        "definition": "Lowest analyte concentration that can be reliably detected (≥95% of replicates positive)",
+        "standard": "CLSI EP17-A2; probit analysis with minimum 60 replicates across concentrations near detection limit",
+        "reporting": "Report LoD with 95% CI; verify with minimum 20 replicates at claimed LoD (≥95% hit rate)",
+        "clinical_significance": "Critical for infectious disease viral load assays (HIV, HCV) and tumor markers; determines lower reportable range"
+      },
+      "limit_of_quantitation": {
+        "term": "Limit of Quantitation (LoQ)",
+        "definition": "Lowest concentration where analyte can be quantified with acceptable precision (typically CV ≤20%) and accuracy (bias ≤20%)",
+        "determination": "Test dilutions series; identify concentration where CV first exceeds 20% (this is LoQ)",
+        "relationship_to_LoD": "LoQ typically 2-10× higher than LoD; LoD for qualitative tests, LoQ for quantitative",
+        "clinical_use": "Defines lower end of reportable range for quantitative assays (glucose, cholesterol, troponin)"
+      },
+      "reportable_range": {
+        "term": "Reportable Range / Analytical Measuring Interval",
+        "definition": "Span of analyte concentrations over which device accurately measures (includes dilution-extended range)",
+        "standard": "CLSI C28-A3; verify linearity, precision, and accuracy at low and high ends",
+        "documentation": "Lower limit = LoD or LoQ; Upper limit = highest validated concentration (may require dilution)",
+        "clinical_consideration": "Should encompass 95-99% of expected patient values; results beyond range require dilution or reported as >upper limit"
+      },
+      "interferents": {
+        "term": "Interferents (Endogenous and Exogenous)",
+        "definition": "Substances that cause inaccurate results. Endogenous: hemoglobin, bilirubin, triglycerides, proteins. Exogenous: drugs, supplements",
+        "standard": "CLSI EP07-A3; test at clinically relevant concentrations (hemolysis 500 mg/dL Hb, lipemia 2000 mg/dL triglycerides, icterus 20 mg/dL bilirubin)",
+        "acceptance": "Bias <±10% or within total allowable error; if interference present, document in IFU with affected concentration range",
+        "clinical_significance": "Hemolysis affects potassium (falsely elevated from RBC lysis); lipemia affects turbidimetric assays; biotin interferes with immunoassays"
+      },
+      "hook_effect": {
+        "term": "Hook Effect (Prozone Effect)",
+        "definition": "In sandwich immunoassays, falsely low results at very high antigen concentrations due to excess antigen saturating both capture and detection antibodies",
+        "mechanism": "Extreme antigen excess prevents sandwich formation; individual antigen-antibody complexes (not sandwiches) are formed",
+        "testing": "Dose-response curve to high antigen concentrations; dilution shows increased signal (paradoxical)",
+        "mitigation": "Automatic sample dilution, algorithm to detect hook (flag if diluted result >neat result), warn users to dilute if clinical suspicion high",
+        "clinical_examples": "hCG (molar pregnancy), troponin (acute MI), tumor markers (advanced cancer)"
+      }
+    },
+    "clinical_performance_terms": {
+      "clinical_sensitivity": {
+        "term": "Clinical Sensitivity (True Positive Rate, Recall)",
+        "definition": "Proportion of specimens from disease-positive patients that test positive: TP/(TP+FN)",
+        "calculation": "Exact 95% CI using Clopper-Pearson method",
+        "stratification": "Report overall and stratified by disease severity, time since symptom onset, demographics",
+        "clinical_significance": "High sensitivity (>95%) needed for screening tests to rule out disease; low sensitivity causes false negatives and missed diagnoses"
+      },
+      "clinical_specificity": {
+        "term": "Clinical Specificity (True Negative Rate)",
+        "definition": "Proportion of specimens from disease-negative patients that test negative: TN/(TN+FP)",
+        "testing_population": "Healthy controls AND patients with cross-reactive conditions (e.g., flu test should include other respiratory viruses)",
+        "acceptance": "Typically ≥95-99% for diagnostic tests; balance with sensitivity using ROC analysis",
+        "clinical_significance": "High specificity needed for confirmatory tests to rule in disease; low specificity causes false positives, unnecessary treatment, patient anxiety"
+      },
+      "positive_predictive_value": {
+        "term": "Positive Predictive Value (PPV)",
+        "definition": "Probability that positive test result is true positive; depends on disease prevalence: PPV = (Sens × Prev)/[(Sens × Prev) + ((1-Spec) × (1-Prev))]",
+        "prevalence_scenarios": "Report PPV for low (0.1%, screening), moderate (5%, primary care), high (50%, symptomatic) prevalence",
+        "clinical_interpretation": "Low prevalence → low PPV even with high sensitivity/specificity; positive results often require confirmatory testing",
+        "regulatory": "FDA requires PPV/NPV in labeling for home-use and OTC tests"
+      },
+      "likelihood_ratio": {
+        "term": "Likelihood Ratios (LR+ and LR-)",
+        "definition": "LR+ = Sens/(1-Spec); LR- = (1-Sens)/Spec. Indicates how much test result changes disease probability",
+        "interpretation": "LR+ >10 or LR- <0.1 = strong diagnostic utility; LR+ 5-10 or LR- 0.1-0.2 = moderate; LR+ 2-5 or LR- 0.2-0.5 = weak",
+        "advantage": "Prevalence-independent (unlike PPV/NPV); can be used with Fagan nomogram to convert pretest to posttest probability",
+        "clinical_use": "LR+ answers: 'If positive, how much does it increase disease probability?' LR- answers: 'If negative, how much does it decrease?'"
+      }
+    },
+    "regulatory_classifications": {
+      "clia_complexity": {
+        "term": "CLIA Complexity (Waived, Moderate, High)",
+        "definition": "Clinical Laboratory Improvement Amendments categorization based on test complexity",
+        "waived_criteria": "Simple, accurate results even with untrained users, minimal risk if error; scored ≤12 on CLIA categorization scorecard",
+        "moderate_complexity": "Some training required; most automated analyzers; scored 13-18",
+        "high_complexity": "Extensive training and QC; manual tests, novel methods, test system development; scored ≥19",
+        "regulatory_pathway": "Waived: 510(k) + usability study demonstrating simple use. Moderate/High: 510(k) or PMA for novel tests"
+      },
+      "prescription_vs_otc": {
+        "term": "Prescription (Rx) vs. Over-the-Counter (OTC) vs. Professional Use",
+        "professional_use": "Sold to labs/hospitals; used by trained personnel (lab technicians, phlebotomists); most IVDs",
+        "prescription": "Home use by patient but requires physician order (e.g., INR monitor for warfarin patients)",
+        "otc": "Direct-to-consumer, no prescription; FDA requires robust usability study (≥100 untrained users, ≥90% correct use and interpretation)",
+        "examples": "OTC: pregnancy test, glucose meter (non-diabetic), COVID rapid test. Rx: glucose meter (diabetes management), genetic tests"
+      },
+      "companion_diagnostic": {
+        "term": "Companion Diagnostic (CDx)",
+        "definition": "IVD essential for safe and effective use of corresponding therapeutic product; patient selection or dose adjustment",
+        "regulatory_pathway": "Co-development with drug; PMA typically required; approval contingent on drug approval",
+        "examples": "HER2 IHC for trastuzumab (Herceptin), EGFR mutation for erlotinib, PD-L1 for pembrolizumab",
+        "clinical_significance": "Test result determines whether patient receives drug or not; false negative denies effective therapy, false positive exposes to toxicity without benefit"
+      },
+      "laboratory_developed_test": {
+        "term": "Laboratory Developed Test (LDT)",
+        "definition": "IVD designed, manufactured, and used within a single CLIA-certified lab; not commercially distributed",
+        "current_regulation": "CLIA oversight (not FDA pre-market review); lab validates performance; proposed FDA oversight for higher-risk LDTs",
+        "validation": "Lab must establish performance characteristics (sensitivity, specificity, precision, reportable range) per CLIA and CAP requirements",
+        "examples": "Esoteric genetic tests, rare disease assays, institution-specific algorithms (e.g., sepsis biomarker panel)"
+      }
+    },
+    "specimen_considerations": {
+      "matrix_effects": {
+        "term": "Matrix Effects",
+        "definition": "Interference from specimen components (proteins, salts, cells) affecting assay performance differently than calibrators/controls in simple buffer",
+        "assessment": "Spike recovery (add known analyte to patient specimens; recover 90-110%) or dilution linearity (dilute high specimens; parallel slope to calibrator)",
+        "mitigation": "Calibrate in matrix-matched material (serum, plasma); use specimen pretreatment (protein precipitation); validate across specimen types",
+        "clinical_significance": "Serum vs. plasma may differ (EDTA chelates calcium); heparin interferes with PCR; hemolysis falsely elevates potassium"
+      },
+      "specimen_stability": {
+        "term": "Specimen Stability",
+        "definition": "Duration and storage conditions (temperature, container, additives) maintaining analyte integrity within acceptable bias (±10% or TEa)",
+        "testing": "Store specimens at claimed conditions (4°C, 25°C, -20°C, -70°C); test at T0, T24h, T48h, T7d, etc.; compare to fresh baseline",
+        "variables": "Temperature (refrigerated, room temp, frozen); time (hours to weeks); freeze-thaw cycles; container type (glass, plastic)",
+        "documentation": "IFU must specify collection tube type, storage temp, and stability limits (e.g., 'stable 24 hours at 2-8°C, 4 hours at room temp')"
+      },
+      "pre_analytical_variables": {
+        "term": "Pre-Analytical Variables",
+        "definition": "Factors before testing affecting results: patient preparation (fasting, medications), collection (tourniquet time, order of draw), handling (centrifugation, aliquoting)",
+        "tourniquet_time": ">1 minute causes hemoconcentration (falsely elevated proteins, cells)",
+        "order_of_draw": "Prevents cross-contamination (e.g., EDTA tube before serum tube can chelate calcium)",
+        "hemolysis": "Most common pre-analytical error (5-10% of specimens); narrow-gauge needles, traumatic draws, delayed centrifugation",
+        "labeling_requirements": "Patient ID, date/time of collection, collector initials; IFU specifies acceptable specimen types and rejection criteria"
+      }
+    },
+    "quality_control": {
+      "internal_quality_control": {
+        "term": "Internal Quality Control (IQC)",
+        "definition": "Materials of known concentration tested alongside patient specimens to verify assay performance each run",
+        "CLIA_requirements": "Minimum 2 levels (one normal, one abnormal) per 24 hours; 3 levels for quantitative tests spanning reportable range",
+        "acceptance_criteria": "Manufacturer-specified range (mean ±2SD or ±3SD); Westgard rules (12s, 13s, 22s, R4s, 41s, 10x) for rejection",
+        "documentation": "Levey-Jennings chart; out-of-control events trigger investigation, corrective action, retest of patient specimens",
+        "materials": "Third-party QC (e.g., Bio-Rad, Randox) preferred over manufacturer's to detect lot-to-lot reagent issues"
+      },
+      "external_quality_assessment": {
+        "term": "External Quality Assessment (EQA) / Proficiency Testing (PT)",
+        "definition": "Blinded specimens sent by external agency (CAP, AACC) to assess lab performance vs. peer labs",
+        "CLIA_requirements": "Minimum 3 PT events/year with ≥5 challenges each; must achieve ≥80% acceptable results over 12 months to maintain certification",
+        "acceptance_criteria": "Fixed limits (e.g., glucose ±10%) or target value ±peer group SD; analyte-specific per CLIA table",
+        "consequences": "PT failure triggers remediation, re-education, possible prohibition from testing analyte; repeat failures can lose CLIA certificate",
+        "clinical_impact": "Ensures interlaboratory comparability; patient can move between hospitals and results are comparable"
+      },
+      "electronic_quality_control": {
+        "term": "Electronic Quality Control (eQC)",
+        "definition": "Statistical monitoring of patient results to detect systematic errors without running physical QC materials (reduce cost)",
+        "methods": "Moving average (detect shift in patient population mean), error detection algorithms (detect outlier patient results)",
+        "regulatory_status": "FDA guidance (2020) allows eQC to partially replace traditional QC if validated; not yet widely adopted",
+        "limitations": "Requires stable patient population; cannot detect commutability issues (patient specimen matrix different from QC)"
+      }
+    }
+  },
+  "usage_notes": {
+    "sensitivity_vs_LoD": "Clinical sensitivity (diagnostic accuracy) is different from analytical sensitivity (LoD); context-dependent terminology",
+    "total_allowable_error": "CLIA PT criteria or Ricos biologic variation database provide TEa targets for each analyte",
+    "traceability": "ISO 17511 describes calibration hierarchy: device → calibrator → reference material → primary reference (SI units)",
+    "clsi_document_codes": "EP = Evaluation Protocol (analytical validation), C = Clinical Chemistry, H = Hematology, M = Microbiology, I = Molecular"
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "version": "1.0",
+  "source": "FDA Software Guidance + IEC 62304 + IMDRF SaMD Framework",
+  "device_types": ["Clinical Decision Support", "Diagnostic Imaging Software", "Remote Monitoring", "Therapeutic Algorithms"],
+  "terminology": {
+    "software_classification": {
+      "software_as_medical_device": {
+        "term": "Software as a Medical Device (SaMD)",
+        "definition": "Software intended for medical purposes that performs functions without being part of a hardware medical device (IMDRF definition)",
+        "examples": "Mobile apps for diabetes management, AI algorithm for radiology diagnosis, clinical decision support for sepsis detection",
+        "exclusions": "Software controlling hardware device (e.g., pacemaker firmware), electronic health records (administrative, not diagnostic/therapeutic)",
+        "regulatory_pathway": "510(k), De Novo, or PMA depending on risk classification; some exempt (low-risk clinical decision support per 21st Century Cures Act Section 3060)"
+      },
+      "software_in_medical_device": {
+        "term": "Software in a Medical Device (SiMD)",
+        "definition": "Software that is integral to a hardware medical device (e.g., pacemaker firmware, MRI scanner reconstruction software, infusion pump control software)",
+        "regulatory_approach": "Regulated as part of hardware device submission; software documentation per FDA guidance (Software Development Lifecycle, Cybersecurity)",
+        "distinction_from_SaMD": "SiMD cannot function independently from hardware; SaMD operates on general-purpose computing platform"
+      },
+      "imdrf_risk_framework": {
+        "term": "IMDRF SaMD Risk Categorization",
+        "definition": "International framework categorizing SaMD risk based on significance of information (treat/diagnose, drive clinical management, inform clinical management) and healthcare situation/condition (critical, serious, non-serious)",
+        "categories": "Class I (low risk), Class II (moderate risk), Class III (high risk), Class IV (very high risk)",
+        "example_I": "Inform clinical management of non-serious condition (fitness app tracking steps)",
+        "example_IV": "Treat or diagnose critical condition (AI for stroke detection in acute setting, insulin dosing algorithm)",
+        "FDA_mapping": "IMDRF framework informs FDA classification but not directly determinative; FDA uses risk-based approach"
+      },
+      "clinical_decision_support": {
+        "term": "Clinical Decision Support (CDS)",
+        "definition": "Software providing recommendations to healthcare providers to aid clinical decision-making",
+        "section_3060_exemption": "21st Century Cures Act exempts CDS from device regulation if: (1) not for acquiring/analyzing medical images/signals, (2) displays info from independent sources, (3) provides rationale, (4) HCP can review basis",
+        "non_exempt_CDS": "CDS that acquires/processes device data (e.g., ECG interpretation), proprietary algorithms without transparency, locks HCP into recommendation",
+        "examples_exempt": "Drug interaction checkers, sepsis screening tools with transparent criteria (SIRS, qSOFA)",
+        "examples_non_exempt": "AI ECG interpretation, proprietary risk scores without disclosed algorithm, closed-loop insulin delivery"
+      }
+    },
+    "software_development": {
+      "iec_62304_safety_class": {
+        "term": "IEC 62304 Software Safety Classification",
+        "definition": "Risk-based classification determining rigor of software lifecycle processes: Class A (no injury), Class B (non-serious injury), Class C (death or serious injury)",
+        "class_determination": "Based on hazard analysis per ISO 14971; if any hazard can lead to death/serious injury without software mitigation, Class C",
+        "class_A_requirements": "Reduced documentation; unit testing optional; minimal design/architecture documentation",
+        "class_C_requirements": "Full design documentation, detailed unit testing, integration testing, traceability matrix, risk management throughout lifecycle",
+        "FDA_expectation": "Most diagnostic/therapeutic SaMD are Class C; some low-risk informational SaMD may be Class B"
+      },
+      "software_bill_of_materials": {
+        "term": "Software Bill of Materials (SBOM)",
+        "definition": "Formal record of software components, including third-party libraries (SOUP - Software of Unknown Provenance), open-source packages, and versions",
+        "FDA_requirement": "SBOM required in premarket submissions per 2023 cybersecurity guidance; machine-readable format (SPDX, CycloneDX)",
+        "content": "Component name, version, supplier, license, known vulnerabilities (CVE identifiers), relationship/dependency tree",
+        "purpose": "Enable vulnerability management post-market; facilitate rapid response to disclosed vulnerabilities (Log4j, Heartbleed)",
+        "maintenance": "Update SBOM with each software version; monitor vulnerability databases (NVD, vendor advisories)"
+      },
+      "soup": {
+        "term": "SOUP (Software of Unknown Provenance)",
+        "definition": "Software item already developed and generally available, not developed for incorporation into medical device (IEC 62304 definition); includes COTS, open-source, legacy code",
+        "examples": "Operating systems (Linux, Windows), programming libraries (NumPy, TensorFlow), databases (PostgreSQL), communication stacks (OpenSSL)",
+        "requirements": "Identify all SOUP in SBOM; perform anomaly analysis (hazards from SOUP functional failure or unexpected behavior); define SOUP requirements",
+        "validation": "Verify SOUP meets requirements; regression testing after SOUP updates; monitor for security vulnerabilities",
+        "FDA_considerations": "High scrutiny for AI/ML frameworks (TensorFlow, PyTorch) and cryptography libraries; version control and update procedures"
+      },
+      "algorithm_validation": {
+        "term": "Algorithm Validation and Performance Testing",
+        "definition": "Demonstration that software algorithm produces correct output for intended input range",
+        "methods": "Test with known reference datasets (gold standard diagnoses), comparison to predicate device, clinical validation study",
+        "edge_cases": "Test boundary conditions, invalid inputs, missing data, extreme values; document expected behavior (error handling vs. graceful degradation)",
+        "traceability": "Requirements → design → code → tests; traceability matrix per IEC 62304; ensure all requirements are tested",
+        "FDA_submissions": "Include validation protocol, test cases with expected outputs, test results, and any known limitations or residual anomalies"
+      }
+    },
+    "ai_ml_specific": {
+      "training_validation_test_datasets": {
+        "term": "Training/Validation/Test Dataset Partitioning",
+        "definition": "ML models require independent datasets: Training (model learning), Validation (hyperparameter tuning, model selection), Test (final performance evaluation)",
+        "split_ratios": "Common: 70% train, 15% validation, 15% test; or 60/20/20; depends on dataset size",
+        "independence": "Test set MUST be fully independent (no patient overlap, no data leakage); collected prospectively or randomly held out before development",
+        "FDA_expectation": "Locked test set before model training; document demographic distribution (age, sex, race), disease spectrum, site diversity",
+        "stratification": "Ensure minority subgroups adequately represented in all sets; report performance by subgroup to assess bias/fairness"
+      },
+      "locked_algorithm": {
+        "term": "Locked Algorithm vs. Continuously Learning",
+        "definition": "Locked: Algorithm fixed at time of clearance/approval; no updates from real-world data without new submission. Continuously learning: Algorithm updates based on new data",
+        "FDA_regulatory_approach": "Locked algorithms: traditional 510(k)/PMA pathway. Continuously learning: requires predetermined change control plan (PCCP) per FDA's proposed framework",
+        "PCCP_elements": "Define SaMD Pre-Specifications (performance goals), Algorithm Change Protocol (retraining triggers, data sources, performance monitoring), Impact Assessment (changes requiring new submission)",
+        "current_status": "FDA guidance in draft (2023); few continuously learning devices authorized (IDx-DR was locked at approval)",
+        "clinical_implications": "Locked = performance may degrade over time (data drift). Continuous = risk of silent performance degradation without oversight"
+      },
+      "bias_and_fairness": {
+        "term": "Algorithmic Bias and Fairness Analysis",
+        "definition": "Systematic performance differences across patient subgroups (race, ethnicity, age, sex, socioeconomic status) due to training data imbalance or feature selection",
+        "assessment": "Report sensitivity, specificity, PPV, NPV separately for each demographic subgroup; test for statistical significance of differences",
+        "mitigation": "Balanced training data across subgroups, fairness constraints during training, post-processing calibration",
+        "FDA_expectations": "Demonstrate no clinically significant performance disparities; if disparities exist, justify or mitigate; include diverse population in clinical validation",
+        "examples": "Pulse oximetry algorithms less accurate in darker skin tones (2020 revelation); facial recognition higher error rates for women and minorities"
+      },
+      "explainability": {
+        "term": "Explainability and Interpretability (XAI - Explainable AI)",
+        "definition": "Ability to understand why AI model made specific prediction; spectrum from transparent models (decision trees) to black boxes (deep neural networks)",
+        "methods": "Saliency maps (highlight image regions influencing diagnosis), SHAP values (feature importance), attention mechanisms, example-based explanations",
+        "regulatory_context": "FDA encourages explainability but does not mandate for all applications; critical for high-risk decisions (cancer diagnosis) vs. low-risk (image enhancement)",
+        "clinical_value": "Builds clinician trust, enables error detection, facilitates teaching, supports clinical audit",
+        "trade_offs": "Complex models (deep learning) often more accurate but less interpretable than simpler models (logistic regression)"
+      },
+      "generalization": {
+        "term": "Generalization and External Validation",
+        "definition": "Model performance on new data from different population, institution, imaging equipment, or time period than training data",
+        "internal_validation": "Test set from same institution/time as training data; assesses overfitting but not generalization",
+        "external_validation": "Test set from different sites, equipment, patient demographics; gold standard for clinical deployment readiness",
+        "common_failures": "Site-specific artifacts (scanner differences, acquisition protocols), population mismatch (disease prevalence, severity), temporal drift (changing standards of care)",
+        "FDA_expectations": "Multi-site clinical validation study for high-risk SaMD; document performance across relevant subgroups and use conditions"
+      }
+    },
+    "cybersecurity": {
+      "secure_by_design": {
+        "term": "Secure by Design Principles",
+        "definition": "Proactive integration of cybersecurity controls throughout software development lifecycle",
+        "FDA_2023_guidance": "Premarket cybersecurity required elements: SBOM, vulnerability management plan, secure update mechanism, secure authentication",
+        "principles": "Threat modeling (identify attack vectors), least privilege (minimum necessary permissions), defense in depth (multiple security layers), fail-safe defaults",
+        "testing": "Penetration testing, fuzzing, static/dynamic code analysis, dependency scanning for known vulnerabilities"
+      },
+      "data_encryption": {
+        "term": "Data Encryption (At Rest and In Transit)",
+        "definition": "At rest: stored data encrypted on device/server (AES-256). In transit: data encrypted during transmission (TLS 1.3)",
+        "regulatory_requirement": "HIPAA Security Rule requires encryption for ePHI; FDA expects encryption for patient data in SaMD",
+        "key_management": "Secure key storage (HSM, OS keychain), key rotation, access control to keys",
+        "authentication": "Encryption alone insufficient; also need authentication and authorization controls"
+      },
+      "authentication_authorization": {
+        "term": "Authentication and Authorization",
+        "definition": "Authentication: verify user identity (username/password, multi-factor, biometrics). Authorization: control access to features/data based on user role",
+        "standards": "NIST SP 800-63B (Digital Identity Guidelines); FDA references for authentication strength",
+        "multi_factor_authentication": "Recommended for high-risk SaMD (remote monitoring, dosing algorithms); something you know + have + are",
+        "role_based_access": "Principle of least privilege; different roles (admin, clinician, patient) with appropriate permissions"
+      },
+      "vulnerability_management": {
+        "term": "Post-Market Vulnerability Management",
+        "definition": "Continuous monitoring for disclosed vulnerabilities (CVEs) in SBOM components; risk assessment; patching or mitigation",
+        "FDA_expectations": "Routine updates and patches (non-device changes, cybersecurity patches) do not require new 510(k) per 2023 guidance",
+        "coordinated_disclosure": "Participate in vulnerability disclosure programs (e.g., CISA, ICS-CERT for medical devices); responsible disclosure timeline (30-90 days)",
+        "transparency": "Publish security advisories for vulnerabilities affecting fielded devices; notify users and recommend mitigations"
+      }
+    },
+    "intended_use_environment": {
+      "hardware_platform": {
+        "term": "Intended Use Environment - Hardware",
+        "definition": "Compatible devices, operating systems, and hardware specifications for SaMD operation",
+        "documentation": "List minimum hardware specs (CPU, RAM, storage, GPU if applicable), supported OS versions (iOS 15+, Android 11+, Windows 10+), screen resolution/size",
+        "validation": "Test on minimum spec hardware; test on range of OS versions; document unsupported configurations",
+        "FDA_labeling": "IFU must clearly state compatible platforms; incompatible use is off-label"
+      },
+      "network_connectivity": {
+        "term": "Network Connectivity Requirements",
+        "definition": "Internet bandwidth, latency, and reliability requirements for SaMD function",
+        "offline_capability": "Can SaMD function without network? Cached data? Graceful degradation?",
+        "bandwidth_requirements": "Minimum bandwidth for image upload, video telemedicine, real-time monitoring",
+        "failure_mode": "What happens if network drops mid-operation? Data loss prevention, queue for retry, user notification"
+      },
+      "user_training": {
+        "term": "User Training and Onboarding",
+        "definition": "Instructions, tutorials, or formal training required for safe and effective use",
+        "professional_use": "May require certification, proctored training, competency assessment (especially for AI diagnostic tools)",
+        "patient_facing": "Must be usable by untrained patients per usability study (IEC 62366-1); in-app tutorials, contextual help",
+        "FDA_requirements": "Include training recommendations in labeling; assess training effectiveness in human factors validation"
+      }
+    }
+  },
+  "regulatory_pathways": {
+    "510k_vs_pma": "Most SaMD are Class II (510(k)); novel algorithms without predicate may require De Novo or PMA (Class III)",
+    "predetermined_change_control_plan": "FDA pilot program for continuously learning AI/ML devices; allows algorithm updates without new submission if within PCCP",
+    "breakthrough_designation": "Expedited review for SaMD addressing unmet need or offering significant advantage over existing options",
+    "real_world_performance_monitoring": "FDA encourages post-market surveillance of AI/ML performance (drift detection, subgroup performance); may become regulatory requirement"
+  },
+  "usage_notes": {
+    "version_control": "Semantic versioning (MAJOR.MINOR.PATCH); document which changes require new submission (major algorithm changes) vs. routine updates (bug fixes, UI changes)",
+    "cloud_vs_onpremise": "Cloud-hosted SaMD has additional cybersecurity considerations (FDA guidance on cloud computing); data residency, vendor risk management",
+    "mobile_medical_apps": "FDA guidance (2015, updated 2023) - low-risk apps exempt (fitness, wellness); diagnostic/therapeutic apps regulated",
+    "interoperability": "HL7 FHIR for health data exchange; FDA encourages standards-based interoperability; USCDI (US Core Data for Interoperability)"
+  }
+}

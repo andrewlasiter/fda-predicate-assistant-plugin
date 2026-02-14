@@ -1,0 +1,142 @@
+{
+  "version": "1.0",
+  "source": "FDA Robotic Surgery Guidance + ISO 13482 + IEC 80601-2-77",
+  "device_types": ["Surgical Robots", "Robotic Navigation", "Robot-Assisted Orthopedic Surgery"],
+  "terminology": {
+    "mechanical_specifications": {
+      "degrees_of_freedom": {
+        "term": "Degrees of Freedom (DoF)",
+        "definition": "Number of independent motion parameters; more DoF enables complex maneuvers in confined spaces",
+        "typical_values": "Robotic arms: 6-7 DoF (3 translation + 3-4 rotation); Endoscopic instruments: 7+ DoF (wrist articulation)",
+        "clinical_significance": "≥7 DoF provides redundancy for obstacle avoidance and ergonomic positioning"
+      },
+      "workspace": {
+        "term": "Surgical Workspace (Reachable Volume)",
+        "definition": "3D volume within which robot end-effector can position and orient surgical tool",
+        "measurement": "CAD analysis or physical testing; document as sphere radius or cuboid dimensions",
+        "typical_values": "Orthopedic robots: 300-500 mm radius; Laparoscopic robots: docked at patient, workspace defined by trocar positions",
+        "regulatory_testing": "Verify workspace encompasses target anatomy (e.g., hip joint, prostate) from typical docking positions"
+      },
+      "positioning_accuracy": {
+        "term": "Positioning Accuracy and Repeatability",
+        "definition": "Accuracy = deviation from commanded position; Repeatability = standard deviation returning to same position",
+        "test_method": "Measure end-effector position with coordinate measuring machine (CMM) or optical tracker; ASTM F2554",
+        "typical_values": "Orthopedic: <0.5 mm translational, <0.5° angular accuracy; Laparoscopic: <1 mm tip positioning",
+        "clinical_significance": "High accuracy critical for implant alignment (±2° cup placement affects THA outcomes) and tumor margin resection"
+      },
+      "haptic_feedback": {
+        "term": "Haptic Feedback (Force and Tactile Sensation)",
+        "definition": "Kinesthetic force feedback and/or tactile vibration feedback to surgeon console from instrument-tissue interaction",
+        "measurement": "Force resolution (Newtons), range (0-10 N typical for laparoscopy), update rate (≥1000 Hz for stability)",
+        "clinical_significance": "Lacking in many systems (da Vinci); suture tensioning and tissue handling rely on visual cues; may reduce tissue trauma if present",
+        "regulatory_testing": "Validate force display accuracy; assess user ability to discriminate force levels in human factors study"
+      },
+      "latency": {
+        "term": "System Latency (Control Loop Delay)",
+        "definition": "Time delay from surgeon master controller motion to slave instrument motion; includes signal processing, communication, actuator response",
+        "acceptance_criteria": "<100 ms for stable teleoperation; <50 ms optimal for complex tasks; >200 ms causes instability and surgeon discomfort",
+        "test_method": "High-speed camera recording master and slave motion; measure time offset; assess at various network loads if applicable",
+        "clinical_significance": "Excessive latency impairs surgeon performance, increases procedure time, and may cause overshoot injuries"
+      }
+    },
+    "safety_systems": {
+      "collision_detection": {
+        "term": "Collision Detection and Avoidance",
+        "definition": "Real-time monitoring for unintended contact between robot and patient/operating room objects; may use force/torque sensors or virtual boundaries",
+        "implementation": "Joint torque monitoring (detect unexpected resistance), proximity sensors, virtual workspace boundaries (software limits)",
+        "response": "Stop motion (hard stop <10 ms), retract, or alert operator depending on severity",
+        "regulatory_testing": "Simulate collisions with patient surrogate and OR equipment; verify detection sensitivity and response time"
+      },
+      "emergency_stop": {
+        "term": "Emergency Stop (E-Stop)",
+        "definition": "Immediate cessation of all robot motion via dedicated button(s) accessible to all team members; IEC 60601-1 Clause 15.4.4",
+        "requirements": "Hard-wired circuit (not software-controlled); Category 0 stop per ISO 13850 (immediate power removal); red mushroom-head button; multiple locations",
+        "test_method": "Activate E-stop during motion; verify all axes stop within specified time (<500 ms) and distance (<5 mm at end-effector)",
+        "clinical_significance": "Last-resort safety measure for runaway robot, patient emergency (cardiac arrest), or fire"
+      },
+      "redundant_safety": {
+        "term": "Redundant Safety Architecture",
+        "definition": "Dual-channel monitoring of safety-critical functions; independent processors verify commanded motion within safe limits",
+        "implementation": "Two CPUs compare position commands; disagreement >threshold triggers safe state; watchdog timers detect processor faults",
+        "standard": "IEC 62304 Class C software (highest safety classification); IEC 61508 SIL 2-3 for hardware",
+        "clinical_significance": "Prevents single-point software/hardware failures from causing unintended motion"
+      }
+    },
+    "imaging_and_navigation": {
+      "registration": {
+        "term": "Image-to-Patient Registration",
+        "definition": "Spatial alignment of preoperative/intraoperative imaging to patient anatomy for navigation; establishes coordinate transformation",
+        "methods": "Fiducial markers (bone screws, skin markers), anatomical landmarks (bony prominences), surface matching (laser scan or stylus points)",
+        "accuracy_metrics": "Target Registration Error (TRE) and Fiducial Registration Error (FRE); TRE <2 mm for spine surgery, <1 mm for neurosurgery",
+        "validation": "Touch known anatomical points post-registration; measure deviation; FRE <1 mm typical acceptance"
+      },
+      "intraoperative_imaging": {
+        "term": "Intraoperative Imaging Integration",
+        "definition": "Real-time imaging (fluoroscopy, CT, MRI, ultrasound) integrated with robot coordinate system for dynamic guidance",
+        "modalities": "Fluoroscopy (2D X-ray), cone-beam CT (3D intraop), ultrasound (soft tissue), optical coherence tomography (OCT)",
+        "regulatory_considerations": "IEC 60601-2-54 (X-ray); radiation dose to patient and staff; image quality sufficient for surgical decisions",
+        "clinical_use": "Verify implant position, assess anatomical changes from preop imaging, guide instrument to target"
+      },
+      "optical_tracking": {
+        "term": "Optical Tracking (Infrared Stereoscopic)",
+        "definition": "Camera-based system tracking reflective markers on instruments and patient for real-time position measurement",
+        "specifications": "Accuracy <0.3 mm RMS; Update rate ≥20 Hz; Working volume 1-2 m³; Line-of-sight required",
+        "marker_arrays": "Dynamic reference frame (DRF) on patient for registration; tracked instruments with unique marker geometry",
+        "limitations": "Line-of-sight obstructions, OR lighting interference, marker occlusion by surgical drapes"
+      }
+    },
+    "human_machine_interface": {
+      "master_controller": {
+        "term": "Master Controller (Surgeon Console)",
+        "definition": "Hand controllers at surgeon console that command slave instrument motion; may be gimbaled handles or finger-controlled",
+        "ergonomics": "Adjustable height, arm rests to reduce fatigue; neutral wrist position; clutching function to reposition hands without moving instruments",
+        "motion_scaling": {
+          "definition": "Ratio of master motion to slave motion (e.g., 3:1 scaling = 3 cm hand motion → 1 cm instrument tip motion)",
+          "typical_values": "1:1 to 5:1 scaling; surgeon selectable; higher scaling for fine dissection",
+          "tremor_filtering": "High-pass filter removes physiologic tremor (5-12 Hz); improves precision for microsurgery"
+        }
+      },
+      "stereo_visualization": {
+        "term": "Stereoscopic 3D Visualization",
+        "definition": "Dual-camera endoscope with separate left/right eye video channels displayed on surgeon console, providing depth perception",
+        "technical_specs": "1080p or 4K resolution per eye; 60 fps; 10-15x magnification; inter-pupillary distance (IPD) adjustment 50-75 mm",
+        "clinical_advantage": "Superior depth perception vs. 2D laparoscopy; reduces suturing errors and tissue trauma",
+        "validation": "Assess stereoacuity (arc seconds); usability testing for depth perception tasks (peg transfer, suturing)"
+      },
+      "foot_pedals": {
+        "term": "Foot Pedals (Accessory Controls)",
+        "definition": "Foot-operated switches for camera control, energy activation (cautery), clutch engagement, instrument swap",
+        "ergonomic_design": "≥5 pedals; distinct shapes/positions for tactile identification; low activation force (<5 N); prevent accidental activation",
+        "human_factors": "Use errors common (wrong pedal); testing per IEC 62366-1; color-coding and training reduce errors"
+      }
+    },
+    "clinical_workflow": {
+      "docking": {
+        "term": "Robot Docking",
+        "definition": "Positioning robotic arms and attaching to patient port sites (trocars); critical setup step affecting workspace",
+        "docking_time": "5-15 minutes typical for experienced team; learning curve 20-50 cases for proficiency",
+        "considerations": "Avoid arm collisions (minimum 15 cm separation); optimize for target anatomy access; fixed vs. mobile patient carts",
+        "validation": "Measure docking time and collision rate in human factors study; assess across range of patient sizes/positions"
+      },
+      "instrument_exchange": {
+        "term": "Instrument Exchange",
+        "definition": "Removing and replacing robotic instruments intraoperatively; requires assistant at bedside or automated instrument changers",
+        "time_penalty": "Manual exchange: 30-60 seconds per instrument; Automated: 10-20 seconds; instrument library limited (e.g., 4 instruments + camera)",
+        "single_use_instruments": "Sterile, disposable instruments with RFID for usage tracking and expiration; cost driver for robotic surgery"
+      }
+    }
+  },
+  "regulatory_testing": {
+    "software_validation": "IEC 62304 Class C (safety-critical software); unit testing, integration testing, hazard analysis, traceability matrix",
+    "electromagnetic_compatibility": "IEC 60601-1-2; immunity to OR equipment (electrosurgery, cautery); emissions limits for surgical environment",
+    "biocompatibility": "ISO 10993 series for patient-contacting instruments; skin contact (Class II devices) or tissue contact (Class III)",
+    "usability_engineering": "IEC 62366-1; formative and summative usability testing; use-related hazard analysis; assess learning curve, task performance, errors",
+    "clinical_studies": "Demonstrate non-inferiority to standard surgical approach for primary endpoints (blood loss, complication rate, functional outcomes, oncologic margins); assess learning curve (CUSUM analysis)"
+  },
+  "usage_notes": {
+    "robotic_platforms": "da Vinci (Intuitive Surgical) - laparoscopic; Mako (Stryker), ROSA (Zimmer Biomet) - orthopedic; Mazor X (Medtronic) - spine",
+    "cost_considerations": "Capital cost $0.5-2.5 million; disposable instruments $200-3000 per case; service contracts $100-200k/year",
+    "training_requirements": "Industry proctoring, simulation-based training, credentialing typically 20-50 cases for proficiency",
+    "clinical_evidence": "Cochrane reviews show robotic surgery reduces blood loss and hospital stay for some procedures; higher cost, longer operative time; oncologic outcomes equivalent to open/laparoscopic for prostatectomy"
+  }
+}

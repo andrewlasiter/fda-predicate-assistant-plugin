@@ -48,6 +48,7 @@ Calculate accelerated aging duration per ASTM F1980 "Standard Guide for Accelera
 - `--accelerated TEMP` — Accelerated aging temperature in Celsius (default: 55)
 - `--q10 FACTOR` — Q10 temperature coefficient (default: 2.0)
 - `--shelf-life DURATION` — Desired real-time shelf life (e.g., "2years", "3years", "18months")
+- `--packaging-type TYPE` — Packaging type for adjusted Q10 calculation (optional: standard|moisture-barrier|breathable|rigid)
 - `--project NAME` — Save calculation to project folder
 - `--save` — Save results
 
@@ -86,17 +87,45 @@ Where:
 - `t_real` = desired real-time shelf life
 - `t_accelerated` = required accelerated aging duration
 
+### Packaging Type Configuration (Optional)
+
+The Q10 value should be selected based on the dominant degradation mechanism for your device/packaging system. The following are common starting points for Q10 selection based on packaging configuration:
+
+**Packaging Configurations:**
+- **standard** → Q10 = 2.0 (industry default, conservative)
+- **moisture-barrier** (foil pouch, Tyvek) → Q10 = 2.0-2.5 (if moisture sensitivity is the rate-limiting degradation pathway)
+- **breathable** (paper/plastic, unwrapped) → Q10 = 1.8-2.0 (accounts for environmental exposure uncertainty)
+- **rigid** (tray, box) → Q10 = 2.0-2.2 (structural protection, limited moisture barrier)
+
+**IMPORTANT:** These Q10 values must be justified by the submitter based on material-specific data or published literature per ASTM F1980 Section 7.2.1. Higher Q10 values (>2.0) result in shorter accelerated test durations and require stronger justification. When in doubt, use Q10=2.0.
+
 ### Calculation
 
 ```bash
 python3 << 'PYEOF'
 import math
 
-# Parameters (replace with actual values)
+# Parameters (replace with actual values from argument parsing)
 T_ambient = 25      # Celsius
 T_accelerated = 55  # Celsius
-Q10 = 2.0
+packaging_type = "standard"  # Replace with parsed value: standard|moisture-barrier|breathable|rigid
 shelf_life_months = 24  # Replace with parsed value
+
+# Packaging-specific Q10 values (guidance only - must be justified)
+packaging_configs = {
+    "standard": {"q10": 2.0, "description": "Standard packaging (baseline)"},
+    "moisture-barrier": {"q10": 2.5, "description": "Moisture barrier (foil pouch, Tyvek)"},
+    "breathable": {"q10": 1.8, "description": "Breathable packaging (paper/plastic)"},
+    "rigid": {"q10": 2.2, "description": "Rigid container (tray, box)"}
+}
+
+# Get packaging configuration
+if packaging_type not in packaging_configs:
+    packaging_type = "standard"  # Default fallback
+
+config = packaging_configs[packaging_type]
+Q10 = config["q10"]
+packaging_desc = config["description"]
 
 # Calculate AAF
 AAF = Q10 ** ((T_accelerated - T_ambient) / 10)
@@ -108,12 +137,14 @@ accel_days = accel_months * 30.44
 
 print(f"INPUT_AMBIENT:{T_ambient}")
 print(f"INPUT_ACCELERATED:{T_accelerated}")
+print(f"INPUT_PACKAGING_TYPE:{packaging_type}")
 print(f"INPUT_Q10:{Q10}")
 print(f"INPUT_SHELF_LIFE:{shelf_life_months} months")
-print(f"AAF:{AAF:.2f}")
-print(f"ACCEL_MONTHS:{accel_months:.1f}")
+print(f"AAF:{AAF:.3f}")
+print(f"ACCEL_MONTHS:{accel_months:.2f}")
 print(f"ACCEL_WEEKS:{accel_weeks:.1f}")
 print(f"ACCEL_DAYS:{accel_days:.0f}")
+print(f"PACKAGING_DESC:{packaging_desc}")
 PYEOF
 ```
 
@@ -128,29 +159,41 @@ INPUT PARAMETERS
 ────────────────────────────────────────
   Ambient temperature:       {T_ambient} C
   Accelerated temperature:   {T_accelerated} C
+  Packaging type:            {packaging_type} ({packaging_desc})
   Q10 factor:                {Q10}
   Desired shelf life:        {shelf_life}
 
 RESULTS
 ────────────────────────────────────────
-  Accelerated Aging Factor (AAF):  {AAF}
-  Required aging duration:         {months} months ({weeks} weeks / {days} days)
-  Equivalent real-time:            {shelf_life_months} months
+  AAF:                                 {AAF}
+  Required aging duration:             {months} months ({weeks} weeks / {days} days)
+  Equivalent real-time:                {shelf_life_months} months
 
 FORMULA
 ────────────────────────────────────────
   AAF = Q10^((T_accel - T_ambient) / 10)
-  AAF = {Q10}^(({T_accelerated} - {T_ambient}) / 10)
-  AAF = {AAF}
+      = {Q10}^(({T_accelerated} - {T_ambient}) / 10)
+      = {AAF}
 
   t_accelerated = {shelf_life_months} months / {AAF} = {accel_months} months
 
+PACKAGING TYPE GUIDANCE (Q10 Selection)
+────────────────────────────────────────
+  Standard (Q10=2.0):          Industry default, conservative baseline
+  Moisture Barrier (Q10=2.0-2.5):  If moisture is rate-limiting degradation pathway
+  Breathable (Q10=1.8-2.0):    Accounts for environmental exposure uncertainty
+  Rigid (Q10=2.0-2.2):         Structural protection, limited moisture barrier
+
+  IMPORTANT: Q10 values >2.0 must be justified with material-specific data or
+  published literature per ASTM F1980 Section 7.2.1. When in doubt, use Q10=2.0.
+
 NOTES
 ────────────────────────────────────────
-  - Q10 = 2.0 is conservative per ASTM F1980
-  - Real-time aging must also be conducted concurrently
+  - Q10 = 2.0 is conservative baseline per ASTM F1980
+  - Higher Q10 results in shorter accelerated test duration
+  - Real-time aging must be conducted concurrently with accelerated aging
   - Results from accelerated aging are preliminary until confirmed by real-time data
-  - Consider using Q10 = 1.8 for worst-case sensitivity analysis
+  - For sensitivity analysis, consider testing at Q10 ± 0.2 range
 
 REFERENCE
 ────────────────────────────────────────

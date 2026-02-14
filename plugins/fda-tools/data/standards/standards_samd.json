@@ -1,0 +1,54 @@
+{
+  "category": "Software as a Medical Device (SaMD)",
+  "product_codes": ["QIH", "QJT", "POJ"],
+  "applicable_standards": [
+    {
+      "number": "IEC 62304:2006/AMD1:2015",
+      "title": "Medical device software — Software life cycle processes",
+      "applicability": "Software development lifecycle (REQUIRED for all SaMD)",
+      "sections": ["Software design", "Verification", "Validation", "Maintenance", "Risk management"]
+    },
+    {
+      "number": "IEC 62366-1:2015",
+      "title": "Medical devices — Application of usability engineering to medical devices",
+      "applicability": "Human factors for software UI/UX (CRITICAL for SaMD)",
+      "sections": ["User interface design", "Use error analysis", "Formative evaluation", "Summative evaluation"]
+    },
+    {
+      "number": "ISO 14971:2019",
+      "title": "Medical devices — Application of risk management to medical devices",
+      "applicability": "Risk management (required for all devices)",
+      "sections": ["Risk analysis", "Risk evaluation", "Risk control", "Residual risk"]
+    },
+    {
+      "number": "ISO 13485:2016",
+      "title": "Medical devices — Quality management systems — Requirements for regulatory purposes",
+      "applicability": "QMS for SaMD development",
+      "sections": ["Quality management", "Design controls", "Software validation"]
+    },
+    {
+      "number": "IEC 80001-1:2010",
+      "title": "Application of risk management for IT-networks incorporating medical devices — Part 1: Roles, responsibilities and activities",
+      "applicability": "Cybersecurity and network risk management",
+      "sections": ["Network risk analysis", "Security controls", "Risk management for connected devices"]
+    },
+    {
+      "number": "AAMI TIR57:2016",
+      "title": "Principles for medical device security — Risk management",
+      "applicability": "Cybersecurity risk management for SaMD",
+      "sections": ["Threat modeling", "Vulnerability assessment", "Security controls"]
+    },
+    {
+      "number": "IEC 62443-4-1:2018",
+      "title": "Security for industrial automation and control systems — Part 4-1: Secure product development lifecycle requirements",
+      "applicability": "Secure development lifecycle for SaMD with connectivity",
+      "sections": ["Security requirements", "Security testing", "Secure coding practices"]
+    },
+    {
+      "number": "ISO/IEC 25010:2011",
+      "title": "Systems and software engineering — Systems and software Quality Requirements and Evaluation (SQuaRE) — System and software quality models",
+      "applicability": "Software quality attributes",
+      "sections": ["Functional suitability", "Performance efficiency", "Usability", "Reliability", "Security"]
+    }
+  ]
+}

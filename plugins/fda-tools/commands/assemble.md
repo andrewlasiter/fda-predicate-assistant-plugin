@@ -583,6 +583,173 @@ If no artwork directory configured, flag as **CRITICAL** gap in assembly report:
 
 Include missing artwork in the eSTAR index as `CRITICAL GAP` status for Section 09.
 
+## Combination Product Readiness Checks
+
+**Auto-trigger:** If `device_profile['combination_product']['is_combination'] == True`
+
+Perform specialized readiness checks for combination products per 21 CFR Part 3:
+
+### 1. Section 15 Required
+
+**Check:** Does `estar/15_CombinationProduct/` directory exist with content?
+
+- ✅ **PASS:** Section 15 present with substantive content (not just template)
+- ❌ **CRITICAL GAP:** Section 15 (Combination Product Information) MISSING
+  ```
+  ✗ CRITICAL GAP: Section 15 (Combination Product Information) MISSING
+    This is a {combination_type} combination product.
+    FDA requires combination product documentation per 21 CFR Part 3.
+    → Run: /fda:draft combination-product --project NAME
+  ```
+
+### 2. Cover Letter Disclosure
+
+**Check:** Does `draft_cover-letter.md` state combination product status and RHO?
+
+Required statements:
+- "This is a {combination_type} combination product."
+- "{rho_assignment} is the Responsible Health Organization (RHO) per 21 CFR Part 3."
+
+- ✅ **PASS:** Combination product status disclosed in cover letter
+- ❌ **CRITICAL GAP:** Cover letter must disclose combination product status and RHO
+  ```
+  ✗ CRITICAL GAP: Cover letter does not disclose combination product status
+    FDA requires explicit statement of combination product type and RHO assignment.
+    → Add to cover letter:
+      "This submission is for a {combination_type} combination product.
+       Per 21 CFR Part 3, {rho_assignment} is the Responsible Health Organization (RHO)."
+  ```
+
+### 3. PMOA Statement
+
+**Check:** Is Primary Mode of Action clearly stated in Section 04 (Device Description) or Section 15?
+
+Search for: "primary mode of action", "PMOA", "primary mechanism"
+
+- ✅ **PASS:** PMOA clearly stated
+- ❌ **CRITICAL GAP:** Primary Mode of Action not stated
+  ```
+  ✗ CRITICAL GAP: Primary Mode of Action (PMOA) not stated
+    21 CFR Part 3 requires PMOA determination for all combination products.
+    → Add PMOA statement to Section 04 or Section 15:
+      "The primary mode of action is [mechanical/pharmacological/immunological]
+       because [scientific justification]."
+  ```
+
+### 4. Drug/Biologic Specifications
+
+**Check (if drug-device):** Does Section 15 include:
+- Drug chemical name and CAS number
+- Drug concentration/load
+- Drug release profile (elution kinetics)
+- Drug stability data
+
+- ✅ **PASS:** Drug specifications complete
+- ❌ **MAJOR GAP:** Drug specifications incomplete
+  ```
+  ⚠ MAJOR GAP: Drug component specifications incomplete
+    Missing one or more required elements:
+    □ Chemical name and CAS number
+    □ Drug concentration/load (e.g., µg/mm²)
+    □ Elution kinetics (24h, 7d, 28d release percentages)
+    □ Stability data (shelf life, storage conditions)
+    → Complete Section 15.3 (Drug Component Specifications)
+  ```
+
+**Check (if device-biologic):** Does Section 15 include:
+- Biologic source material
+- Donor screening procedures
+- Disease transmission mitigation
+- Immunogenicity assessment
+
+- ✅ **PASS:** Biologic specifications complete
+- ❌ **MAJOR GAP:** Biologic specifications incomplete
+  ```
+  ⚠ MAJOR GAP: Biologic component specifications incomplete
+    Missing one or more required elements:
+    □ Biologic source and processing
+    □ Donor screening and viral testing
+    □ Disease transmission mitigation (SAL, validation)
+    □ Immunogenicity risk characterization
+    → Complete Section 15.4 (Biologic Component Specifications)
+  ```
+
+### 5. RHO Consultation
+
+**Check:** Is consultation with CDER/CBER documented?
+
+- ✅ **PASS:** Center consultation documented in Section 15.7
+- ⚠️ **WARNING:** Consultation with {consultation_required} recommended but not documented
+  ```
+  ⚠ WARNING: Center consultation not documented
+    Recommended: Consult with {consultation_required} on {drug/biologic} component assessment
+    → Document consultation in Section 15.7 (Regulatory Pathway and OCP Coordination)
+    → OR: Note in cover letter if consultation is planned pre-submission
+  ```
+
+### 6. OCP RFD (if needed)
+
+**Check:** For complex PMOA or "UNCERTAIN" RHO, is OCP Request for Designation referenced?
+
+- ✅ **PASS:** OCP RFD submitted or not needed (clear RHO assignment)
+- ❌ **CRITICAL GAP:** Complex PMOA requires OCP RFD - not submitted
+  ```
+  ✗ CRITICAL GAP: OCP Request for Designation (RFD) required but not submitted
+    This {drug-device-biologic / UNCERTAIN RHO} product requires OCP RFD per 21 CFR 3.7
+    Rationale: {rho_rationale}
+    → Submit OCP RFD BEFORE 510(k) submission
+    → Reference RFD number in Section 15.7 and cover letter
+  ```
+- ⚠️ **RECOMMENDED:** Consider OCP RFD for clarity
+  ```
+  ⚠ RECOMMENDED: Consider OCP Request for Designation (RFD)
+    While RHO assignment appears clear ({rho_assignment}), an OCP RFD can provide
+    regulatory certainty and avoid review delays.
+    → Optional: Submit OCP Pre-Sub or RFD to confirm RHO assignment
+  ```
+
+### Combination Product Gap Summary
+
+Generate summary report:
+
+```markdown
+COMBINATION_PRODUCT_READINESS
+────────────────────────────────────────
+
+Combination Type: {drug-device / device-biologic / drug-device-biologic}
+RHO: {CDRH / CDER / CBER / UNCERTAIN}
+Detection Confidence: {HIGH / MEDIUM / LOW}
+
+CRITICAL Gaps (must fix before submission):
+  {count}/6 checks PASSED
+
+  {If any CRITICAL gaps:}
+  - Section 15 missing (0/1) → Run /fda:draft combination-product
+  - Cover letter missing combination disclosure (0/1) → Update cover letter
+  - PMOA not stated (0/1) → Add PMOA to Section 04 or 15
+  - OCP RFD required but not submitted (0/1) → Submit RFD per 21 CFR 3.7
+
+MAJOR Gaps (strongly recommended to fix):
+  - Drug specifications incomplete (0/1) → Complete Section 15.3
+  - Biologic specifications incomplete (0/1) → Complete Section 15.4
+
+WARNINGS (recommended but not blocking):
+  - CDER/CBER consultation not documented
+  - Consider OCP RFD for regulatory certainty
+
+Recommendations:
+  {List of specific actions from combination_product['recommendations']}
+```
+
+**Integration with eSTAR Index:**
+
+Mark combination product gaps in the eSTAR index:
+- Section 15 missing → `CRITICAL GAP` status
+- PMOA missing → Add note to Section 04 and Section 15 entries
+- Drug/biologic specs incomplete → Mark Section 15 as `PARTIAL` with gap note
+
+Include missing artwork in the eSTAR index as `CRITICAL GAP` status for Section 09.
+
 ## Error Handling
 
 - **No --project**: ERROR: "Project name required. Usage: /fda:assemble --project NAME"

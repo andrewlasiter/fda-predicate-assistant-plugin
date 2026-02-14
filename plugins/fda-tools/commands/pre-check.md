@@ -484,27 +484,119 @@ Reprocessing Reviewer Assessment:
 
 ### Combination Product Review
 
-If Combination Product reviewer assigned (auto-trigger: device_description or classification_device_name contains "drug", "pharmaceutical", "active ingredient", "drug-eluting", "antimicrobial agent", "medicated", "drug-device", "combination product", "OTC drug", "Drug Facts", "active pharmaceutical"):
-- Check for `draft_combination-product.md`
-- **PMOA determination**: Verify Primary Mode of Action is stated. PMOA missing = **CRITICAL** deficiency
-- Check for drug component characterization (drug name, concentration, release kinetics)
-- Check for drug-device interaction testing documentation
-- If OTC device: check for OTC Drug Facts panel in labeling
-- Flag missing PMOA as CRITICAL deficiency: "Combination product identified but no PMOA determination found. This is required per 21 CFR Part 3."
-- Flag missing drug characterization as MAJOR deficiency
+**Auto-Trigger:** If `device_profile['combination_product']['is_combination'] == True` (detected by combination_detector.py in draft.md Step 0.6)
 
-**Review template:**
+**Reviewer:** Dr. Emily Zhang, PharmD, MBA (Office of Combination Products liaison)
+
+**Triggered for:**
+- Drug-Device combinations (drug-eluting, drug-coated, antimicrobial devices)
+- Device-Biologic combinations (tissue-engineered, cell-seeded, collagen matrices)
+- Drug-Device-Biologic combinations (complex combination products)
+
+**Focus Areas:**
+
+**1. RHO Assignment Validation (10 points)**
+- Is RHO clearly stated in Section 15 or cover letter? (-2 if missing)
+- Is PMOA (Primary Mode of Action) justified with scientific rationale? (-3 if weak or missing justification)
+- Does PMOA determination align with product description and mechanism? (-2 if inconsistent)
+- Is OCP Request for Designation (RFD) needed but not mentioned? (-3 if complex PMOA unclear and no RFD)
+
+**2. Drug Component Assessment (if drug-device) (10 points)**
+- Drug specifications complete (chemical name, CAS number, concentration, load)? (-2 if incomplete)
+- Drug release profile characterized (elution kinetics at multiple timepoints)? (-2 if missing)
+- Pharmacokinetics addressed (systemic exposure or local-only statement)? (-2 if not addressed)
+- Drug stability data provided (shelf life, storage conditions)? (-2 if missing)
+- Biocompatibility for drug-device interface per ISO 10993? (-2 if missing)
+
+**3. Biologic Component Assessment (if device-biologic) (10 points)**
+- Biologic source and processing described (donor, tissue type, processing method)? (-2 if incomplete)
+- Donor screening and viral inactivation addressed? (-3 if missing - CRITICAL safety issue)
+- Immunogenicity risk characterized and justified? (-2 if not addressed)
+- Disease transmission mitigation documented (screening, validation, SAL)? (-3 if missing - CRITICAL safety issue)
+
+**4. Center Consultation Documentation (5 points)**
+- Is consultation with CDER/CBER documented? (-3 if required but missing)
+- Are consultation comments addressed in submission? (-2 if unresolved comments noted)
+
+**5. Mandatory Section 15 Present (5 points)**
+- Section 15 (Combination Product Information) exists? (-5 if missing for confirmed combination product)
+- Section 15 content complete (not just template)? (-3 if only template skeleton)
+
+**Scoring:**
+- 35-40 points: ACCEPTABLE (combination product requirements comprehensively met)
+- 25-34 points: DEFICIENT (missing key combination product elements, likely Additional Info request)
+- <25 points: REFUSE TO ACCEPT (incomplete combination product submission, RTA likely)
+
+**Common Deficiencies:**
+- "PMOA not clearly stated or justified with scientific rationale" (30% of combination product RTAs)
+- "Drug release profile missing or incomplete (need multiple timepoints)" (25%)
+- "Immunogenicity not addressed for biologic component" (20%)
+- "OCP RFD needed but not submitted for unclear PMOA" (15%)
+- "Section 15 missing entirely" (10%)
+
+**Review Template:**
 ```
-Combination Product Reviewer Assessment:
-  □ PMOA determination (device/drug/biologic)
-  □ Lead center assignment (CDRH/CDER/CBER)
-  □ Drug component characterized (name, concentration, class)
-  □ Drug-device interaction testing
-  □ Drug release kinetics/elution profile
-  □ 21 CFR Part 3/4 compliance documented
-  □ OTC Drug Facts panel (if OTC)
-  □ cGMP for drug component (21 CFR 211)
+COMBINATION PRODUCTS REVIEWER: Dr. Emily Zhang, PharmD, MBA
+────────────────────────────────────────
+
+Combination Product Type: {drug-device / device-biologic / drug-device-biologic}
+Detection Confidence: {HIGH / MEDIUM / LOW}
+RHO Assignment: {CDRH / CDER / CBER / UNCERTAIN}
+
+RHO ASSIGNMENT VALIDATION (10 points)
+  □ RHO clearly stated (2 pts)
+  □ PMOA justified with scientific rationale (3 pts)
+  □ PMOA aligns with product mechanism (2 pts)
+  □ OCP RFD submitted if needed (3 pts)
+  Score: {X}/10
+
+DRUG COMPONENT ASSESSMENT (10 points) [if applicable]
+  □ Drug specifications complete (2 pts)
+  □ Drug release profile characterized (2 pts)
+  □ Pharmacokinetics addressed (2 pts)
+  □ Drug stability data provided (2 pts)
+  □ Biocompatibility for drug-device interface (2 pts)
+  Score: {X}/10
+
+BIOLOGIC COMPONENT ASSESSMENT (10 points) [if applicable]
+  □ Biologic source and processing described (2 pts)
+  □ Donor screening and viral inactivation (3 pts)
+  □ Immunogenicity risk characterized (2 pts)
+  □ Disease transmission mitigation (3 pts)
+  Score: {X}/10
+
+CENTER CONSULTATION (5 points)
+  □ CDER/CBER consultation documented (3 pts)
+  □ Consultation comments addressed (2 pts)
+  Score: {X}/5
+
+SECTION 15 COMPLETENESS (5 points)
+  □ Section 15 present (5 pts) OR (0 pts if missing)
+  □ Content complete vs template (3 pts deduction if template-only)
+  Score: {X}/5
+
+TOTAL SCORE: {X}/40
+
+Issues Found:
+  - [CRITICAL] {issue requiring RTA or immediate correction}
+  - [MAJOR] {issue likely to trigger Additional Info request}
+  - [MINOR] {issue for clarification}
+
+Recommendations:
+  - {specific actions to address deficiencies}
+  - {guidance references to consult}
+  - {testing or documentation needed}
 ```
+
+**Check for Section 15:**
+- If combination product detected but Section 15 missing → **CRITICAL** deficiency
+- If Section 15 exists but is only template skeleton → **MAJOR** deficiency
+- Verify Section 15 includes PMOA statement, component specifications, RHO assignment
+
+**OCP RFD Recommendation:**
+- If combination_type is "drug-device-biologic" → STRONGLY RECOMMEND OCP RFD
+- If RHO assignment is "UNCERTAIN" → RECOMMEND OCP RFD
+- If PMOA justification is weak or ambiguous → SUGGEST OCP Pre-Sub meeting
 
 ### Clinical Review
 

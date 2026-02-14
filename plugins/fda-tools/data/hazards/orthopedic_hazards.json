@@ -1,0 +1,251 @@
+{
+  "version": "1.0",
+  "source": "ISO 14971:2019 + FDA Orthopedic Device Guidance + ASTM F2423",
+  "device_types": ["Hip Implants", "Knee Implants", "Spinal Implants", "Trauma Fixation", "Joint Replacement"],
+  "hazards": [
+    {
+      "id": "OR-001",
+      "category": "Implant Loosening",
+      "description": "Loss of fixation between implant and bone",
+      "typical_severity": 4,
+      "typical_probability": 3,
+      "harm": "Pain, loss of function, revision surgery required",
+      "iso14971_reference": "Annex E - Mechanical hazards",
+      "common_causes": [
+        "Inadequate osseointegration",
+        "Wear debris-induced osteolysis",
+        "Micromotion at bone-implant interface",
+        "Infection",
+        "Patient factors (obesity, osteoporosis)"
+      ],
+      "typical_controls": [
+        "Porous coating for bone ingrowth (per ASTM F1854)",
+        "Hydroxyapatite coating (if applicable)",
+        "Press-fit sizing guidelines",
+        "Preclinical wear testing (ISO 14243 for knees, ISO 14242 for hips)",
+        "Clinical radiographic surveillance at 1, 2, 5, 10 years",
+        "Instructions for cement technique (if cemented)"
+      ]
+    },
+    {
+      "id": "OR-002",
+      "category": "Wear Debris and Osteolysis",
+      "description": "Particulate wear from articulating surfaces induces bone resorption",
+      "typical_severity": 4,
+      "typical_probability": 3,
+      "harm": "Periprosthetic osteolysis, implant loosening, revision surgery",
+      "iso14971_reference": "Annex E - Biological hazards - Particulate",
+      "common_causes": [
+        "Polyethylene wear in joint replacements",
+        "Metal-on-metal bearing wear",
+        "Third-body wear (cement, bone fragments)",
+        "Edge loading due to malalignment"
+      ],
+      "typical_controls": [
+        "Highly cross-linked polyethylene (HXLPE) for reduced wear",
+        "Simulator wear testing (ISO 14243, ISO 14242) for ≥5 million cycles",
+        "Particulate testing per ISO 10993-12",
+        "Alignment instrumentation to prevent edge loading",
+        "Post-market surveillance for osteolysis rates",
+        "Material biocompatibility per ISO 10993 series"
+      ]
+    },
+    {
+      "id": "OR-003",
+      "category": "Infection",
+      "description": "Bacterial colonization of implant and surrounding tissue",
+      "typical_severity": 5,
+      "typical_probability": 2,
+      "harm": "Deep infection requiring implant removal, sepsis, chronic osteomyelitis",
+      "iso14971_reference": "Annex E - Biological hazards - Infection",
+      "common_causes": [
+        "Non-sterile implant",
+        "Contamination during surgery",
+        "Biofilm formation on implant surface",
+        "Patient immunocompromise or comorbidities"
+      ],
+      "typical_controls": [
+        "Terminal sterilization (steam, EO, radiation per ISO 11135/11137)",
+        "Sterility assurance level (SAL) of 10^-6",
+        "Sterility testing per ISO 11737",
+        "Instructions for aseptic surgical technique",
+        "Antimicrobial coatings (if applicable - validation required)",
+        "Post-market surveillance for infection rates (<1% target for primary THA/TKA)"
+      ]
+    },
+    {
+      "id": "OR-004",
+      "category": "Subsidence",
+      "description": "Implant sinks into bone over time due to inadequate support",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "Loss of anatomical alignment, pain, functional impairment",
+      "iso14971_reference": "Annex E - Mechanical hazards",
+      "common_causes": [
+        "Osteoporotic bone",
+        "Undersized implant",
+        "Inadequate bone preparation",
+        "Excessive loading before bone ingrowth"
+      ],
+      "typical_controls": [
+        "Compressive testing of bone-implant interface (ASTM F1717 for spinal)",
+        "Sizing guidelines based on bone density and anatomy",
+        "Instructions for bone preparation technique",
+        "Weight-bearing restrictions during healing period",
+        "Clinical radiographic monitoring (subsidence >3mm at 2 years = failure)"
+      ]
+    },
+    {
+      "id": "OR-005",
+      "category": "Dislocation",
+      "description": "Joint components separate from normal articulation (e.g., hip dislocation)",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "Pain, loss of function, closed or open reduction required, revision surgery",
+      "iso14971_reference": "Annex E - Mechanical hazards",
+      "common_causes": [
+        "Component malpositioning during surgery",
+        "Inadequate soft tissue tension",
+        "Large femoral head size (for hip)",
+        "Patient activity level or trauma"
+      ],
+      "typical_controls": [
+        "Range of motion testing to validate impingement-free arc",
+        "Surgical instrumentation for accurate component positioning",
+        "Dual-mobility designs (if applicable)",
+        "Instructions for optimal acetabular cup positioning (40-45° inclination)",
+        "Patient activity restrictions during healing",
+        "Clinical dislocation rate monitoring (<3% at 2 years for THA)"
+      ]
+    },
+    {
+      "id": "OR-006",
+      "category": "Fracture (Periprosthetic or Device)",
+      "description": "Bone fracture adjacent to implant or fracture of implant itself",
+      "typical_severity": 5,
+      "typical_probability": 2,
+      "harm": "Loss of fixation, pain, revision surgery, potential for non-union",
+      "iso14971_reference": "Annex E - Mechanical hazards",
+      "common_causes": [
+        "Stress shielding leading to bone loss",
+        "Device fatigue failure",
+        "Trauma or fall",
+        "Osteoporotic bone",
+        "Undersized or malpositioned implant"
+      ],
+      "typical_controls": [
+        "Fatigue testing per ASTM F1717 (spinal), ASTM F1800 (femoral stems)",
+        "Material specification (Ti-6Al-4V per ASTM F136, CoCr per ASTM F75)",
+        "Finite element analysis for stress distribution",
+        "Instructions for component sizing and positioning",
+        "Post-market surveillance for fracture rates",
+        "Warnings about osteoporosis and fall risk"
+      ]
+    },
+    {
+      "id": "OR-007",
+      "category": "Nerve or Vascular Injury",
+      "description": "Damage to nerves or blood vessels during implantation",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "Neuropathy, vascular injury, limb ischemia, chronic pain",
+      "iso14971_reference": "Annex E - Operational hazards",
+      "common_causes": [
+        "Retractor placement during surgery",
+        "Drill or screw penetration beyond cortex",
+        "Component impingement on neurovascular structures",
+        "Leg length discrepancy causing nerve stretch"
+      ],
+      "typical_controls": [
+        "Atraumatic surgical instrumentation design",
+        "Instructions for neurovascular anatomy awareness",
+        "Fluoroscopic or navigation guidance",
+        "Warnings about proximity to critical structures (e.g., sciatic nerve in THA)",
+        "Surgeon training and credentialing",
+        "Pre-operative imaging to assess anatomy"
+      ]
+    },
+    {
+      "id": "OR-008",
+      "category": "Metallosis",
+      "description": "Accumulation of metal debris in soft tissue from implant wear or corrosion",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "Pseudotumor formation, soft tissue necrosis, systemic metal ion elevation",
+      "iso14971_reference": "Annex E - Biological hazards - Metal ions",
+      "common_causes": [
+        "Metal-on-metal bearing wear",
+        "Corrosion at modular junctions",
+        "Fretting between components",
+        "Malalignment causing edge loading"
+      ],
+      "typical_controls": [
+        "Corrosion testing per ASTM F1801 (fretting corrosion)",
+        "Material compatibility at modular junctions (avoid mixed metals)",
+        "Simulator wear testing for metal-on-metal bearings (if applicable)",
+        "Clinical metal ion monitoring (Cr, Co levels in blood)",
+        "Post-market surveillance for pseudotumor incidence",
+        "Warnings about MoM bearing risks (if applicable)"
+      ]
+    },
+    {
+      "id": "OR-009",
+      "category": "Component Dissociation",
+      "description": "Separation of modular implant components (e.g., head from stem)",
+      "typical_severity": 5,
+      "typical_probability": 1,
+      "harm": "Loss of function, revision surgery, potential for injury from loose component",
+      "iso14971_reference": "Annex E - Mechanical hazards",
+      "common_causes": [
+        "Inadequate taper lock",
+        "Impaction technique during surgery",
+        "Taper corrosion or fretting",
+        "Excessive loading"
+      ],
+      "typical_controls": [
+        "Taper lock testing per ISO 7206-10 (hip stems)",
+        "Manufacturing tolerances for taper geometry",
+        "Instructions for proper impaction technique and force",
+        "Post-market surveillance for dissociation events",
+        "Warnings about revision surgery risks if components mixed from different manufacturers"
+      ]
+    },
+    {
+      "id": "OR-010",
+      "category": "Adverse Tissue Reaction",
+      "description": "Hypersensitivity or inflammatory response to implant materials",
+      "typical_severity": 3,
+      "typical_probability": 2,
+      "harm": "Pain, dermatitis, implant loosening, tissue necrosis",
+      "iso14971_reference": "Annex E - Biological hazards - Sensitization",
+      "common_causes": [
+        "Nickel allergy (in stainless steel implants)",
+        "Metal ion release (Cr, Co, Ni)",
+        "Polyethylene wear debris",
+        "Bone cement (PMMA) reaction"
+      ],
+      "typical_controls": [
+        "Material biocompatibility per ISO 10993-5 (cytotoxicity), -10 (sensitization)",
+        "Use of low-nickel or nickel-free alloys (Ti-6Al-4V, CoCrMo)",
+        "Patient screening for metal allergies (if applicable)",
+        "Instructions to inquire about patient allergy history",
+        "Post-market surveillance for adverse tissue reactions",
+        "Alternative materials (ceramic, oxidized zirconium) for high-risk patients"
+      ]
+    }
+  ],
+  "severity_scale": {
+    "1": "Negligible - No injury or health effect",
+    "2": "Minor - Temporary injury requiring first aid",
+    "3": "Serious - Injury requiring medical intervention",
+    "4": "Critical - Permanent impairment or life-threatening injury",
+    "5": "Catastrophic - Death or irreversible severe injury"
+  },
+  "probability_scale": {
+    "1": "Remote - <0.01% (1 in 10,000)",
+    "2": "Unlikely - 0.01-0.1% (1 in 1,000 to 1 in 10,000)",
+    "3": "Possible - 0.1-1% (1 in 100 to 1 in 1,000)",
+    "4": "Probable - 1-10% (1 in 10 to 1 in 100)",
+    "5": "Frequent - >10% (>1 in 10)"
+  }
+}

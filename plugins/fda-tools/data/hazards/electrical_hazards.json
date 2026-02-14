@@ -1,0 +1,314 @@
+{
+  "version": "1.0",
+  "source": "ISO 14971:2019 + IEC 60601-1:2020 + IEC 62304",
+  "device_types": ["Active Medical Devices", "Diagnostic Equipment", "Therapeutic Devices", "Software Medical Devices", "Connected Devices"],
+  "hazards": [
+    {
+      "id": "EL-001",
+      "category": "Electrical Shock - Patient",
+      "description": "Leakage current or applied part contact causes patient shock",
+      "typical_severity": 5,
+      "typical_probability": 1,
+      "harm": "Ventricular fibrillation, cardiac arrest, burns, death",
+      "iso14971_reference": "Annex E - Energy hazards - Electrical",
+      "common_causes": [
+        "Insulation failure on patient-applied parts",
+        "Excessive leakage current through applied part",
+        "Loss of protective earth connection",
+        "Single fault condition (e.g., mains voltage on applied part)"
+      ],
+      "typical_controls": [
+        "IEC 60601-1 compliance testing (Clause 8 - Leakage currents)",
+        "Type BF or CF applied part classification (for cardiac applications)",
+        "Means of patient protection (MOPP) ≥2 for Type CF",
+        "Leakage current limits: Normal <100μA, Single Fault <500μA (Type BF)",
+        "Dielectric strength testing at 1500V AC for 1 minute",
+        "Protective earth resistance <0.2Ω",
+        "Warnings about use in wet environments"
+      ]
+    },
+    {
+      "id": "EL-002",
+      "category": "Electrical Shock - Operator",
+      "description": "Operator contact with live parts or enclosure under fault conditions",
+      "typical_severity": 4,
+      "typical_probability": 1,
+      "harm": "Electric shock, burns, involuntary muscle contraction",
+      "iso14971_reference": "Annex E - Energy hazards - Electrical",
+      "common_causes": [
+        "Inadequate enclosure protection",
+        "Service access without power disconnect",
+        "Damaged power cord",
+        "Loss of protective earth"
+      ],
+      "typical_controls": [
+        "IEC 60601-1 Clause 8.6 - Enclosure leakage current limits (<100μA normal)",
+        "Means of operator protection (MOOP) ≥1",
+        "IP rating for enclosure (IP21 minimum per IEC 60529)",
+        "Instructions for pre-use inspection of power cord",
+        "Service access interlocks or warnings",
+        "Ground fault circuit interrupter (GFCI) recommendations"
+      ]
+    },
+    {
+      "id": "EL-003",
+      "category": "Electromagnetic Interference (EMI) - Emissions",
+      "description": "Device emits electromagnetic energy that interferes with other equipment",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "Malfunction of nearby life-support equipment (ventilators, monitors, pacemakers)",
+      "iso14971_reference": "Annex E - Electromagnetic hazards",
+      "common_causes": [
+        "High-frequency switching in power supply",
+        "RF energy from wireless transmitters",
+        "Inadequate shielding or filtering",
+        "Electrosurgical unit operation"
+      ],
+      "typical_controls": [
+        "IEC 60601-1-2:2014 EMC testing (emissions per CISPR 11)",
+        "Group 1 Class B limits for emissions (residential environment)",
+        "Radiated emissions <30 dBμV/m at 3m (30 MHz - 1 GHz)",
+        "Conducted emissions on mains <66 dBμV (150 kHz - 30 MHz)",
+        "Instructions for minimum separation distances from other equipment",
+        "Warnings about use near implanted devices (pacemakers, ICDs)"
+      ]
+    },
+    {
+      "id": "EL-004",
+      "category": "Electromagnetic Interference (EMI) - Susceptibility",
+      "description": "Device malfunctions due to electromagnetic interference from external sources",
+      "typical_severity": 5,
+      "typical_probability": 2,
+      "harm": "Incorrect output, loss of essential performance, patient injury",
+      "iso14971_reference": "Annex E - Electromagnetic hazards",
+      "common_causes": [
+        "Electrosurgical units in same operating room",
+        "MRI scanners",
+        "Mobile phones or wireless networks",
+        "Power line transients"
+      ],
+      "typical_controls": [
+        "IEC 60601-1-2:2014 EMC testing (immunity per IEC 61000-4 series)",
+        "Radiated immunity testing at 10 V/m (80 MHz - 2.7 GHz)",
+        "ESD immunity ±8 kV contact, ±15 kV air discharge",
+        "Electrical fast transient (burst) immunity ±2 kV on mains",
+        "Surge immunity ±2 kV line-to-line on mains",
+        "Warnings about use near strong EM sources",
+        "Instructions for risk management when immunity limits exceeded"
+      ]
+    },
+    {
+      "id": "EL-005",
+      "category": "Software Failure - Loss of Function",
+      "description": "Software defect causes device to fail to perform intended function",
+      "typical_severity": 5,
+      "typical_probability": 2,
+      "harm": "Loss of monitoring, incorrect therapy delivery, delayed diagnosis",
+      "iso14971_reference": "Annex E - Functional failure - Loss of function",
+      "common_causes": [
+        "Software bugs or defects",
+        "Race conditions or timing issues",
+        "Memory leaks or resource exhaustion",
+        "Inadequate input validation"
+      ],
+      "typical_controls": [
+        "IEC 62304 software lifecycle compliance (Class B or C based on risk)",
+        "Software hazard analysis per ISO 14971",
+        "Unit testing, integration testing, system testing per IEC 62304 Clause 5.5-5.7",
+        "Static code analysis tools (MISRA compliance for embedded)",
+        "Cybersecurity controls per FDA premarket guidance (2023)",
+        "Software Bill of Materials (SBOM) for SOUP components",
+        "Post-market software maintenance and update procedures"
+      ]
+    },
+    {
+      "id": "EL-006",
+      "category": "Software Failure - Incorrect Output",
+      "description": "Software calculates or displays incorrect data leading to clinical error",
+      "typical_severity": 5,
+      "typical_probability": 2,
+      "harm": "Misdiagnosis, inappropriate therapy, patient injury or death",
+      "iso14971_reference": "Annex E - Functional failure - Incorrect output",
+      "common_causes": [
+        "Algorithm errors in clinical calculations",
+        "Data corruption or loss",
+        "Incorrect unit conversions",
+        "Rounding errors in critical calculations",
+        "User interface design errors"
+      ],
+      "typical_controls": [
+        "Algorithm validation testing with known reference datasets",
+        "Clinical validation study to verify accuracy",
+        "IEC 62304 software unit testing for calculation modules",
+        "Usability testing per IEC 62366-1 to prevent use errors",
+        "Instructions for verification of output reasonableness",
+        "Warnings about limitations of algorithms (e.g., population applicability)",
+        "Independent third-party algorithm verification (if applicable)"
+      ]
+    },
+    {
+      "id": "EL-007",
+      "category": "Cybersecurity Breach",
+      "description": "Unauthorized access to device or patient data",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "Loss of confidentiality, device malfunction due to malicious code, ransomware",
+      "iso14971_reference": "Annex E - Information security hazards",
+      "common_causes": [
+        "Weak or default passwords",
+        "Unencrypted network communications",
+        "Outdated operating system or libraries with known vulnerabilities",
+        "Lack of access controls"
+      ],
+      "typical_controls": [
+        "FDA premarket cybersecurity guidance (2023) - Secure by Design",
+        "Software Bill of Materials (SBOM) for vulnerability tracking",
+        "Encryption for data at rest (AES-256) and in transit (TLS 1.3)",
+        "Authentication and authorization controls (NIST SP 800-63B)",
+        "Penetration testing and vulnerability scanning",
+        "Secure software update mechanism with code signing",
+        "Post-market vulnerability management and patching procedures",
+        "Instructions for network security configuration"
+      ]
+    },
+    {
+      "id": "EL-008",
+      "category": "Thermal Burn - Excessive Surface Temperature",
+      "description": "Device enclosure or applied part reaches unsafe temperature",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "First to third degree burns on patient or operator",
+      "iso14971_reference": "Annex E - Energy hazards - Thermal",
+      "common_causes": [
+        "Inadequate heat dissipation in enclosure",
+        "Power supply or component failure",
+        "Blocked ventilation",
+        "Applied part heating during therapy"
+      ],
+      "typical_controls": [
+        "IEC 60601-1 Clause 11 - Temperature limits",
+        "Applied part contact temperature <41°C for prolonged contact (>1 min)",
+        "Accessible surface temperature <48°C under normal use",
+        "Thermal testing under worst-case conditions (max ambient, blocked vents)",
+        "Thermal cutoff or overheat protection",
+        "Warnings about surface temperature during/after use",
+        "Ventilation requirements in IFU"
+      ]
+    },
+    {
+      "id": "EL-009",
+      "category": "Battery Failure",
+      "description": "Battery depletion, leakage, or fire during device operation",
+      "typical_severity": 4,
+      "typical_probability": 2,
+      "harm": "Loss of device function, chemical burns, fire, explosion",
+      "iso14971_reference": "Annex E - Energy hazards - Electrical",
+      "common_causes": [
+        "End of battery life",
+        "Battery overcharge or overdischarge",
+        "Thermal runaway in lithium batteries",
+        "Manufacturing defect",
+        "Physical damage to battery"
+      ],
+      "typical_controls": [
+        "IEC 60601-1 Clause 11.8 - Internal electrical power sources",
+        "UN 38.3 testing for lithium batteries (if >20 Wh)",
+        "Battery management system (BMS) for overcharge/overdischarge protection",
+        "Low battery alarm or indicator (IEC 60601-1 Clause 6.4.8)",
+        "Instructions for battery replacement schedule",
+        "Warnings about battery disposal per RCRA",
+        "Thermal protection for lithium batteries (max 60°C cell temperature)"
+      ]
+    },
+    {
+      "id": "EL-010",
+      "category": "Radiation Exposure",
+      "description": "Exposure to ionizing or non-ionizing radiation beyond safe limits",
+      "typical_severity": 5,
+      "typical_probability": 2,
+      "harm": "Radiation burns, tissue damage, increased cancer risk, eye injury",
+      "iso14971_reference": "Annex E - Energy hazards - Radiation",
+      "common_causes": [
+        "Excessive X-ray dose in imaging devices",
+        "Laser eye exposure in optical devices",
+        "Ultrasound thermal or mechanical index exceeds limits",
+        "Operator exposure during fluoroscopy"
+      ],
+      "typical_controls": [
+        "IEC 60601-2-54 for X-ray imaging (dose limits, AEC performance)",
+        "IEC 60601-2-22 for surgical lasers (Class 3B or 4 controls)",
+        "IEC 60601-2-37 for ultrasound (TI <6.0, MI <1.9 for fetal)",
+        "Radiation safety interlock systems",
+        "Instructions for ALARA (As Low As Reasonably Achievable) principle",
+        "Operator training on radiation safety",
+        "Dosimetry monitoring for ionizing radiation",
+        "Laser safety eyewear requirements in IFU"
+      ]
+    },
+    {
+      "id": "EL-011",
+      "category": "Mechanical Failure - Moving Parts",
+      "description": "Motors, actuators, or robotic components malfunction causing unintended motion",
+      "typical_severity": 5,
+      "typical_probability": 2,
+      "harm": "Crush injury, amputation, tissue damage",
+      "iso14971_reference": "Annex E - Mechanical hazards - Moving parts",
+      "common_causes": [
+        "Software error in motion control algorithm",
+        "Sensor failure (loss of position feedback)",
+        "Power supply transient",
+        "Mechanical obstruction or jamming"
+      ],
+      "typical_controls": [
+        "IEC 60601-1 Clause 12 - Accuracy of controls and instruments",
+        "Redundant position sensors with comparison monitoring",
+        "Software safety architecture per IEC 62304 Class C",
+        "Emergency stop button (IEC 60601-1 Clause 15.4.4)",
+        "Force/torque limiting to prevent crush injuries",
+        "Motion testing with intentional faults injected",
+        "Warnings about operator vigilance during motion",
+        "Clinical risk mitigation procedures (e.g., timeout verification)"
+      ]
+    },
+    {
+      "id": "EL-012",
+      "category": "Alarm Failure",
+      "description": "Device fails to generate or user fails to perceive critical alarm",
+      "typical_severity": 5,
+      "typical_probability": 2,
+      "harm": "Delayed response to patient deterioration, injury or death",
+      "iso14971_reference": "Annex E - Functional failure - Incorrect alarm",
+      "common_causes": [
+        "Alarm disabled by user",
+        "Alarm priority set too low",
+        "Alarm drowned out by ambient noise",
+        "Software defect prevents alarm generation",
+        "Alarm fatigue from excessive false alarms"
+      ],
+      "typical_controls": [
+        "IEC 60601-1-8 Alarm system requirements (priority, pause limits, backup)",
+        "Usability testing per IEC 62366-1 to validate alarm perception",
+        "Alarm priority classification: High (red), Medium (yellow), Low (cyan)",
+        "Minimum sound pressure levels: High 65 dB, Medium 55 dB at 1m",
+        "Visual alarm signals in addition to audible",
+        "Default alarm settings cannot be disabled for critical parameters",
+        "Instructions for alarm setting and testing procedures",
+        "Post-market surveillance for alarm-related adverse events"
+      ]
+    }
+  ],
+  "severity_scale": {
+    "1": "Negligible - No injury or health effect",
+    "2": "Minor - Temporary injury requiring first aid",
+    "3": "Serious - Injury requiring medical intervention",
+    "4": "Critical - Permanent impairment or life-threatening injury",
+    "5": "Catastrophic - Death or irreversible severe injury"
+  },
+  "probability_scale": {
+    "1": "Remote - <0.01% (1 in 10,000)",
+    "2": "Unlikely - 0.01-0.1% (1 in 1,000 to 1 in 10,000)",
+    "3": "Possible - 0.1-1% (1 in 100 to 1 in 1,000)",
+    "4": "Probable - 1-10% (1 in 10 to 1 in 100)",
+    "5": "Frequent - >10% (>1 in 10)"
+  }
+}
