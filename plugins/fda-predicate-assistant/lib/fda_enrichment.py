@@ -733,7 +733,10 @@ class FDAEnrichment:
         # Phase 3: Advanced Analytics
         # Feature 1: MAUDE Peer Comparison
         device_maude_count = maude_data.get('maude_productcode_5y', 0)
-        if isinstance(device_maude_count, int) and device_maude_count >= 0:
+        maude_scope = maude_data.get('maude_scope', '')
+
+        # Only run peer comparison if MAUDE data is available (not UNAVAILABLE scope)
+        if isinstance(device_maude_count, int) and device_maude_count >= 0 and maude_scope != 'UNAVAILABLE':
             peer_comparison = self.analyze_maude_peer_comparison(
                 product_code,
                 device_maude_count,
