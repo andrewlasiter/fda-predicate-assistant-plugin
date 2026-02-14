@@ -6,15 +6,15 @@
     "email": "andrewlasiter@users.noreply.github.com"
   },
   "metadata": {
-    "description": "FDA regulatory tools for medical device 510(k) analysis, predicate extraction, and submission preparation",
-    "version": "1.0.0"
+    "description": "FDA regulatory tools for medical device 510(k) analysis, predicate extraction, and submission preparation. v5.22.0 includes advanced intelligence suite with workflow automation, semantic search, and ML-powered recommendations.",
+    "version": "5.22.0"
   },
   "plugins": [
     {
       "name": "fda-tools",
       "source": "./plugins/fda-tools",
-      "description": "AI-powered FDA 510(k) regulatory assistant — 33 commands, 4 agents, FDA review simulation, CDRH Portal submission guidance, eSTAR template selection, manual predicate proposal, deep predicate analysis, PMA/De Novo search, standards database, interactive search, automated alerts, timeline analytics, UDI/GUDID lookup, AI/ML trends, correspondence tracking, DoC templates, risk management, DHF checklist, clinical study guidance, shelf life calculator, BOM/materials tracking, human factors templates, complaint handling, eSTAR import/export, full submission drafting, and autonomous workflows",
-      "version": "5.4.0",
+      "description": "⚠️ BREAKING CHANGE v5.22.0: Plugin renamed from fda-predicate-assistant to fda-tools. See migration guide. | AI-powered FDA 510(k) regulatory assistant with 43 commands, 8 agents, and advanced intelligence suite — Phase 5: workflow orchestration, streaming processor, semantic search, device clustering | Phase 4: smart predicate recommendations (ML-powered), automated gap analysis | Phase 3: MAUDE peer comparison, competitive intelligence, review time predictions | Phase 1-2: data provenance tracking, quality validation, CFR citations, clinical data detection, FDA standards intelligence, predicate chain validation | Core features: predicate extraction, substantial equivalence analysis, submission drafting, FDA review simulation, safety surveillance, guidance lookup, and full eSTAR export | 96.6% test pass rate, research use only",
+      "version": "5.22.0",
       "author": {
         "name": "PredicateExtraction"
       },
