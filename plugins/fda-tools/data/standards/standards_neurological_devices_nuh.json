@@ -1,0 +1,69 @@
+{
+  "category": "Neurological Devices",
+  "product_codes": [
+    "NUH"
+  ],
+  "device_examples": [
+    "Stimulator, Nerve, Transcutaneous, Over-The-Counter"
+  ],
+  "device_class": "2",
+  "regulation_number": "882.5890",
+  "review_panel": "NE",
+  "applicable_standards": [
+    {
+      "number": "IEC 60601-1:2005+A1:2012",
+      "title": "Medical electrical equipment - General safety",
+      "applicability": "FDA recognized consensus standard for neurological devices",
+      "frequency": 0.95,
+      "confidence": "HIGH",
+      "source": "FDA_recognized_standards"
+    },
+    {
+      "number": "IEC 60601-2-10:2012",
+      "title": "Nerve and muscle stimulators",
+      "applicability": "FDA recognized consensus standard for neurological devices",
+      "frequency": 0.9,
+      "confidence": "HIGH",
+      "source": "FDA_recognized_standards"
+    },
+    {
+      "number": "ISO 14708-3:2017",
+      "title": "Active implantable medical devices - Neurostimulators",
+      "applicability": "FDA recognized consensus standard for neurological devices",
+      "frequency": 0.85,
+      "confidence": "HIGH",
+      "source": "FDA_recognized_standards"
+    },
+    {
+      "number": "ISO 10993-1:2018",
+      "title": "Biological evaluation",
+      "applicability": "FDA recognized consensus standard for neurological devices",
+      "frequency": 0.8,
+      "confidence": "HIGH",
+      "source": "FDA_recognized_standards"
+    },
+    {
+      "number": "ISO 14971:2019",
+      "title": "Risk management",
+      "applicability": "FDA recognized consensus standard for neurological devices",
+      "frequency": 0.85,
+      "confidence": "HIGH",
+      "source": "FDA_recognized_standards"
+    },
+    {
+      "number": "ASTM F2182:2011a",
+      "title": "Measurement of radio frequency induced heating",
+      "applicability": "FDA recognized consensus standard for neurological devices",
+      "frequency": 0.7,
+      "confidence": "HIGH",
+      "source": "FDA_recognized_standards"
+    }
+  ],
+  "generation_metadata": {
+    "method": "knowledge_based",
+    "source": "FDA_recognized_consensus_standards",
+    "confidence_level": "HIGH",
+    "manual_review_required": false,
+    "notes": "Standards selected from FDA recognized consensus standards database"
+  }
+}

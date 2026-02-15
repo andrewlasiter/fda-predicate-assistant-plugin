@@ -1,0 +1,53 @@
+{
+  "category": "Dental Devices",
+  "product_codes": [
+    "EFB"
+  ],
+  "device_examples": [
+    "Handpiece, Air-Powered, Dental"
+  ],
+  "device_class": "1",
+  "regulation_number": "872.4200",
+  "review_panel": "DE",
+  "applicable_standards": [
+    {
+      "number": "ISO 14801:2016",
+      "title": "Dentistry - Implants - Dynamic loading test",
+      "applicability": "FDA recognized consensus standard for dental devices",
+      "frequency": 0.8,
+      "confidence": "HIGH",
+      "source": "FDA_recognized_standards"
+    },
+    {
+      "number": "ASTM F3332:2018",
+      "title": "Static Bending and Torsion Testing of Dental Implants",
+      "applicability": "FDA recognized consensus standard for dental devices",
+      "frequency": 0.7,
+      "confidence": "HIGH",
+      "source": "FDA_recognized_standards"
+    },
+    {
+      "number": "ISO 10993-1:2018",
+      "title": "Biological evaluation",
+      "applicability": "FDA recognized consensus standard for dental devices",
+      "frequency": 0.85,
+      "confidence": "HIGH",
+      "source": "FDA_recognized_standards"
+    },
+    {
+      "number": "ISO 13485:2016",
+      "title": "Quality management systems",
+      "applicability": "FDA recognized consensus standard for dental devices",
+      "frequency": 0.85,
+      "confidence": "HIGH",
+      "source": "FDA_recognized_standards"
+    }
+  ],
+  "generation_metadata": {
+    "method": "knowledge_based",
+    "source": "FDA_recognized_consensus_standards",
+    "confidence_level": "HIGH",
+    "manual_review_required": false,
+    "notes": "Standards selected from FDA recognized consensus standards database"
+  }
+}

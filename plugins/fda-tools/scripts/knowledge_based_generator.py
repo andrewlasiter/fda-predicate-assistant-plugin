@@ -290,11 +290,40 @@ def main():
     codes = args.codes or []
 
     if args.top:
-        # Top codes by submission volume (from FDA data)
+        # Top codes by submission volume (from FDA data 2020-2024)
         top_codes = [
-            'DQY', 'KGN', 'MAX', 'FRN', 'DSI', 'GEI', 'OVE', 'NIQ',
-            'DTK', 'JJE', 'LCX', 'QIH', 'GZB', 'OLO', 'QBH', 'FTL',
-            'MJR', 'OZO', 'QPA', 'EXE', 'EXH', 'FRO', 'LWV', 'OBO'
+            'GEX', 'GEI', 'LLZ', 'QIH', 'OLO', 'IYN', 'HRS', 'NHA',
+            'NKB', 'DZE', 'LZA', 'MAX', 'MBI', 'ITI', 'OHT', 'MQV',
+            'DXN', 'LNH', 'JAK', 'GCJ', 'FRO', 'EIH', 'QJP', 'HWC',
+            'DQY', 'OUR', 'DYB', 'FMF', 'JWH', 'HGX', 'NUH', 'DQK',
+            'EBF', 'ODP', 'OWB', 'FXX', 'KWQ', 'DQA', 'FLL', 'QAS',
+            'OHS', 'KGN', 'HSB', 'FGB', 'NXC', 'IRP', 'LPL', 'KPS',
+            'OVE', 'QEW', 'IYE', 'NGX', 'DPS', 'OVD', 'DQX', 'IYO',
+            'KPR', 'EOQ', 'EBI', 'MOS', 'JOJ', 'FRG', 'JKA', 'HAW',
+            'IPF', 'KCT', 'LZO', 'PGY', 'BZD', 'MWI', 'MQB', 'NGL',
+            'NUC', 'GEH', 'PHX', 'ODC', 'FMI', 'MBH', 'MQL', 'OBO',
+            'MUJ', 'OAP', 'EHD', 'FMK', 'QFG', 'DJG', 'QOF', 'FOZ',
+            'NEU', 'BTT', 'FAJ', 'FPA', 'IZL', 'LHI', 'NBW', 'MUH',
+            'JOW', 'MQC', 'JDR', 'OMP', 'INI', 'LCX', 'NFO', 'JWY',
+            'NAY', 'GXY', 'KIF', 'HSN', 'JAQ', 'NRY', 'NEY', 'OAS',
+            'KGO', 'KDI', 'CAF', 'CBK', 'KLE', 'PSY', 'FRC', 'MRW',
+            'KTT', 'MAI', 'IOR', 'KNT', 'NKG', 'LPH', 'FYA', 'JSM',
+            'LRK', 'MYN', 'GAT', 'MHX', 'ONB', 'FRN', 'FGE', 'KNS',
+            'QFM', 'FED', 'OCX', 'PKL', 'OBP', 'HIH', 'PBX', 'HTN',
+            'QDQ', 'MNR', 'KRD', 'QKB', 'CAW', 'EZD', 'ONF', 'QHE',
+            'HIF', 'QSY', 'DWJ', 'LIT', 'HRX', 'FDS', 'KPI', 'DQD',
+            'DSY', 'EFB', 'KNW', 'HQF', 'QBD', 'FDF', 'DSH', 'EZL',
+            'ITX', 'JEY', 'ELC', 'QNP', 'GKZ', 'OHV', 'NGT', 'EKX',
+            'HKI', 'ETN', 'GWF', 'NLH', 'MEH', 'BZG', 'POK', 'MSX',
+            'DQO', 'GAG', 'DXQ', 'LOX', 'MUD', 'PNN', 'FBK', 'HCG',
+            'QYT', 'DTZ', 'OWQ', 'QJI', 'NFJ', 'GWG', 'OWN', 'HQC',
+            'PIF', 'HTY', 'HEB', 'JDQ', 'FLE', 'LON', 'BTA', 'JAA',
+            'DXT', 'HHW', 'JXG', 'CHL', 'GWL', 'NDC', 'EBG', 'OMB',
+            'DXF', 'QNQ', 'LFL', 'MQP', 'PBF', 'PCC', 'MCW', 'HQD',
+            'DRF', 'QRK', 'OYK', 'QAI', 'NFT', 'CGA', 'MLR', 'DTK',
+            'LJS', 'DXE', 'QTZ', 'EMA', 'KPO', 'JXI', 'MBF', 'MRN',
+            'NPL', 'QUH', 'BZH', 'QPB', 'SBF', 'QME', 'CCK', 'DYG',
+            'OAB', 'KWS',
         ]
         codes = top_codes[:args.top]
 
